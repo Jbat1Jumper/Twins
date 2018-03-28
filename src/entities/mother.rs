@@ -5,7 +5,7 @@ use ggez::graphics::Color;
 
 use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message};
+use messages::{MessageSender, Message, Direction};
 
 use math::VectorUtils;
 
@@ -16,6 +16,7 @@ const PRECISION : f32 = 0.5;
 pub struct Mother {
     entity_data: EntityData,
     cycle: f32,
+    leaving: f32,
 }
 
 impl Mother {
@@ -25,7 +26,8 @@ impl Mother {
                 pos,
                 ..EntityData::new()
             },
-            cycle: 0.0
+            cycle: 0.0,
+            leaving: 0.0,
         }
     }
 
@@ -166,6 +168,13 @@ impl Entity for Mother {
     fn entity_data(&self) -> &EntityData { &self.entity_data }
     fn update(&mut self, _ctx: &mut Context) {
         self.cycle += 0.1;
+
+        if self.leaving > 0.0 {
+            let pos = self.get_pos();
+            let speed = self.leaving;
+            self.set_pos(pos.add(Point2::new(0.0, -1.0).mul(speed)));
+            self.leaving += 0.05;
+        }
     }
     fn render(&mut self, ctx: &mut Context) {
         let cycle = self.cycle;
@@ -173,8 +182,13 @@ impl Entity for Mother {
         self.render_orbits(ctx, cycle);
         self.render_rays(ctx, cycle);
     }
-    fn receive_message(&mut self, sender: MessageSender, message: Message) {
-
+    fn receive_message(&mut self, _sender: MessageSender, message: Message) {
+        match message {
+            Message::Move(Direction::Up, _) => {
+                self.leaving = 0.05;
+            },
+            _ => ()
+        }
     }
 }
 
