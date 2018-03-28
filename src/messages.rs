@@ -16,7 +16,7 @@ pub enum Direction {
 
 #[derive(Copy, Clone)]
 pub enum Message {
-    Move(Direction),
+    Move(Direction, f32),
     Shoot,
     Start,
     Stop,
