@@ -94,6 +94,7 @@ impl event::EventHandler for Main {
             entity.is_alive()
         });
         self.current_state = self.current_state.update(&mut self.game);
+        //println!("{:?}", self.current_state);
 
         Ok(())
     }
