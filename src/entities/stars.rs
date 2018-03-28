@@ -9,7 +9,6 @@ use math::VectorUtils;
 use messages::{MessageSender, Message};
 
 use rand::{Rng, StdRng, SeedableRng};
-use na;
 
 use W_WIDTH;
 use W_HEIGHT;

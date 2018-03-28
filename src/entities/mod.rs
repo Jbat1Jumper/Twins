@@ -34,7 +34,6 @@ pub trait Entity {
 }
 
 
-pub mod mother;
 pub mod stars;
-pub mod twin;
 pub mod blink;
+pub mod intro;
