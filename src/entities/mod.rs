@@ -28,6 +28,8 @@ pub trait Entity {
     fn receive_message(&mut self, sender: MessageSender, message: Message);
     fn is_alive(&self) -> bool { self.entity_data().alive }
     fn z_order(&self) -> f32 { self.entity_data().z_order }
+    fn get_pos(&self) -> Point2 { self.entity_data().pos }
+    fn set_pos(&mut self, pos: Point2) { self.entity_data_mut().pos = pos }
 }
 
 
