@@ -13,14 +13,14 @@ use math::VectorUtils;
 const PRECISION : f32 = 0.5;
 
 
-pub struct Twin {
+pub struct TwinIntro {
     entity_data: EntityData,
     cycle: f32,
     going_to: Option<Point2>,
     speed: f32,
 }
 
-impl Entity for Twin {
+impl Entity for TwinIntro {
 
     fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
     fn entity_data(&self) -> &EntityData { &self.entity_data }
@@ -61,9 +61,9 @@ impl Entity for Twin {
     }
 }
 
-impl Twin {
-    pub fn new(pos: Point2) -> Twin {
-        Twin {
+impl TwinIntro {
+    pub fn new(pos: Point2) -> Self {
+        Self {
             entity_data: EntityData {
                 pos,
                 ..EntityData::new()

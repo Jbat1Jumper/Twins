@@ -2,7 +2,7 @@ use Game;
 use entities::EntityId;
 use entities::mother::{MotherIntro, MegaRay};
 use entities::stars::Stars;
-use entities::twin::Twin;
+use entities::twin::TwinIntro;
 use entities::blink::Blink;
 use ggez::graphics::Point2;
 use messages::{Message, Direction};
@@ -88,8 +88,8 @@ impl IntroState {
             &IntroState::MegaRay(ref d) if d.waiting() => IntroState::MegaRay(d.elapsed(game.delta_time())),
             &IntroState::MegaRay(ref d) => {
                 let d = IntroData {
-                    twin1: Some(game.add_entity(Box::new(Twin::new(Point2::new(200.0, 500.0))))),
-                    twin2: Some(game.add_entity(Box::new(Twin::new(Point2::new(200.0, 500.0))))),
+                    twin1: Some(game.add_entity(Box::new(TwinIntro::new(Point2::new(200.0, 500.0))))),
+                    twin2: Some(game.add_entity(Box::new(TwinIntro::new(Point2::new(200.0, 500.0))))),
                     ..*d
                 };
                 IntroState::TwinsRay(d.wait(5.0))
