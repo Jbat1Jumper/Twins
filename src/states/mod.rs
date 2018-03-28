@@ -18,7 +18,7 @@ impl GameState {
             &GameState::Start => GameState::Intro(IntroState::Start),
             &GameState::Intro(ref intro_state) => {
                 match intro_state.update(game) {
-                    IntroState::End => GameState::Play,
+                    IntroState::Go => GameState::Play,
                     x => GameState::Intro(x)
                 }
             },

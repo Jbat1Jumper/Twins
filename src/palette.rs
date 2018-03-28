@@ -6,6 +6,7 @@ pub enum Palette {
     Black,
     Light(f32),
     Player,
+    Blink(f32)
 }
 
 impl From<Palette> for Color {
@@ -17,7 +18,10 @@ impl From<Palette> for Color {
                 let v = (i * 60.0) as u8;
                 Color::from_rgb(180+v, 150+v, 195+v)
             },
-            Palette::Player => Color::from_rgb(190, 200, 250)
+            Palette::Player => Color::from_rgb(190, 200, 250),
+            Palette::Blink(opacity) => {
+                Color::from_rgba(255, 255, 255, (255.0 * opacity) as u8)
+            }
         }
     }
 }

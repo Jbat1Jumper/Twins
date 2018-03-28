@@ -27,6 +27,7 @@ pub trait Entity {
     fn render(&mut self,  ctx: &mut Context);
     fn receive_message(&mut self, sender: MessageSender, message: Message);
     fn is_alive(&self) -> bool { self.entity_data().alive }
+    fn die(&mut self) { self.entity_data_mut().alive = false; }
     fn z_order(&self) -> f32 { self.entity_data().z_order }
     fn get_pos(&self) -> Point2 { self.entity_data().pos }
     fn set_pos(&mut self, pos: Point2) { self.entity_data_mut().pos = pos }
@@ -36,3 +37,4 @@ pub trait Entity {
 pub mod mother;
 pub mod stars;
 pub mod twin;
+pub mod blink;

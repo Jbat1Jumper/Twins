@@ -3,6 +3,7 @@ use entities::EntityId;
 use entities::mother::{MotherIntro, MegaRay};
 use entities::stars::Stars;
 use entities::twin::Twin;
+use entities::blink::Blink;
 use ggez::graphics::Point2;
 use messages::{Message, Direction};
 
@@ -51,7 +52,9 @@ pub enum IntroState {
     Twins(IntroData),
     TwinsMoving(IntroData),
     MotherLeaves(IntroData),
-    End,
+    Ready(IntroData),
+    Set(IntroData),
+    Go,
 }
 
 impl IntroState {
@@ -114,9 +117,31 @@ impl IntroState {
                 if let Some(id) = d.mother {
                     game.send_message(id, Message::Move(Direction::Up, 600.0));
                 }
-                IntroState::MotherLeaves(d.wait(5.0))
+                IntroState::MotherLeaves(d.wait(8.0))
             },
-            _ => IntroState::End
+            &IntroState::MotherLeaves(ref d) if d.waiting() => IntroState::MotherLeaves(d.elapsed(game.delta_time())),
+            &IntroState::MotherLeaves(ref d) => {
+                if let Some(id) = d.mother {
+                    game.send_message(id, Message::Kill);
+                }
+                let d = IntroData { mother: None, ..*d };
+                game.add_entity(Box::new(Blink::new(0.5)));
+                IntroState::Ready(d.wait(2.0))
+            }
+            &IntroState::Ready(ref d) if d.waiting() => IntroState::Ready(d.elapsed(game.delta_time())),
+            &IntroState::Ready(ref d) => {
+                game.add_entity(Box::new(Blink::new(0.5)));
+                IntroState::Set(d.wait(2.0))
+            }
+            &IntroState::Set(ref d) if d.waiting() => IntroState::Set(d.elapsed(game.delta_time())),
+            &IntroState::Set(ref d) => {
+                game.add_entity(Box::new(Blink::new(2.0)));
+                if let Some(id) = d.twin1 { game.send_message(id, Message::Kill) }
+                if let Some(id) = d.twin2 { game.send_message(id, Message::Kill) }
+                if let Some(id) = d.stars { game.send_message(id, Message::Move(Direction::Down, 2.0)) }
+                IntroState::Go
+            }
+            _ => IntroState::Go
         }
     }
 }
