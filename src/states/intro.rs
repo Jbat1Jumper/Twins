@@ -1,6 +1,6 @@
 use Game;
 use entities::EntityId;
-use entities::mother::{Mother, MegaRay};
+use entities::mother::{MotherIntro, MegaRay};
 use entities::stars::Stars;
 use entities::twin::Twin;
 use ggez::graphics::Point2;
@@ -69,7 +69,7 @@ impl IntroState {
             &IntroState::Stars(ref d) if d.waiting() => IntroState::Stars(d.elapsed(game.delta_time())),
             &IntroState::Stars(ref d) => {
                 let d = IntroData {
-                    mother: Some(game.add_entity(Box::new(Mother::new(Point2::new(200.0, 200.0))))),
+                    mother: Some(game.add_entity(Box::new(MotherIntro::new(Point2::new(200.0, 200.0))))),
                     ..*d
                 };
                 IntroState::Mother(d.wait(5.0))

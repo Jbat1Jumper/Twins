@@ -13,15 +13,15 @@ use math::VectorUtils;
 const PRECISION : f32 = 0.5;
 
 
-pub struct Mother {
+pub struct MotherIntro {
     entity_data: EntityData,
     cycle: f32,
     leaving: f32,
 }
 
-impl Mother {
-    pub fn new(pos: Point2) -> Mother {
-        Mother {
+impl MotherIntro {
+    pub fn new(pos: Point2) -> Self {
+        Self {
             entity_data: EntityData {
                 pos,
                 ..EntityData::new()
@@ -162,7 +162,7 @@ impl Mother {
     }
 }
 
-impl Entity for Mother {
+impl Entity for MotherIntro {
 
     fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
     fn entity_data(&self) -> &EntityData { &self.entity_data }
