@@ -1,5 +1,5 @@
 use Game;
-use entities::EntityId;
+use entities::{EntityId, EntityTag};
 use entities::intro::{MotherIntro, MegaRay, TwinIntro};
 use entities::stars::Stars;
 use entities::blink::Blink;
@@ -8,13 +8,12 @@ use ggez::graphics::Point2;
 use messages::{Message, Direction, SendMessageTo};
 
 
-const INTRO_SPEED : f32 = 4.0;
+const INTRO_SPEED : f32 = 5.0;
 
 
 #[derive(Debug)]
 pub struct IntroData {
     time_left: f32,
-    stars: Option<EntityId>,
     mother: Option<EntityId>,
     ray: Option<EntityId>,
     twin1: Option<EntityId>,
@@ -25,7 +24,6 @@ impl IntroData {
     fn new() -> IntroData {
         IntroData {
             time_left: 0.0,
-            stars: None,
             mother: None,
             ray: None,
             twin1: None,
@@ -60,13 +58,11 @@ pub enum IntroState {
 impl IntroState {
     pub fn update(&self, game: &mut Game) -> IntroState {
         match self {
-            &IntroState::Start => IntroState::Empty(IntroData::new().wait(5.0)),
+            &IntroState::Start => IntroState::Empty(IntroData::new().wait(20.0)),
             &IntroState::Empty(ref d) if d.waiting() => IntroState::Empty(d.elapsed(game.delta_time())),
             &IntroState::Empty(ref d) => {
-                let d = IntroData {
-                    stars: Some(game.add_entity(Box::new(Stars::new()))),
-                    ..*d
-                };
+                game.add_entity(Box::new(Stars::new(10.0)));
+                game.add_entity(Box::new(Stars::new(20.0)));
                 IntroState::Stars(d.wait(5.0))
             },
             &IntroState::Stars(ref d) if d.waiting() => IntroState::Stars(d.elapsed(game.delta_time())),
@@ -138,7 +134,8 @@ impl IntroState {
                 game.add_entity(Box::new(Blink::new(2.0)));
                 if let Some(id) = d.twin1 { game.send_message(id, Message::Kill) }
                 if let Some(id) = d.twin2 { game.send_message(id, Message::Kill) }
-                if let Some(id) = d.stars { game.send_message(id, Message::Move(Direction::Down, 2.0)) }
+
+                game.send_message(EntityTag::Stars, Message::Move(Direction::Down, 2.0));
 
                 game.add_entity(Box::new(Twin::new(Point2::new(100.0, 500.0))));
                 game.add_entity(Box::new(Twin::new(Point2::new(300.0, 500.0))));

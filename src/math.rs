@@ -13,6 +13,7 @@ pub trait VectorUtils where Self: Sized {
         let norm = self.norm();
         self.mul(1.0/norm)
     }
+    fn set(&mut self, other: Self);
 }
 
 impl VectorUtils for Point2 {
@@ -28,5 +29,9 @@ impl VectorUtils for Point2 {
     }
     fn norm(&self) -> f32 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+    fn set(&mut self, other: Point2) {
+        self.x = other.x;
+        self.y = other.y;
     }
 }

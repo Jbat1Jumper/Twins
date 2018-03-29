@@ -1,4 +1,5 @@
 use entities::{EntityId};
+use ggez::graphics::Point2;
 
 pub enum MessageSender {
     Entity(EntityId),
@@ -10,7 +11,8 @@ pub enum Direction {
     Up,
     Down,
     Left,
-    Right
+    Right,
+    Point(Point2)
 }
 
 #[derive(Copy, Clone)]
