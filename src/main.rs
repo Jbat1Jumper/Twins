@@ -12,11 +12,10 @@ mod entities;
 mod states;
 mod messages;
 
-use entities::Entity;
-use entities::EntityId;
+use entities::{Entity, EntityId, EntityTag};
 use palette::Palette;
 use states::GameState;
-use messages::{MessageSender, MessageDestination, IntoMessageDestination, Message};
+use messages::{MessageSender, SendMessageTo, Message};
 
 
 pub const W_HEIGHT : u32 = 600;
@@ -52,30 +51,25 @@ impl Game {
         });
         id
     }
-    pub fn send_message(&mut self, destination: &IntoMessageDestination, message: Message) {
-        let destination = destination.message_destination();
-        match destination {
-            MessageDestination::Entity(target_id) => {
-                for ie in self.entities.iter_mut() {
-                    let (id, ref mut entity) = *ie;
-                    if id == target_id {
-                        entity.receive_message(MessageSender::God, message);
-                    }
-                }
+}
+
+impl SendMessageTo<EntityId> for Game {
+    fn send_message(&mut self, target_id: EntityId, message: Message) {
+        for ie in self.entities.iter_mut() {
+            let (id, ref mut entity) = *ie;
+            if id == target_id {
+                entity.receive_message(MessageSender::God, message);
             }
-            MessageDestination::Tag(target_tag) => {
-                for ie in self.entities.iter_mut() {
-                    let (_, ref mut entity) = *ie;
-                    if entity.get_tag() == target_tag {
-                        entity.receive_message(MessageSender::God, message);
-                    }
-                }
-            }
-            MessageDestination::All => {
-                for ie in self.entities.iter_mut() {
-                    let (_, ref mut entity) = *ie;
-                    entity.receive_message(MessageSender::God, message);
-                }
+        }
+    }
+}
+
+impl SendMessageTo<EntityTag> for Game {
+    fn send_message(&mut self, target_tag: EntityTag, message: Message) {
+        for ie in self.entities.iter_mut() {
+            let (_, ref mut entity) = *ie;
+            if entity.get_tag() == target_tag {
+                entity.receive_message(MessageSender::God, message);
             }
         }
     }

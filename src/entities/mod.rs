@@ -1,12 +1,8 @@
 use ggez::Context;
 use ggez::graphics::Point2;
-use messages::{MessageSender, Message, MessageDestination, IntoMessageDestination};
+use messages::{MessageSender, Message};
 
 pub type EntityId = i32;
-
-impl IntoMessageDestination for EntityId {
-    fn message_destination(&self) -> MessageDestination { MessageDestination::Entity(*self) }
-}
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum EntityTag {
@@ -14,10 +10,6 @@ pub enum EntityTag {
     Stars,
     Enemy,
     Untagged
-}
-
-impl IntoMessageDestination for EntityTag {
-    fn message_destination(&self) -> MessageDestination { MessageDestination::Tag(*self) }
 }
 
 pub struct EntityData {

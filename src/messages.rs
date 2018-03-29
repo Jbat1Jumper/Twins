@@ -1,19 +1,4 @@
-use entities::{EntityId, EntityTag};
-
-#[derive(Copy, Clone)]
-pub enum MessageDestination {
-    Entity(EntityId),
-    Tag(EntityTag),
-    All,
-}
-
-pub trait IntoMessageDestination {
-    fn message_destination(&self) -> MessageDestination;
-}
-
-impl IntoMessageDestination for MessageDestination {
-    fn message_destination(&self) -> MessageDestination { *self }
-}
+use entities::{EntityId};
 
 pub enum MessageSender {
     Entity(EntityId),
@@ -35,4 +20,8 @@ pub enum Message {
     Start,
     Stop,
     Kill,
+}
+
+pub trait SendMessageTo<T> {
+    fn send_message(&mut self, destination: T, message: Message);
 }

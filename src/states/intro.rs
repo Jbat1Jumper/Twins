@@ -5,7 +5,7 @@ use entities::stars::Stars;
 use entities::blink::Blink;
 use entities::twin::Twin;
 use ggez::graphics::Point2;
-use messages::{Message, MessageDestination, Direction};
+use messages::{Message, Direction, SendMessageTo};
 
 
 const INTRO_SPEED : f32 = 4.0;
@@ -97,7 +97,7 @@ impl IntroState {
             &IntroState::TwinsRay(ref d) if d.waiting() => IntroState::TwinsRay(d.elapsed(game.delta_time())),
             &IntroState::TwinsRay(ref d) => {
                 if let Some(id) = d.ray {
-                    game.send_message(&id, Message::Kill);
+                    game.send_message(id, Message::Kill);
                 };
                 let d = IntroData { ray: None, ..*d };
                 IntroState::Twins(d.wait(5.0))
@@ -105,24 +105,24 @@ impl IntroState {
             &IntroState::Twins(ref d) if d.waiting() => IntroState::Twins(d.elapsed(game.delta_time())),
             &IntroState::Twins(ref d) => {
                 if let Some(id) = d.twin1 {
-                    game.send_message(&id, Message::Move(Direction::Left, 100.0));
+                    game.send_message(id, Message::Move(Direction::Left, 100.0));
                 }
                 if let Some(id) = d.twin2 {
-                    game.send_message(&id, Message::Move(Direction::Right, 100.0));
+                    game.send_message(id, Message::Move(Direction::Right, 100.0));
                 }
                 IntroState::TwinsMoving(d.wait(5.0))
             },
             &IntroState::TwinsMoving(ref d) if d.waiting() => IntroState::TwinsMoving(d.elapsed(game.delta_time())),
             &IntroState::TwinsMoving(ref d) => {
                 if let Some(id) = d.mother {
-                    game.send_message(&id, Message::Move(Direction::Up, 0.05 * INTRO_SPEED));
+                    game.send_message(id, Message::Move(Direction::Up, 0.05 * INTRO_SPEED));
                 }
                 IntroState::MotherLeaves(d.wait(8.0))
             },
             &IntroState::MotherLeaves(ref d) if d.waiting() => IntroState::MotherLeaves(d.elapsed(game.delta_time())),
             &IntroState::MotherLeaves(ref d) => {
                 if let Some(id) = d.mother {
-                    game.send_message(&id, Message::Kill);
+                    game.send_message(id, Message::Kill);
                 }
                 let d = IntroData { mother: None, ..*d };
                 game.add_entity(Box::new(Blink::new(0.5)));
@@ -136,9 +136,9 @@ impl IntroState {
             &IntroState::Set(ref d) if d.waiting() => IntroState::Set(d.elapsed(game.delta_time())),
             &IntroState::Set(ref d) => {
                 game.add_entity(Box::new(Blink::new(2.0)));
-                if let Some(id) = d.twin1 { game.send_message(&id, Message::Kill) }
-                if let Some(id) = d.twin2 { game.send_message(&id, Message::Kill) }
-                if let Some(id) = d.stars { game.send_message(&id, Message::Move(Direction::Down, 2.0)) }
+                if let Some(id) = d.twin1 { game.send_message(id, Message::Kill) }
+                if let Some(id) = d.twin2 { game.send_message(id, Message::Kill) }
+                if let Some(id) = d.stars { game.send_message(id, Message::Move(Direction::Down, 2.0)) }
 
                 game.add_entity(Box::new(Twin::new(Point2::new(100.0, 500.0))));
                 game.add_entity(Box::new(Twin::new(Point2::new(300.0, 500.0))));
