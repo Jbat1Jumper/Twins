@@ -16,7 +16,7 @@ use entities::Entity;
 use entities::EntityId;
 use palette::Palette;
 use states::GameState;
-use messages::{MessageSender, MessageDestination, Message};
+use messages::{MessageSender, MessageDestination, IntoMessageDestination, Message};
 
 
 pub const W_HEIGHT : u32 = 600;
@@ -52,7 +52,8 @@ impl Game {
         });
         id
     }
-    pub fn send_message(&mut self, destination: MessageDestination, message: Message) {
+    pub fn send_message(&mut self, destination: &IntoMessageDestination, message: Message) {
+        let destination = destination.message_destination();
         match destination {
             MessageDestination::Entity(target_id) => {
                 for ie in self.entities.iter_mut() {
