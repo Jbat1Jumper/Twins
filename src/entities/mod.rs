@@ -4,6 +4,7 @@ use messages::{MessageSender, Message};
 
 pub type EntityId = i32;
 
+#[derive(PartialEq)]
 pub enum EntityTag {
     Player,
     Stars,

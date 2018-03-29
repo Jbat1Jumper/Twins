@@ -1,5 +1,10 @@
-use entities::EntityId;
+use entities::{EntityId, EntityTag};
 
+pub enum MessageDestination {
+    Entity(EntityId),
+    Tag(EntityTag),
+    All,
+}
 
 pub enum MessageSender {
     Entity(EntityId),

@@ -16,7 +16,7 @@ use entities::Entity;
 use entities::EntityId;
 use palette::Palette;
 use states::GameState;
-use messages::{MessageSender, Message};
+use messages::{MessageSender, MessageDestination, Message};
 
 
 pub const W_HEIGHT : u32 = 600;
@@ -52,11 +52,29 @@ impl Game {
         });
         id
     }
-    pub fn send_message(&mut self, target_id: EntityId, message: Message) {
-        for ie in self.entities.iter_mut() {
-            let (id, ref mut entity) = *ie;
-            if id == target_id {
-                entity.receive_message(MessageSender::God, message);
+    pub fn send_message(&mut self, destination: MessageDestination, message: Message) {
+        match destination {
+            MessageDestination::Entity(target_id) => {
+                for ie in self.entities.iter_mut() {
+                    let (id, ref mut entity) = *ie;
+                    if id == target_id {
+                        entity.receive_message(MessageSender::God, message);
+                    }
+                }
+            }
+            MessageDestination::Tag(target_tag) => {
+                for ie in self.entities.iter_mut() {
+                    let (_, ref mut entity) = *ie;
+                    if entity.get_tag() == target_tag {
+                        entity.receive_message(MessageSender::God, message);
+                    }
+                }
+            }
+            MessageDestination::All => {
+                for ie in self.entities.iter_mut() {
+                    let (_, ref mut entity) = *ie;
+                    entity.receive_message(MessageSender::God, message);
+                }
             }
         }
     }
