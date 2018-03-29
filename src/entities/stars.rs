@@ -4,7 +4,7 @@ use ggez::graphics;
 use ggez::graphics::Color;
 
 use palette::Palette;
-use entities::{Entity, EntityData};
+use entities::{Entity, EntityData, EntityTag};
 use math::VectorUtils;
 use messages::{MessageSender, Message};
 
@@ -66,4 +66,5 @@ impl Entity for Stars {
     fn receive_message(&mut self, sender: MessageSender, message: Message) {
 
     }
+    fn get_tag(&self) -> EntityTag { EntityTag::Stars }
 }

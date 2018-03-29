@@ -4,6 +4,13 @@ use messages::{MessageSender, Message};
 
 pub type EntityId = i32;
 
+pub enum EntityTag {
+    Player,
+    Stars,
+    Enemy,
+    Untagged
+}
+
 pub struct EntityData {
     pos: Point2,
     alive: bool,
@@ -31,6 +38,7 @@ pub trait Entity {
     fn z_order(&self) -> f32 { self.entity_data().z_order }
     fn get_pos(&self) -> Point2 { self.entity_data().pos }
     fn set_pos(&mut self, pos: Point2) { self.entity_data_mut().pos = pos }
+    fn get_tag(&self) -> EntityTag { EntityTag::Untagged }
 }
 
 
