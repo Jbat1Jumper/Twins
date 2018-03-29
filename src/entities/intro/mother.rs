@@ -17,6 +17,7 @@ pub struct MotherIntro {
     entity_data: EntityData,
     cycle: f32,
     leaving: f32,
+    leaving_speed: f32,
 }
 
 impl MotherIntro {
@@ -28,6 +29,7 @@ impl MotherIntro {
             },
             cycle: 0.0,
             leaving: 0.0,
+            leaving_speed: 0.0,
         }
     }
 
@@ -173,7 +175,7 @@ impl Entity for MotherIntro {
             let pos = self.get_pos();
             let speed = self.leaving;
             self.set_pos(pos.add(Point2::new(0.0, -1.0).mul(speed)));
-            self.leaving += 0.05;
+            self.leaving += self.leaving_speed;
         }
     }
     fn render(&mut self, ctx: &mut Context) {
@@ -184,8 +186,9 @@ impl Entity for MotherIntro {
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
         match message {
-            Message::Move(Direction::Up, _) => {
+            Message::Move(Direction::Up, speed) => {
                 self.leaving = 0.05;
+                self.leaving_speed = speed;
             },
             _ => ()
         }

@@ -3,11 +3,12 @@ use entities::EntityId;
 use entities::intro::{MotherIntro, MegaRay, TwinIntro};
 use entities::stars::Stars;
 use entities::blink::Blink;
+use entities::twin::Twin;
 use ggez::graphics::Point2;
 use messages::{Message, Direction};
 
 
-const INTRO_SPEED : f32 = 3.0;
+const INTRO_SPEED : f32 = 4.0;
 
 
 #[derive(Debug)]
@@ -114,7 +115,7 @@ impl IntroState {
             &IntroState::TwinsMoving(ref d) if d.waiting() => IntroState::TwinsMoving(d.elapsed(game.delta_time())),
             &IntroState::TwinsMoving(ref d) => {
                 if let Some(id) = d.mother {
-                    game.send_message(id, Message::Move(Direction::Up, 600.0));
+                    game.send_message(id, Message::Move(Direction::Up, 0.05 * INTRO_SPEED));
                 }
                 IntroState::MotherLeaves(d.wait(8.0))
             },
@@ -138,6 +139,10 @@ impl IntroState {
                 if let Some(id) = d.twin1 { game.send_message(id, Message::Kill) }
                 if let Some(id) = d.twin2 { game.send_message(id, Message::Kill) }
                 if let Some(id) = d.stars { game.send_message(id, Message::Move(Direction::Down, 2.0)) }
+
+                game.add_entity(Box::new(Twin::new(Point2::new(100.0, 500.0))));
+                game.add_entity(Box::new(Twin::new(Point2::new(300.0, 500.0))));
+
                 IntroState::Go
             }
             _ => IntroState::Go
