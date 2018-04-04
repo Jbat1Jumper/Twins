@@ -1,7 +1,7 @@
 use ggez::Context;
 use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
-use ggez::graphics::Color;
+use ggez::graphics::{Color, Mesh, Drawable};
 
 use palette::Palette;
 use entities::{Entity, EntityData, EntityTag};
@@ -66,13 +66,20 @@ impl Entity for Stars {
         let cycle = self.cycle;
 
         graphics::set_color(ctx, Color::from(Palette::Light(0.0))).unwrap();
+        let polygon = [
+            Point2::new(0.0, -1.0),
+            Point2::new(0.0, 1.0),
+            Point2::new(0.0, 0.0),
+            Point2::new(-1.0, 0.0),
+            Point2::new(1.0, 0.0),
+        ];
+        let star = Mesh::new_polyline(ctx, DrawMode::Line(1.0), &polygon).unwrap();
 
         for pi in self.stars.iter() {
             let (p, i) = *pi;
             if cycle < i * 5.0 { continue }
             if cycle % (10.0 * i) < i { continue }
-            graphics::line(ctx, &[p.add(Point2::new(0.0, -1.0)), p.add(Point2::new(0.0, 1.0))], 1.0).unwrap();
-            graphics::line(ctx, &[p.add(Point2::new(-1.0, 0.0)), p.add(Point2::new(1.0, 0.0))], 1.0).unwrap();
+            star.draw(ctx, p, 0.0);
         }
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
