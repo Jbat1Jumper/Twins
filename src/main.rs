@@ -5,6 +5,7 @@ use ggez::*;
 use ggez::graphics::Color;
 use nalgebra as na;
 use std::cmp::Ordering;
+use std::time::{Instant, Duration};
 
 mod math;
 mod palette;
@@ -78,6 +79,9 @@ impl SendMessageTo<EntityTag> for Game {
 pub struct Main {
     game: Game,
     current_state: GameState,
+    last_time: Instant,
+    profile: bool,
+    debug: bool,
 }
 
 impl Main {
@@ -88,7 +92,10 @@ impl Main {
                 entity_id_counter: 0,
                 currently_updated_entity_id: 0,
             },
-            current_state: GameState::Start
+            current_state: GameState::Start,
+            last_time: Instant::now(),
+            debug: false,
+            profile: false,
         };
         Ok(s)
     }
@@ -98,6 +105,12 @@ impl Main {
 
 impl event::EventHandler for Main {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+
+        let start = Instant::now();
+        let frame_time = start - self.last_time;
+        if self.profile { print!("   Frame time is {}s {}ms", frame_time.as_secs(), frame_time.subsec_nanos() / 1_000_000); }
+        self.last_time = start;
+
         for i in self.game.entities.iter_mut() {
             let (id, ref mut entity) = *i;
             entity.update(ctx);
@@ -107,12 +120,19 @@ impl event::EventHandler for Main {
             entity.is_alive()
         });
         self.current_state = self.current_state.update(&mut self.game);
-        //println!("{:?}", self.current_state);
+
+        if self.debug { println!("{:?}", self.current_state); }
+        let end = Instant::now();
+        let update_time = end - start;
+        if self.profile { print!("   Update time is {}s {}ms", update_time.as_secs(), update_time.subsec_nanos() / 1_000_000); }
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+
+        let start = Instant::now();
+
         graphics::set_background_color(ctx, Color::from(Palette::Black));
         graphics::clear(ctx);
 
@@ -121,7 +141,19 @@ impl event::EventHandler for Main {
             entity.render(ctx);
         }
 
+        let present = Instant::now();
+        let draw_time = present - start;
+        if self.profile { print!("   Draw time is {}s {}ms", draw_time.as_secs(), draw_time.subsec_nanos() / 1_000_000); }
+
         graphics::present(ctx);
+
+        let end = Instant::now();
+        let present_time = end - present;
+        if self.profile {
+            print!("    Present time is {}s {}ms", present_time.as_secs(), present_time.subsec_nanos() / 1_000_000);
+            println!(" ;");
+        }
+
         Ok(())
     }
 }
