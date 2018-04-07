@@ -14,6 +14,12 @@ pub trait VectorUtils where Self: Sized {
         self.mul(1.0/norm)
     }
     fn set(&mut self, other: Self);
+
+    fn left() -> Self;
+    fn down() -> Self;
+    fn right() -> Self;
+    fn up() -> Self;
+    fn zero() -> Self;
 }
 
 impl VectorUtils for Point2 {
@@ -33,5 +39,21 @@ impl VectorUtils for Point2 {
     fn set(&mut self, other: Point2) {
         self.x = other.x;
         self.y = other.y;
+    }
+
+    fn left() -> Self {
+        Point2::new(-1.0, 0.0)
+    }
+    fn down() -> Self {
+        Point2::new(0.0, 1.0)
+    }
+    fn right() -> Self {
+        Point2::new(1.0, 0.0)
+    }
+    fn up() -> Self {
+        Point2::new(0.0, -1.0)
+    }
+    fn zero() -> Self {
+        Point2::new(0.0, 0.0)
     }
 }
