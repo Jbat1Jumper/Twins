@@ -2,7 +2,8 @@ extern crate ggez;
 extern crate rand;
 
 use ggez::*;
-use ggez::graphics::Color;
+use ggez::graphics::{Color, Point2};
+use ggez::event::{Keycode, Mod};
 use nalgebra as na;
 use std::cmp::Ordering;
 use std::time::{Instant, Duration};
@@ -13,10 +14,11 @@ mod entities;
 mod states;
 mod messages;
 
-use entities::{Entity, EntityId, EntityTag};
+use entities::{Entity, EntityId, EntityTag, EntityTagPlayer};
 use palette::Palette;
 use states::GameState;
-use messages::{MessageSender, SendMessageTo, Message};
+use messages::{MessageSender, SendMessageTo, Message, Direction};
+use math::VectorUtils;
 
 
 pub const W_HEIGHT : u32 = 600;
@@ -69,7 +71,7 @@ impl SendMessageTo<EntityTag> for Game {
     fn send_message(&mut self, target_tag: EntityTag, message: Message) {
         for ie in self.entities.iter_mut() {
             let (_, ref mut entity) = *ie;
-            if entity.get_tag() == target_tag {
+            if entity.get_tag().suffices(target_tag) {
                 entity.receive_message(MessageSender::God, message);
             }
         }
@@ -155,6 +157,24 @@ impl event::EventHandler for Main {
         }
 
         Ok(())
+    }
+
+    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
+
+        let axis_speed = 1.0;
+
+        println!("keycode {:?} {}", keycode, if repeat {"repeat"} else {""});
+
+        let p1_axis = match keycode {
+            Keycode::A => Point2::left(),
+            Keycode::S => Point2::down(),
+            Keycode::D => Point2::right(),
+            Keycode::W => Point2::up(),
+            _ => Point2::zero()
+        };
+        let p1_axis = p1_axis.mul(axis_speed);
+
+        self.game.send_message(EntityTag::Player(EntityTagPlayer::One), Message::Move(Direction::Point(p1_axis), 1.0));
     }
 }
 

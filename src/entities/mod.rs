@@ -6,10 +6,37 @@ pub type EntityId = i32;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum EntityTag {
-    Player,
+    Player(EntityTagPlayer),
     Stars,
     Enemy,
     Untagged
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum EntityTagPlayer {
+    One,
+    Two,
+    Both
+}
+
+impl EntityTag {
+    pub fn suffices(self, other: Self) -> bool {
+        match self {
+            EntityTag::Player(self_tag) => {
+                match other {
+                    EntityTag::Player(other_tag) => {
+                        match other_tag {
+                            EntityTagPlayer::One => self_tag == EntityTagPlayer::One,
+                            EntityTagPlayer::Two => self_tag == EntityTagPlayer::Two,
+                            _ => true
+                        }
+                    },
+                    _ => false
+                }
+            },
+            _ => self == other
+        }
+    }
 }
 
 pub struct EntityData {

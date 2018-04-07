@@ -3,7 +3,7 @@ use entities::{EntityId, EntityTag};
 use entities::intro::{MotherIntro, MegaRay, TwinIntro};
 use entities::stars::Stars;
 use entities::blink::Blink;
-use entities::twin::Twin;
+use entities::twin;
 use ggez::graphics::Point2;
 use messages::{Message, Direction, SendMessageTo};
 
@@ -137,8 +137,8 @@ impl IntroState {
 
                 game.send_message(EntityTag::Stars, Message::Move(Direction::Down, 2.0));
 
-                game.add_entity(Box::new(Twin::new(Point2::new(100.0, 500.0))));
-                game.add_entity(Box::new(Twin::new(Point2::new(300.0, 500.0))));
+                game.add_entity(Box::new(twin::Twin::new(Point2::new(100.0, 500.0), twin::Player::One)));
+                game.add_entity(Box::new(twin::Twin::new(Point2::new(300.0, 500.0), twin::Player::Two)));
 
                 IntroState::Go
             }
