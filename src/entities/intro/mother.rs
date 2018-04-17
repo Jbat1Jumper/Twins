@@ -7,7 +7,7 @@ use palette::Palette;
 use entities::{Entity, EntityData};
 use messages::{MessageSender, Message, Direction};
 
-use math::VectorUtils;
+use math::{VectorUtils, Wavize};
 
 
 const PRECISION : f32 = 0.5;
@@ -33,50 +33,51 @@ impl MotherIntro {
         }
     }
 
-    fn render_ray(&mut self, ctx: &mut Context, lenght: f32, speed: f32, offset: f32) {
+    fn render_ray(&mut self, ctx: &mut Context, cycle: f32, phase: f32, speed: f32, offset: f32) {
+        let length = (125.0).wave(10.0, cycle * 0.6, phase);
         graphics::line(
             ctx,
-            &[self.entity_data.pos, self.entity_data.pos.add(Point2::new(lenght, 0.0).rotate(self.cycle * speed + offset))],
+            &[self.entity_data.pos, self.entity_data.pos.add(Point2::new(length, 0.0).rotate(self.cycle * speed + offset))],
             1.0
         ).unwrap();
     }
 
     fn render_rays(&mut self, ctx: &mut Context, cycle: f32) {
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 1.4 + 1.0).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, -0.21, 0.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.0).sin() * 10.0, 0.25, 2.8);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.0).sin() * 10.0, 0.22, 2.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.0).sin() * 10.0, 0.2, 1.0);
+        self.render_ray(ctx, cycle, 0.0, -0.21, 0.0);
+        self.render_ray(ctx, cycle, 1.0, 0.25, 2.8);
+        self.render_ray(ctx, cycle, 2.0, 0.22, 2.0);
+        self.render_ray(ctx, cycle, 3.0, 0.2, 1.0);
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 2.0 + 1.0).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, -0.2, 0.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.2).sin() * 10.0, 0.26, 4.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.8).sin() * 10.0, 0.23, 5.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.5).sin() * 10.0, -0.23, 6.0);
+        self.render_ray(ctx, cycle, 0.0, -0.2, 0.0);
+        self.render_ray(ctx, cycle, 1.2, 0.26, 4.0);
+        self.render_ray(ctx, cycle, 2.8, 0.23, 5.0);
+        self.render_ray(ctx, cycle, 3.5, -0.23, 6.0);
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 2.6 + 1.0).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, -0.3, 0.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.0).sin() * 10.0, 0.25, 2.4);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.0).sin() * 10.0, -0.23, 2.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.0).sin() * 10.0, -0.2, 1.5);
+        self.render_ray(ctx, cycle, 0.0, -0.3, 0.5);
+        self.render_ray(ctx, cycle, 1.0, 0.25, 2.4);
+        self.render_ray(ctx, cycle, 2.0, -0.23, 2.0);
+        self.render_ray(ctx, cycle, 3.0, -0.2, 1.5);
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 4.2 + 1.0).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, -0.2, 0.2);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.2).sin() * 10.0, 0.26, 4.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.8).sin() * 10.0, 0.3, 5.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.5).sin() * 10.0, -0.25, 6.5);
+        self.render_ray(ctx, cycle, 0.0, -0.2, 0.2);
+        self.render_ray(ctx, cycle, 1.2, 0.26, 4.5);
+        self.render_ray(ctx, cycle, 2.8, 0.3, 5.5);
+        self.render_ray(ctx, cycle, 3.5, -0.25, 6.5);
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 5.6 + 1.0).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, -0.3, 0.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.0).sin() * 10.0, 0.25, 2.4);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.0).sin() * 10.0, -0.23, 2.0);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.0).sin() * 10.0, -0.2, 1.5);
+        self.render_ray(ctx, cycle, 0.0, -0.3, 0.5);
+        self.render_ray(ctx, cycle, 1.0, 0.25, 2.4);
+        self.render_ray(ctx, cycle, 2.0, -0.23, 2.0);
+        self.render_ray(ctx, cycle, 3.0, -0.2, 1.5);
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle * 1.2 + 0.4).sin()))).unwrap();
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 0.0).sin() * 10.0, 0.31, 0.2);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 1.2).sin() * 10.0, -0.32, 4.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 2.8).sin() * 10.0, -0.29, 5.5);
-        self.render_ray(ctx, 125.0 + (cycle * 0.6 + 3.5).sin() * 10.0, 0.35, 6.5);
+        self.render_ray(ctx, cycle, 0.0, 0.31, 0.2);
+        self.render_ray(ctx, cycle, 1.2, -0.32, 4.5);
+        self.render_ray(ctx, cycle, 2.8, -0.29, 5.5);
+        self.render_ray(ctx, cycle, 3.5, 0.35, 6.5);
     }
 
     fn render_orbit(&mut self, ctx: &mut Context, radius: f32) {

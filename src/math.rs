@@ -1,5 +1,12 @@
 use ggez::graphics::Point2;
 use std::marker::Sized;
+use rand::Rng;
+use rand::distributions::{Sample, Normal};
+use std::ops::{
+    Add,
+    Mul,
+    Sub,
+};
 
 pub trait VectorUtils where Self: Sized {
     fn rotate(&self, angle: f32) -> Self;
@@ -57,3 +64,31 @@ impl VectorUtils for Point2 {
         Point2::new(0.0, 0.0)
     }
 }
+
+pub trait Wavize where Self: Sized + Add<Self> + Mul<Self> + Sub<Self> {
+    fn wave(&self, amount: f32, tick: f32, phase: f32) -> Self;
+}
+
+impl Wavize for f32 {
+    fn wave(&self, amount: f32, tick: f32, phase: f32) -> Self {
+        self + (tick + phase).sin() * amount
+    }
+}
+
+pub trait Randomize<RNG> where Self: Sized + Add<Self> + Mul<Self> + Sub<Self>, RNG: Rng {
+    fn rand(&self, rng: &mut RNG, amount: f32) -> Self;
+    fn gauss(&self, rng: &mut RNG, deviation: f32) -> Self;
+}
+
+impl<RNG> Randomize<RNG> for f32 where RNG: Rng {
+    fn rand(&self, rng: &mut RNG, amount: f32) -> Self {
+        let rand: f32 = rng.gen();
+        let delta: f32 = rand * 2.0 - 1.0;
+        self + delta * amount
+    }
+    fn gauss(&self, rng: &mut RNG, amount: f32) -> Self {
+        let mut dist = Normal::new(*self as f64, amount as f64);
+        dist.sample(rng) as f32
+    }
+}
+
