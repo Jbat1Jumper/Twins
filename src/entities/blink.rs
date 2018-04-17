@@ -1,15 +1,11 @@
 use ggez::Context;
-use ggez::graphics::{Point2, DrawMode, Rect};
+use ggez::graphics::{DrawMode, Rect};
 use ggez::graphics;
 use ggez::graphics::Color;
 
 use palette::Palette;
 use entities::{Entity, EntityData};
-use math::VectorUtils;
 use messages::{MessageSender, Message};
-
-use rand::{Rng, StdRng, SeedableRng};
-use na;
 
 use W_WIDTH;
 use W_HEIGHT;
@@ -47,8 +43,8 @@ impl Entity for Blink {
     }
     fn render(&mut self, ctx: &mut Context) {
         let opacity = self.remaining_time / self.total_time;
-        graphics::set_color(ctx, Color::from(Palette::Blink(opacity)));
-        graphics::rectangle(ctx, DrawMode::Fill, Rect::new(0.0, 0.0, W_WIDTH as f32, W_HEIGHT as f32));
+        graphics::set_color(ctx, Color::from(Palette::Blink(opacity))).unwrap();
+        graphics::rectangle(ctx, DrawMode::Fill, Rect::new(0.0, 0.0, W_WIDTH as f32, W_HEIGHT as f32)).unwrap();
     }
-    fn receive_message(&mut self, _sender: MessageSender, message: Message) { }
+    fn receive_message(&mut self, _sender: MessageSender, _message: Message) { }
 }

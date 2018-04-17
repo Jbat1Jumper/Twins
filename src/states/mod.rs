@@ -9,7 +9,7 @@ pub enum GameState {
     Start,
     Intro(IntroState),
     Play,
-    Halt,
+    _Halt,
 }
 
 impl GameState {
@@ -23,7 +23,7 @@ impl GameState {
                 }
             },
             &GameState::Play => { GameState::Play }
-            &GameState::Halt => { GameState::Halt }
+            &GameState::_Halt => { GameState::_Halt }
         }
     }
 }

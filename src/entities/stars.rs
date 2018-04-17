@@ -79,7 +79,7 @@ impl Entity for Stars {
             let (p, i) = *pi;
             if cycle < i * 5.0 { continue }
             if cycle % (10.0 * i) < i { continue }
-            star.draw(ctx, p, 0.0);
+            star.draw(ctx, p, 0.0).unwrap();
         }
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {

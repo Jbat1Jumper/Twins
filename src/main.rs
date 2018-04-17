@@ -6,7 +6,7 @@ use ggez::graphics::{Color, Point2};
 use ggez::event::{Keycode, Mod};
 use nalgebra as na;
 use std::cmp::Ordering;
-use std::time::{Instant, Duration};
+use std::time::{Instant};
 
 mod math;
 mod palette;
@@ -28,7 +28,7 @@ pub const W_WIDTH : u32 = 400;
 pub struct Game {
     entities: Vec<(EntityId, Box<Entity>)>,
     entity_id_counter: EntityId,
-    currently_updated_entity_id: EntityId,
+    _currently_updated_entity_id: EntityId,
 }
 
 impl Game {
@@ -92,7 +92,7 @@ impl Main {
             game: Game {
                 entities: Vec::new(),
                 entity_id_counter: 0,
-                currently_updated_entity_id: 0,
+                _currently_updated_entity_id: 0,
             },
             current_state: GameState::Start,
             last_time: Instant::now(),
@@ -114,7 +114,7 @@ impl event::EventHandler for Main {
         self.last_time = start;
 
         for i in self.game.entities.iter_mut() {
-            let (id, ref mut entity) = *i;
+            let (_id, ref mut entity) = *i;
             entity.update(ctx);
         }
         self.game.entities.retain(move |ie| {
@@ -159,7 +159,7 @@ impl event::EventHandler for Main {
         Ok(())
     }
 
-    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
+    fn key_down_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
 
         let axis_speed = 1.0;
 

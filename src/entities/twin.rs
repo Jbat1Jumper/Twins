@@ -17,19 +17,12 @@ const PRECISION : f32 = 0.5;
 pub struct Twin {
     entity_data: EntityData,
     cycle: f32,
-    going_to: Option<Point2>,
+    _going_to: Option<Point2>,
     player: Player,
     speed: f32,
 }
 
 impl Entity for Twin {
-
-    fn get_tag(&self) -> EntityTag {
-        match self.player {
-            Player::One => EntityTag::Player(EntityTagPlayer::One),
-            Player::Two => EntityTag::Player(EntityTagPlayer::Two)
-        }
-    }
     fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
     fn entity_data(&self) -> &EntityData { &self.entity_data }
     fn update(&mut self, _ctx: &mut Context) {
@@ -54,6 +47,12 @@ impl Entity for Twin {
             _ => ()
         }
     }
+    fn get_tag(&self) -> EntityTag {
+        match self.player {
+            Player::One => EntityTag::Player(EntityTagPlayer::One),
+            Player::Two => EntityTag::Player(EntityTagPlayer::Two)
+        }
+    }
 }
 
 pub enum Player {
@@ -69,7 +68,7 @@ impl Twin {
                 ..EntityData::new()
             },
             cycle: 0.0,
-            going_to: Option::None,
+            _going_to: Option::None,
             speed: 2.0,
             player
         }

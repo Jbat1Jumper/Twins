@@ -5,7 +5,7 @@ use ggez::graphics::Color;
 
 use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message, Direction};
+use messages::{MessageSender, Message};
 
 use math::VectorUtils;
 
@@ -85,7 +85,7 @@ impl Entity for MegaRay {
             ).unwrap();
         }
     }
-    fn receive_message(&mut self, sender: MessageSender, message: Message) {
+    fn receive_message(&mut self, _sender: MessageSender, message: Message) {
         match message {
             Message::Kill => {
                 self.entity_data.alive = false
