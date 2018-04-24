@@ -20,7 +20,14 @@ pub trait VectorUtils where Self: Sized {
         let norm = self.norm();
         self.mul(1.0/norm)
     }
+    fn clamp(&self, amount: f32) -> Self;
     fn set(&mut self, other: Self);
+
+    fn lerp(&self, other: Self, amount: f32) -> Self {
+        let d = self.sub(other);
+        let amount = amount.min(1.0).max(0.0);
+        self.sub(d.mul(amount))
+    }
 
     fn left() -> Self;
     fn down() -> Self;
@@ -28,6 +35,8 @@ pub trait VectorUtils where Self: Sized {
     fn up() -> Self;
     fn zero() -> Self;
 }
+
+
 
 impl VectorUtils for Point2 {
     fn rotate(&self, angle: f32) -> Point2 {
@@ -42,6 +51,13 @@ impl VectorUtils for Point2 {
     }
     fn norm(&self) -> f32 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+    fn clamp(&self, amount: f32) -> Self {
+        let norm = self.norm();
+        if norm <= 0.001 { return Point2::zero() }
+        let res = match norm < 1.0 { true => norm,
+                                     false => 1.0 };
+        <Self as VectorUtils>::mul(&self, res / norm)
     }
     fn set(&mut self, other: Point2) {
         self.x = other.x;
@@ -92,3 +108,15 @@ impl<RNG> Randomize<RNG> for f32 where RNG: Rng {
     }
 }
 
+
+
+#[test]
+fn lerp_points() {
+    let a = Point2::new(0.0, 0.0);
+    let b = Point2::new(1.0, 0.0);
+    let c = Point2::new(2.0, 2.0);
+    assert_eq!(a.lerp(b, 0.0), a);
+    assert_eq!(a.lerp(b, 0.5), Point2::new(0.5, 0.0));
+    assert_eq!(a.lerp(c, 1.0), c);
+    assert_eq!(c.lerp(a, 0.5), Point2::new(1.0, 1.0));
+}
