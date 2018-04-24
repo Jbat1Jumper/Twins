@@ -2,7 +2,7 @@ extern crate ggez;
 extern crate rand;
 
 use ggez::*;
-use ggez::graphics::{Color, Point2};
+use ggez::graphics::Color;
 use ggez::event::{Keycode, Mod};
 use nalgebra as na;
 use std::cmp::Ordering;
@@ -13,12 +13,13 @@ mod palette;
 mod entities;
 mod states;
 mod messages;
+mod controller;
 
-use entities::{Entity, EntityId, EntityTag, EntityTagPlayer};
+use entities::{Entity, EntityId, EntityTag};
 use palette::Palette;
 use states::GameState;
 use messages::{MessageSender, SendMessageTo, Message, Direction};
-use math::VectorUtils;
+use controller::Controller;
 
 
 pub const W_HEIGHT : u32 = 600;
@@ -45,12 +46,7 @@ impl Game {
         self.entities.sort_by(|ref iea, ref ieb| {
             let a = &iea.1;
             let b = &ieb.1;
-            if a.z_order() > b.z_order() {
-                Ordering::Greater
-            }
-            else {
-                Ordering::Less
-            }
+            if a.z_order() > b.z_order() { Ordering::Greater } else { Ordering::Less }
         });
         id
     }
@@ -80,6 +76,7 @@ impl SendMessageTo<EntityTag> for Game {
 
 pub struct Main {
     game: Game,
+    controller: Controller,
     current_state: GameState,
     last_time: Instant,
     profile: bool,
@@ -94,6 +91,7 @@ impl Main {
                 entity_id_counter: 0,
                 _currently_updated_entity_id: 0,
             },
+            controller: Controller::new(),
             current_state: GameState::Start,
             last_time: Instant::now(),
             debug: false,
@@ -112,6 +110,8 @@ impl event::EventHandler for Main {
         let frame_time = start - self.last_time;
         if self.profile { print!("   Frame time is {}s {}ms", frame_time.as_secs(), frame_time.subsec_nanos() / 1_000_000); }
         self.last_time = start;
+
+        self.controller.update(&mut self.game);
 
         for i in self.game.entities.iter_mut() {
             let (_id, ref mut entity) = *i;
@@ -159,22 +159,14 @@ impl event::EventHandler for Main {
         Ok(())
     }
 
-    fn key_down_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, repeat: bool) {
+    fn key_down_event(&mut self, _ctx: &mut Context, keycode: Keycode, keymod: Mod, repeat: bool) {
+        if repeat { return }
+        self.controller.key_down_event(&mut self.game, keycode, keymod);
+    }
 
-        let axis_speed = 1.0;
-
-        println!("keycode {:?} {}", keycode, if repeat {"repeat"} else {""});
-
-        let p1_axis = match keycode {
-            Keycode::A => Point2::left(),
-            Keycode::S => Point2::down(),
-            Keycode::D => Point2::right(),
-            Keycode::W => Point2::up(),
-            _ => Point2::zero()
-        };
-        let p1_axis = p1_axis.mul(axis_speed);
-
-        self.game.send_message(EntityTag::Player(EntityTagPlayer::One), Message::Move(Direction::Point(p1_axis), 1.0));
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, keymod: Mod, repeat: bool) {
+        if repeat { return }
+        self.controller.key_up_event(&mut self.game, keycode, keymod);
     }
 }
 
