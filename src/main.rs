@@ -14,13 +14,13 @@ mod entities;
 mod states;
 mod messages;
 mod controller;
+mod bezier;
 
 use entities::{Entity, EntityId, EntityTag};
 use palette::Palette;
 use states::GameState;
-use messages::{MessageSender, SendMessageTo, Message, Direction};
+use messages::{MessageSender, SendMessageTo, Message};
 use controller::Controller;
-
 
 pub const W_HEIGHT : u32 = 600;
 pub const W_WIDTH : u32 = 400;
