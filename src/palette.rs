@@ -6,7 +6,8 @@ pub enum Palette {
     Black,
     Light(f32),
     Player,
-    Blink(f32)
+    Blink(f32),
+    DebugA,
 }
 
 impl From<Palette> for Color {
@@ -21,7 +22,8 @@ impl From<Palette> for Color {
             Palette::Player => Color::from_rgb(190, 200, 250),
             Palette::Blink(opacity) => {
                 Color::from_rgba(255, 255, 255, (255.0 * opacity) as u8)
-            }
+            },
+            Palette::DebugA => Color::from_rgb(100, 240, 100),
         }
     }
 }
