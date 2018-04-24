@@ -54,9 +54,9 @@ impl VectorUtils for Point2 {
     }
     fn clamp(&self, amount: f32) -> Self {
         let norm = self.norm();
-        if norm <= 0.001 { return Point2::zero() }
-        let res = match norm < 1.0 { true => norm,
-                                     false => 1.0 };
+        if norm <= 0.0001 { return Point2::zero() }
+        let res = match norm < amount { true => norm,
+                                     false => amount };
         <Self as VectorUtils>::mul(&self, res / norm)
     }
     fn set(&mut self, other: Point2) {

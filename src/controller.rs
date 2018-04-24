@@ -24,12 +24,12 @@ impl Controller {
             game.send_message(EntityTag::Player(EntityTagPlayer::One), Message::Move(Direction::Point(self.p1_motion_axis), 5.0));
         }
     }
-    pub fn key_down_event(&mut self, game: &mut Game, keycode: Keycode, _keymod: Mod) {
+    pub fn key_down_event(&mut self, _game: &mut Game, keycode: Keycode, _keymod: Mod) {
         println!("keycode {:?} down", keycode);
         let p1_axis = self.p1_axis_direction(keycode);
         self.p1_axis = self.p1_axis.add(p1_axis);
     }
-    pub fn key_up_event(&mut self, game: &mut Game, keycode: Keycode, _keymod: Mod) {
+    pub fn key_up_event(&mut self, _game: &mut Game, keycode: Keycode, _keymod: Mod) {
         println!("keycode {:?} up", keycode);
         let p1_axis = self.p1_axis_direction(keycode);
         self.p1_axis = self.p1_axis.sub(p1_axis);
