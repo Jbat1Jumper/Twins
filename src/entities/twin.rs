@@ -20,6 +20,7 @@ pub struct Twin {
     _going_to: Option<Point2>,
     player: Player,
     speed: f32,
+    animation_speed: f32,
 }
 
 impl Entity for Twin {
@@ -34,14 +35,14 @@ impl Entity for Twin {
             ctx,
             DrawMode::Fill,
             self.entity_data.pos,
-            20.0 + (self.cycle * self.speed).sin() * 2.0,
+            20.0 + (self.cycle * self.animation_speed).sin() * 2.0,
             PRECISION
         ).unwrap();
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
         match message {
             Message::Move(Direction::Point(axis), _) => {
-                let pos = self.entity_data.pos.add(axis);
+                let pos = self.entity_data.pos.add(axis.mul(self.speed));
                 self.entity_data.pos.set(pos);
             }
             _ => ()
@@ -69,7 +70,8 @@ impl Twin {
             },
             cycle: 0.0,
             _going_to: Option::None,
-            speed: 2.0,
+            speed: 10.0,
+            animation_speed: 2.0,
             player
         }
     }
