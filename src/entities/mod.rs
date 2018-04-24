@@ -69,6 +69,17 @@ pub trait Entity {
     fn get_tag(&self) -> EntityTag { EntityTag::Untagged }
 }
 
+pub trait Renderable {
+    fn render(&mut self, ctx: &mut Context);
+}
+
+impl<T> Renderable for T
+    where T: Entity {
+    fn render(&mut self, ctx: &mut Context) {
+        Entity::render(self, ctx);
+    }
+}
+
 
 pub mod stars;
 pub mod blink;
