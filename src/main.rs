@@ -82,6 +82,7 @@ pub struct Main {
     last_time: Instant,
     profile: bool,
     debug: bool,
+    t: f32,
 }
 
 impl Main {
@@ -97,6 +98,7 @@ impl Main {
             last_time: Instant::now(),
             debug: false,
             profile: false,
+            t: 0.0,
         };
         Ok(s)
     }
@@ -106,6 +108,8 @@ impl Main {
 
 impl event::EventHandler for Main {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+
+        self.t += self.game.delta_time();
 
         let start = Instant::now();
         let frame_time = start - self.last_time;
