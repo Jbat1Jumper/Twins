@@ -17,6 +17,7 @@ mod controller;
 mod bezier;
 mod prob;
 mod mekano;
+mod mekano_renderer;
 
 use entities::{Entity, EntityId, EntityTag};
 use palette::Palette;
