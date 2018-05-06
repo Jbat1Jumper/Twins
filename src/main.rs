@@ -15,6 +15,7 @@ mod states;
 mod messages;
 mod controller;
 mod bezier;
+mod prob;
 
 use entities::{Entity, EntityId, EntityTag};
 use palette::Palette;
