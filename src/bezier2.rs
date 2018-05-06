@@ -3,6 +3,7 @@ use ggez::graphics::Point2;
 use math::VectorUtils;
 use entities::Renderable;
 
+#[derive(Debug)]
 pub struct Bezier {
     points: Vec<Point2>,
     weights: Vec<Point2>,

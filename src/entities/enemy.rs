@@ -21,6 +21,7 @@ pub trait EnemyPath {
     fn get(&self, t: f32) -> Point2;
 }
 
+#[derive(Debug)]
 pub struct Enemy<P> where P: EnemyPath {
     path: P,
     current_duration: Duration,

@@ -4,7 +4,7 @@ use messages::{MessageSender, Message};
 
 pub type EntityId = i32;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum EntityTag {
     Player(EntityTagPlayer),
     Stars,
@@ -12,7 +12,7 @@ pub enum EntityTag {
     Untagged
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum EntityTagPlayer {
     One,
     Two,
@@ -39,6 +39,7 @@ impl EntityTag {
     }
 }
 
+#[derive(Debug)]
 pub struct EntityData {
     pos: Point2,
     alive: bool,

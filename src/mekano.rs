@@ -1,5 +1,6 @@
 
 
+#[derive(Debug)]
 pub enum Mekano<Data> {
     End(Data),
     Segment(Data, Box<Mekano<Data>>),
