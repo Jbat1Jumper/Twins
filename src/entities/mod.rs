@@ -88,3 +88,4 @@ pub mod stars;
 pub mod blink;
 pub mod intro;
 pub mod twin;
+pub mod enemy;
