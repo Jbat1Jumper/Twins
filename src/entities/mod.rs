@@ -46,9 +46,12 @@ pub struct EntityData {
 }
 
 impl EntityData {
-    pub fn new() -> EntityData {
+    pub fn new() -> Self {
+        EntityData::new_at(Point2::new(0.0, 0.0))
+    }
+    pub fn new_at(pos: Point2) -> Self {
         EntityData {
-            pos: Point2::new(0.0, 0.0),
+            pos,
             alive: true,
             z_order: 0.0,
         }
