@@ -1,60 +1,35 @@
 use ggez::Context;
 use ggez::graphics;
 use ggez::graphics::Point2;
-use mekano::{Mekano, BxBody, BxJoint, Body, Joint};
+use mekano::Mekano;
 
 pub trait MekanoRender2D {
-    type R: RootRender2DData;
-    type B: BodyRender2DData;
-    type J: JointRender2DData;
+    type Data: MekanoRender2DData;
 
-    fn render(mekano: Mekano<Self::R, Self::B, Self::J>, ctx: &mut Context);
+    fn render(mekano: &Mekano<Self::Data>, ctx: &mut Context);
 }
 
-pub trait RootRender2DData {
+pub trait MekanoRender2DData {
     fn origin(&self) -> Point2;
 }
 
-pub enum BodyRender2DShape {
-}
-
-pub trait BodyRender2DData {
-}
-
-pub trait JointRender2DData {
-}
-
-
-impl<R, B, J> MekanoRender2D for Mekano<R, B, J>
+impl<Data> MekanoRender2D for Mekano<Data>
 where
-    R: RootRender2DData,
-    B: BodyRender2DData,
-    J: JointRender2DData
+    Data: MekanoRender2DData,
 {
-    type R = R;
-    type B = B;
-    type J = J;
+    type Data = Data;
 
-    fn render(mekano: Mekano<R, B, J>, ctx: &mut Context) {
-        render_body(mekano.root, ctx)
-    }
-}
+    fn render(mekano: &Mekano<Data>, ctx: &mut Context) {
+        match mekano {
+            &Mekano::End(ref d) => {
 
-fn render_body<B, J>(body: BxBody<B, J>, ctx: &mut Context)
-where 
-    B: BodyRender2DData,
-    J: JointRender2DData
-{
+            }
+            &Mekano::Segment(ref d, ref j) => {
 
-    match *body {
-        Body::End(ref d) => {
+            }
+            &Mekano::Split(ref d, ref j1, ref j2) => {
 
-        }
-        Body::Segment(ref d, ref j) => {
-
-        }
-        Body::Split(ref d, ref j1, ref j2) => {
-
+            }
         }
     }
 }

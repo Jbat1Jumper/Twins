@@ -11,7 +11,7 @@ use messages::{MessageSender, Message};
 use std::time::Duration;
 use bezier2::Bezier;
 
-use mekano::{Mekano, Body, Joint};
+use mekano::Mekano;
 
 
 const PRECISION : f32 = 0.5;
@@ -28,7 +28,7 @@ pub struct Enemy<P> where P: EnemyPath {
     entity_data: EntityData,
     cycle: f32,
     animation_speed: f32,
-    mekano: Mekano<(),f32, f32>,
+    mekano: Mekano<f32>,
 }
 
 impl<P> Enemy<P> where P: EnemyPath {
@@ -45,8 +45,8 @@ impl<P> Enemy<P> where P: EnemyPath {
         }
     }
 
-    fn generate_mekano_model() -> Mekano<(), f32, f32> {
-        Mekano::new((), Box::new(Body::End(5.0)))
+    fn generate_mekano_model() -> Mekano<f32> {
+        Mekano::End(5.0)
     }
 }
 
