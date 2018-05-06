@@ -1,26 +1,58 @@
 use ggez::Context;
 use ggez::graphics;
-use ggez::graphics::Point2;
+use ggez::graphics::{Point2, DrawMode};
 use mekano::Mekano;
+use math::VectorUtils;
 
-pub trait MekanoRender2D {
-    type Data: MekanoRender2DData;
+pub trait Render {
+    type Data: Data;
 
-    fn render(mekano: &Mekano<Self::Data>, ctx: &mut Context);
+    fn render(&self, ctx: &mut Context);
 }
 
-pub trait MekanoRender2DData {
-    fn origin(&self) -> Point2;
+pub trait Data {
+    fn origin(&self) -> Point2 {
+        Point2::zero()
+    }
+    fn rotation(&self) -> f32 {
+        0.0
+    }
+    fn shape(&self) -> Shape {
+        Shape::None
+    }
 }
 
-impl<Data> MekanoRender2D for Mekano<Data>
+pub enum Shape {
+    Circle(f32),
+    Ellipse(f32, f32),
+    Sqare(f32),
+    Rectangle(f32, f32),
+    Rombus(f32, f32),
+    None,
+}
+
+impl<D> Render for Mekano<D>
 where
-    Data: MekanoRender2DData,
+    D: Data,
 {
-    type Data = Data;
+    type Data = D;
 
-    fn render(mekano: &Mekano<Data>, ctx: &mut Context) {
-        match mekano {
+    fn render(&self, ctx: &mut Context) {
+
+        {
+            const tolerance: f32 = 5.0;
+            let data = self.data();
+            let shape = data.shape();
+            let origin = data.origin();
+
+            match shape {
+                Shape::Circle(radius) => {
+                    graphics::circle(ctx, DrawMode::Fill, origin, radius, tolerance).unwrap();
+                }
+                _ => {}
+            }
+        }
+        match self {
             &Mekano::End(ref d) => {
 
             }
