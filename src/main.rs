@@ -15,6 +15,7 @@ mod states;
 mod messages;
 mod controller;
 mod bezier;
+mod bezier2;
 mod prob;
 mod mekano;
 mod mekano_renderer;
