@@ -64,7 +64,7 @@ impl Renderable for Bezier {
 
         let lines = self.points.len() * precision;
 
-        let v = (0..lines).map(|x| self.get(x as f32 / lines as f32)).collect::<Vec<Point2>>();
+        let v = (0..lines+1).map(|x| self.get(x as f32 / lines as f32)).collect::<Vec<Point2>>();
 
         graphics::line(ctx, &v, 1.0).unwrap();
     }
