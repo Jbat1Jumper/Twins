@@ -1,6 +1,8 @@
 pub mod intro;
+pub mod play;
 
 use states::intro::IntroState;
+use states::play::PlayState;
 use Game;
 
 
@@ -8,7 +10,7 @@ use Game;
 pub enum GameState {
     Start,
     Intro(IntroState),
-    Play,
+    Play(PlayState),
     _Halt,
 }
 
@@ -18,11 +20,13 @@ impl GameState {
             &GameState::Start => GameState::Intro(IntroState::Start),
             &GameState::Intro(ref intro_state) => {
                 match intro_state.update(game) {
-                    IntroState::Go => GameState::Play,
+                    IntroState::Go => GameState::Play(PlayState::new()),
                     x => GameState::Intro(x)
                 }
             },
-            &GameState::Play => { GameState::Play }
+            &GameState::Play(ref state) => {
+                GameState::Play(state.update(game))
+            }
             &GameState::_Halt => { GameState::_Halt }
         }
     }

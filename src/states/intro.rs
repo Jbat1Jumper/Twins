@@ -135,11 +135,6 @@ impl IntroState {
                 if let Some(id) = d.twin1 { game.send_message(id, Message::Kill) }
                 if let Some(id) = d.twin2 { game.send_message(id, Message::Kill) }
 
-                game.send_message(EntityTag::Stars, Message::Move(Direction::Down, 2.0));
-
-                game.add_entity(Box::new(twin::Twin::new(Point2::new(100.0, 500.0), twin::Player::One)));
-                game.add_entity(Box::new(twin::Twin::new(Point2::new(300.0, 500.0), twin::Player::Two)));
-
                 IntroState::Go
             }
             _ => IntroState::Go
