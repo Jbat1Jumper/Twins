@@ -20,7 +20,13 @@ pub trait VectorUtils where Self: Sized {
         let norm = self.norm();
         self.mul(1.0/norm)
     }
-    fn clamp(&self, amount: f32) -> Self;
+    fn clamp(&self, amount: f32) -> Self {
+        let norm = self.norm();
+        if norm <= 0.0001 { return Self::zero() }
+        let res = match norm < amount { true => norm,
+                                     false => amount };
+        <Self as VectorUtils>::mul(&self, res / norm)
+    }
     fn set(&mut self, other: Self);
 
     fn lerp(&self, other: Self, amount: f32) -> Self {
@@ -52,13 +58,6 @@ impl VectorUtils for Point2 {
     fn norm(&self) -> f32 {
         (self.x.powi(2) + self.y.powi(2)).sqrt()
     }
-    fn clamp(&self, amount: f32) -> Self {
-        let norm = self.norm();
-        if norm <= 0.0001 { return Point2::zero() }
-        let res = match norm < amount { true => norm,
-                                     false => amount };
-        <Self as VectorUtils>::mul(&self, res / norm)
-    }
     fn set(&mut self, other: Point2) {
         self.x = other.x;
         self.y = other.y;
@@ -78,6 +77,40 @@ impl VectorUtils for Point2 {
     }
     fn zero() -> Self {
         Point2::new(0.0, 0.0)
+    }
+}
+
+impl VectorUtils for f32 {
+    fn rotate(&self, angle: f32) -> f32 {
+        self * angle.cos()
+    }
+    fn add(&self, other: f32) -> f32 {
+        self + other
+    }
+    fn mul(&self, scalar: f32) -> f32 {
+        self * scalar
+    }
+    fn norm(&self) -> f32 {
+        self.abs()
+    }
+    fn set(&mut self, other: f32) {
+        panic!("Can't use set on f32")
+    }
+
+    fn left() -> Self {
+        -1.0
+    }
+    fn down() -> Self {
+        0.0
+    }
+    fn right() -> Self {
+        1.0
+    }
+    fn up() -> Self {
+        0.0
+    }
+    fn zero() -> Self {
+        0.0
     }
 }
 

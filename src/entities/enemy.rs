@@ -7,9 +7,11 @@ use ggez::timer::get_delta;
 use palette::Palette;
 use entities::{Entity, EntityData, EntityTag, Renderable};
 use messages::{MessageSender, Message};
+use debug::DebugText;
 
 use std::time::Duration;
 use bezier2::Bezier;
+use math::VectorUtils;
 
 use mekano::Mekano;
 
@@ -88,9 +90,10 @@ impl<P> Entity for Enemy<P> where P: EnemyPath + Renderable {
     fn render(&mut self, ctx: &mut Context) {
         self.mekano.render(ctx);
         self.path.render(ctx);
+        let mut dt: DebugText = (self.entity_data.pos, self.entity_data.pos.add(Point2::up().mul(40.0))).into();
+        dt.render(ctx);
     }
     fn receive_message(&mut self, _sender: MessageSender, _message: Message) {
     }
     fn get_tag(&self) -> EntityTag { EntityTag::Enemy }
 }
-
