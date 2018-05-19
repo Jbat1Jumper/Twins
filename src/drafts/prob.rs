@@ -1,9 +1,9 @@
-trait RandomVariable {
+pub trait RandomVariable {
     fn sample(&self, u: fn() -> f32) -> f32;
 }
 
 
-struct Unif { a: f32, b: f32 }
+pub struct Unif { a: f32, b: f32 }
 
 impl Unif {
     pub fn new(a: f32, b: f32) -> Unif { Unif { a, b } }
@@ -17,7 +17,7 @@ impl RandomVariable for Unif {
 }
 
 
-struct Bern { p: f32 }
+pub struct Bern { p: f32 }
 
 impl Bern {
     pub fn new(p: f32) -> Bern { Bern { p } }
@@ -31,7 +31,7 @@ impl RandomVariable for Bern {
     }
 }
 
-struct Bin { n: usize, p: f32 }
+pub struct Bin { n: usize, p: f32 }
 
 impl Bin {
     pub fn new(n: usize, p: f32) -> Bin { Bin { n, p } }
@@ -47,7 +47,7 @@ impl RandomVariable for Bin {
 }
 
 
-struct Exp { l: f32 }
+pub struct Exp { l: f32 }
 
 impl Exp {
     pub fn new(l: f32) -> Exp { Exp { l } }
