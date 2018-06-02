@@ -42,7 +42,7 @@ impl RandomVariable for Bin {
         let &Bin { n, p } = self;
         (0..n).map(|_| Bern::new(p)).filter(|b| b.sucess(u)).count() as f32
         // TODO: Calculate the probability of each possible value (from 0 to n)
-        // todo: and then use a weighted choice between them (using only one call to `a`)
+        // todo: and then use a weighted choice between them (using only one call to `u`)
     }
 }
 
