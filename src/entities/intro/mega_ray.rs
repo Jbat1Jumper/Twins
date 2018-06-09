@@ -30,9 +30,12 @@ impl MegaRay {
 }
 
 impl Entity for MegaRay {
-
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, _ctx: &mut Context) {
         self.cycle += 0.1;
     }
