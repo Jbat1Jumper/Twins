@@ -1,17 +1,15 @@
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message, Direction};
+use messages::{Direction, Message, MessageSender};
+use palette::Palette;
 
 use math::{VectorUtils, Wavize};
 
-
-const PRECISION : f32 = 0.5;
-
+const PRECISION: f32 = 0.5;
 
 pub struct MotherIntro {
     entity_data: EntityData,
@@ -37,8 +35,13 @@ impl MotherIntro {
         let length = (125.0).wave(10.0, cycle * 0.6, phase);
         graphics::line(
             ctx,
-            &[self.entity_data.pos, self.entity_data.pos.add(Point2::new(length, 0.0).rotate(self.cycle * speed + offset))],
-            1.0
+            &[
+                self.entity_data.pos,
+                self.entity_data
+                    .pos
+                    .add(Point2::new(length, 0.0).rotate(self.cycle * speed + offset)),
+            ],
+            1.0,
         ).unwrap();
     }
 
@@ -90,11 +93,20 @@ impl MotherIntro {
         ).unwrap();
     }
 
-    fn render_moon_ring(&mut self, ctx: &mut Context, radius: f32, speed: f32, offset: f32, size: f32) {
+    fn render_moon_ring(
+        &mut self,
+        ctx: &mut Context,
+        radius: f32,
+        speed: f32,
+        offset: f32,
+        size: f32,
+    ) {
         graphics::circle(
             ctx,
             DrawMode::Line(1.0),
-            self.entity_data.pos.add(Point2::new(radius, 0.0).rotate(self.cycle * speed + offset)),
+            self.entity_data
+                .pos
+                .add(Point2::new(radius, 0.0).rotate(self.cycle * speed + offset)),
             size,
             PRECISION,
         ).unwrap();
@@ -106,43 +118,109 @@ impl MotherIntro {
         self.render_orbit(ctx, 110.0 + (cycle * 0.3 - 0.0).sin() * 7.0);
         self.render_orbit(ctx, 110.0 + (cycle * 0.3 + 1.0).sin() * 7.0);
         self.render_orbit(ctx, 110.0 + (cycle * 0.3 + 2.0).sin() * 7.0);
-        self.render_moon_ring(ctx, 110.0 + (cycle * 0.3).sin() * 6.0, 0.1, 0.0, 20.0 + (cycle * 0.9 + 1.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 110.0 + (cycle * 0.3).sin() * 6.0, 0.1, 0.0, 20.0 + (cycle * 0.9 + 2.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 110.0 + (cycle * 0.3).sin() * 6.0, 0.1, 0.0, 20.0 + (cycle * 0.9 + 3.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 110.0 + (cycle * 0.3).sin() * 6.0, 0.1, 0.0, 20.0 + (cycle * 0.9 + 4.0).sin() * 3.0);
+        self.render_moon_ring(
+            ctx,
+            110.0 + (cycle * 0.3).sin() * 6.0,
+            0.1,
+            0.0,
+            20.0 + (cycle * 0.9 + 1.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            110.0 + (cycle * 0.3).sin() * 6.0,
+            0.1,
+            0.0,
+            20.0 + (cycle * 0.9 + 2.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            110.0 + (cycle * 0.3).sin() * 6.0,
+            0.1,
+            0.0,
+            20.0 + (cycle * 0.9 + 3.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            110.0 + (cycle * 0.3).sin() * 6.0,
+            0.1,
+            0.0,
+            20.0 + (cycle * 0.9 + 4.0).sin() * 3.0,
+        );
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle + 1.0).sin()))).unwrap();
         self.render_orbit(ctx, 80.0 + (cycle * 0.3 + 0.0).sin() * 7.0);
         self.render_orbit(ctx, 80.0 + (cycle * 0.3 + 1.0).sin() * 7.0);
         self.render_orbit(ctx, 80.0 + (cycle * 0.3 + 2.0).sin() * 7.0);
         self.render_orbit(ctx, 80.0 + (cycle * 0.3 + 3.0).sin() * 7.0);
-        self.render_moon_ring(ctx, 80.0 + (cycle * 0.3 + 1.0).sin() * 6.0, -0.11, 0.0, 20.0 + (cycle * 0.9 + 1.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 80.0 + (cycle * 0.3 + 1.0).sin() * 6.0, -0.11, 0.0, 20.0 + (cycle * 0.9 + 2.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 80.0 + (cycle * 0.3 + 1.0).sin() * 6.0, -0.11, 0.0, 20.0 + (cycle * 0.9 + 3.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 80.0 + (cycle * 0.3 + 1.0).sin() * 6.0, -0.11, 0.0, 20.0 + (cycle * 0.9 + 4.0).sin() * 3.0);
+        self.render_moon_ring(
+            ctx,
+            80.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            -0.11,
+            0.0,
+            20.0 + (cycle * 0.9 + 1.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            80.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            -0.11,
+            0.0,
+            20.0 + (cycle * 0.9 + 2.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            80.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            -0.11,
+            0.0,
+            20.0 + (cycle * 0.9 + 3.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            80.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            -0.11,
+            0.0,
+            20.0 + (cycle * 0.9 + 4.0).sin() * 3.0,
+        );
 
         graphics::set_color(ctx, Color::from(Palette::Light((cycle + 2.0).sin()))).unwrap();
         self.render_orbit(ctx, 50.0 + (cycle * 0.3 + 1.0).sin() * 7.0);
         self.render_orbit(ctx, 50.0 + (cycle * 0.3 + 2.0).sin() * 7.0);
         self.render_orbit(ctx, 50.0 + (cycle * 0.3 + 3.0).sin() * 7.0);
         self.render_orbit(ctx, 50.0 + (cycle * 0.3 + 4.0).sin() * 7.0);
-        self.render_moon_ring(ctx, 50.0 + (cycle * 0.3 + 1.0).sin() * 6.0, 0.06, 0.0, 20.0 + (cycle * 0.9 + 1.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 50.0 + (cycle * 0.3 + 1.0).sin() * 6.0, 0.06, 0.0, 20.0 + (cycle * 0.9 + 2.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 50.0 + (cycle * 0.3 + 1.0).sin() * 6.0, 0.06, 0.0, 20.0 + (cycle * 0.9 + 3.0).sin() * 3.0);
-        self.render_moon_ring(ctx, 50.0 + (cycle * 0.3 + 1.0).sin() * 6.0, 0.06, 0.0, 20.0 + (cycle * 0.9 + 4.0).sin() * 3.0);
+        self.render_moon_ring(
+            ctx,
+            50.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            0.06,
+            0.0,
+            20.0 + (cycle * 0.9 + 1.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            50.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            0.06,
+            0.0,
+            20.0 + (cycle * 0.9 + 2.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            50.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            0.06,
+            0.0,
+            20.0 + (cycle * 0.9 + 3.0).sin() * 3.0,
+        );
+        self.render_moon_ring(
+            ctx,
+            50.0 + (cycle * 0.3 + 1.0).sin() * 6.0,
+            0.06,
+            0.0,
+            20.0 + (cycle * 0.9 + 4.0).sin() * 3.0,
+        );
     }
 
     fn render_eye(&mut self, ctx: &mut Context, cycle: f32) {
         graphics::set_color(ctx, Color::from(Palette::Light(0.0))).unwrap();
         self.render_orbit(ctx, 14.0 + (cycle * 0.3 - 2.0).sin() * 1.0);
         self.render_orbit(ctx, 14.0 + (cycle * 0.3).sin() * 1.0);
-        graphics::circle(
-            ctx,
-            DrawMode::Fill,
-            self.entity_data.pos,
-            12.0,
-            PRECISION,
-        ).unwrap();
+        graphics::circle(ctx, DrawMode::Fill, self.entity_data.pos, 12.0, PRECISION).unwrap();
 
         graphics::set_color(ctx, Color::from(Palette::Black)).unwrap();
         graphics::ellipse(
@@ -166,9 +244,12 @@ impl MotherIntro {
 }
 
 impl Entity for MotherIntro {
-
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, _ctx: &mut Context) {
         self.cycle += 0.1;
 
@@ -190,8 +271,8 @@ impl Entity for MotherIntro {
             Message::Move(Direction::Up, speed) => {
                 self.leaving = 0.05;
                 self.leaving_speed = speed;
-            },
-            _ => ()
+            }
+            _ => (),
         }
     }
 }
