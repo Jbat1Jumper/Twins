@@ -37,7 +37,6 @@ mod test {
 
     #[test]
     fn desired_continuous_usage() {
-
         let va_x = Unif::new(0.0, 1.0);
         let ev_a = Range::new(0.0, 0.3);
         let p_win = va_x.probability_of(ev_a);
@@ -53,7 +52,9 @@ mod test {
 
     impl Unif {
         fn new(a: f32, b: f32) -> Self {
-            if a > b { panic!("Unif::new, a={} must be less or equal than b={}", a, b) }
+            if a > b {
+                panic!("Unif::new, a={} must be less or equal than b={}", a, b)
+            }
             Unif { a, b }
         }
     }
@@ -82,7 +83,7 @@ mod test {
         }
     }
 
-    impl Outcome for f32 { }
+    impl Outcome for f32 {}
 
     impl Event<f32> for Range {
         fn contains_outcome(&self, x: f32) -> bool {
@@ -95,10 +96,16 @@ mod test {
         fn intersection(&self, other: &Self) -> Self {
             match *self {
                 Range::Empty => Range::Empty,
-                Range::Union(ref s, ref t) => Range::Union(Box::new(s.intersection(other)), Box::new(s.intersection(other))),
+                Range::Union(ref s, ref t) => Range::Union(
+                    Box::new(s.intersection(other)),
+                    Box::new(s.intersection(other)),
+                ),
                 Range::Simple(a, b) => match *other {
                     Range::Empty => Range::Empty,
-                    Range::Union(ref s, ref t) => Range::Union(Box::new(s.intersection(self)), Box::new(t.intersection(self))),
+                    Range::Union(ref s, ref t) => Range::Union(
+                        Box::new(s.intersection(self)),
+                        Box::new(t.intersection(self)),
+                    ),
                     Range::Simple(c, d) => {
                         if a > d || b < c {
                             Range::Empty
