@@ -49,20 +49,17 @@ impl Entity for MegaRay {
                 DrawMode::Fill,
                 self.entity_data.pos,
                 60.0 + (cycle * 23.0).sin() * 60.0,
-                PRECISION
+                PRECISION,
             ).unwrap();
             graphics::line(
                 ctx,
-                &[self.entity_data.pos, self.entity_data.pos.add(Point2::new(0.0, 400.0))],
-                40.0
-            ).unwrap();
-            graphics::circle(
-                ctx,
-                DrawMode::Fill,
-                self.entity_data.pos,
+                &[
+                    self.entity_data.pos,
+                    self.entity_data.pos.add(Point2::new(0.0, 400.0)),
+                ],
                 40.0,
-                PRECISION
             ).unwrap();
+            graphics::circle(ctx, DrawMode::Fill, self.entity_data.pos, 40.0, PRECISION).unwrap();
         }
         if cycle % 0.3 > 0.2 {
             graphics::circle(
@@ -70,28 +67,29 @@ impl Entity for MegaRay {
                 DrawMode::Fill,
                 self.entity_data.pos,
                 60.0 + (cycle * 0.6).sin() * 20.0,
-                PRECISION
+                PRECISION,
             ).unwrap();
             graphics::line(
                 ctx,
-                &[self.entity_data.pos, self.entity_data.pos.add(Point2::new(0.0, 400.0))],
-                35.0 + (cycle * 9.0).sin() * 30.0
+                &[
+                    self.entity_data.pos,
+                    self.entity_data.pos.add(Point2::new(0.0, 400.0)),
+                ],
+                35.0 + (cycle * 9.0).sin() * 30.0,
             ).unwrap();
             graphics::circle(
                 ctx,
                 DrawMode::Fill,
                 self.entity_data.pos,
                 35.0 + (cycle * 9.0).sin() * 30.0,
-                PRECISION
+                PRECISION,
             ).unwrap();
         }
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
         match message {
-            Message::Kill => {
-                self.entity_data.alive = false
-            },
-            _ => ()
+            Message::Kill => self.entity_data.alive = false,
+            _ => (),
         }
     }
 }
