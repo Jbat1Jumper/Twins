@@ -159,39 +159,66 @@ mod test {
     #[test]
     fn more_assertions() {
         let va_x = Unif::new(0.0, 80.0);
-        assert_eq!(1.00, va_x.probability_of(Range::new(  0.0,  80.0)));
-        assert_eq!(0.25, va_x.probability_of(Range::new(-20.0,  20.0)));
-        assert_eq!(0.25, va_x.probability_of(Range::new(  0.0,  20.0)));
-        assert_eq!(1.00, va_x.probability_of(Range::new(  0.0, 100.0)));
+        assert_eq!(1.00, va_x.probability_of(Range::new(0.0, 80.0)));
+        assert_eq!(0.25, va_x.probability_of(Range::new(-20.0, 20.0)));
+        assert_eq!(0.25, va_x.probability_of(Range::new(0.0, 20.0)));
+        assert_eq!(1.00, va_x.probability_of(Range::new(0.0, 100.0)));
     }
-    
+
     #[test]
     fn transform_random_variables() {
         let va_x = Unif::new(0.0, 10.0);
         let va_y = va_x.add_constant(10.0);
-        assert_eq!(va_x.probability_of(Range::new(2.0, 4.0)), va_y.probability_of(Range::new(12.0, 14.0)));
+        assert_eq!(
+            va_x.probability_of(Range::new(2.0, 4.0)),
+            va_y.probability_of(Range::new(12.0, 14.0))
+        );
         assert_eq!(va_y.probability_of(Range::new(0.0, 8.0)), 0.0);
     }
 
     use std::ops::Add;
 
-    trait AddConstant<E, O> where Self: RandomVariable<O, E> + Sized, E: Event<O>, O: Outcome + Add {
+    trait AddConstant<E, O>
+    where
+        Self: RandomVariable<O, E> + Sized,
+        E: Event<O>,
+        O: Outcome + Add,
+    {
         fn add_constant(&self, k: f32) -> AddedConstantVariable<Self, E, O>;
     }
 
-    struct AddedConstantVariable<RV, E, O> where RV: RandomVariable<O, E>, E: Event<O>, O: Outcome + Add {
+    struct AddedConstantVariable<RV, E, O>
+    where
+        RV: RandomVariable<O, E>,
+        E: Event<O>,
+        O: Outcome + Add,
+    {
         v: RV,
         k: f32,
         phanthom: Option<(E, O)>,
     }
 
-    impl<RV, E, O> AddConstant<E, O> for RV where RV: RandomVariable<O, E> + Sized + Clone, E: Event<O>, O: Outcome + Add {
+    impl<RV, E, O> AddConstant<E, O> for RV
+    where
+        RV: RandomVariable<O, E> + Sized + Clone,
+        E: Event<O>,
+        O: Outcome + Add,
+    {
         fn add_constant(&self, k: f32) -> AddedConstantVariable<RV, E, O> {
-            AddedConstantVariable { v: (*self).clone(), k , phanthom: Option::None }
+            AddedConstantVariable {
+                v: (*self).clone(),
+                k,
+                phanthom: Option::None,
+            }
         }
     }
 
-    impl<RV, E, O> RandomVariable<O, E> for AddedConstantVariable<RV, E, O> where RV: RandomVariable<O, E>, E: Event<O>, O: Outcome + Add  {
+    impl<RV, E, O> RandomVariable<O, E> for AddedConstantVariable<RV, E, O>
+    where
+        RV: RandomVariable<O, E>,
+        E: Event<O>,
+        O: Outcome + Add,
+    {
         fn probability_of(&self, ev: E) -> f32 {
             self.v.probability_of(ev)
         }
