@@ -48,7 +48,11 @@ impl Entity for Blink {
     fn render(&mut self, ctx: &mut Context) {
         let opacity = self.remaining_time / self.total_time;
         graphics::set_color(ctx, Color::from(Palette::Blink(opacity))).unwrap();
-        graphics::rectangle(ctx, DrawMode::Fill, Rect::new(0.0, 0.0, W_WIDTH as f32, W_HEIGHT as f32)).unwrap();
+        graphics::rectangle(
+            ctx,
+            DrawMode::Fill,
+            Rect::new(0.0, 0.0, W_WIDTH as f32, W_HEIGHT as f32),
+        ).unwrap();
     }
-    fn receive_message(&mut self, _sender: MessageSender, _message: Message) { }
+    fn receive_message(&mut self, _sender: MessageSender, _message: Message) {}
 }
