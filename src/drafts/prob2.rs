@@ -1,24 +1,32 @@
+trait Outcome {}
 
-trait Outcome {
+trait ProbabilitySpace<O>
+where
+    O: Outcome,
+{
 }
 
-trait ProbabilitySpace<O> where O: Outcome {
-    
-}
-
-trait Event<O> where O: Outcome {
+trait Event<O>
+where
+    O: Outcome,
+{
     fn contains_outcome(&self, o: O) -> bool;
     fn intersection(&self, other: &Self) -> Self;
     fn union(&self, other: &Self) -> Self;
     fn lebesgue_measure(&self) -> f32;
 }
 
-trait DistributionFunction<O> where O: Outcome {
-
+trait DistributionFunction<O>
+where
+    O: Outcome,
+{
 }
 
-
-trait RandomVariable<O, E> where O: Outcome, E: Event<O> {
+trait RandomVariable<O, E>
+where
+    O: Outcome,
+    E: Event<O>,
+{
     fn probability_of(&self, ev: E) -> f32;
 }
 
