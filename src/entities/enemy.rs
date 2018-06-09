@@ -1,33 +1,34 @@
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Point2};
 use ggez::timer::get_delta;
+use ggez::Context;
 
-use palette::Palette;
-use entities::{Entity, EntityData, EntityTag, Renderable};
-use messages::{MessageSender, Message};
 use debug::DebugText;
+use entities::{Entity, EntityData, EntityTag, Renderable};
+use messages::{Message, MessageSender};
+use palette::Palette;
 
-use std::time::Duration;
 use bezier2::Bezier;
 use math::VectorUtils;
+use std::time::Duration;
 
 use mekano::Mekano;
 
 use mekano_renderer;
 use mekano_renderer::Render;
 
-
-const PRECISION : f32 = 0.5;
-
+const PRECISION: f32 = 0.5;
 
 pub trait EnemyPath {
     fn get(&self, t: f32) -> Point2;
 }
 
 #[derive(Debug)]
-pub struct Enemy<P> where P: EnemyPath {
+pub struct Enemy<P>
+where
+    P: EnemyPath,
+{
     path: P,
     current_duration: Duration,
     duration: Duration,
@@ -49,7 +50,10 @@ impl mekano_renderer::Data for BodyData {
     }
 }
 
-impl<P> Enemy<P> where P: EnemyPath + Renderable {
+impl<P> Enemy<P>
+where
+    P: EnemyPath + Renderable,
+{
     pub fn new(path: P, duration: Duration) -> Self {
         let pos = path.get(0.0);
         Self {
@@ -74,9 +78,16 @@ fn duration_ratio(a: Duration, b: Duration) -> f32 {
     t_a / t_b
 }
 
-impl<P> Entity for Enemy<P> where P: EnemyPath + Renderable {
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+impl<P> Entity for Enemy<P>
+where
+    P: EnemyPath + Renderable,
+{
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, ctx: &mut Context) {
         let delta = get_delta(ctx);
         self.current_duration += delta;
@@ -90,10 +101,14 @@ impl<P> Entity for Enemy<P> where P: EnemyPath + Renderable {
     fn render(&mut self, ctx: &mut Context) {
         self.mekano.render(ctx);
         self.path.render(ctx);
-        let mut dt: DebugText = (self.entity_data.pos, self.entity_data.pos.add(Point2::up().mul(40.0))).into();
+        let mut dt: DebugText = (
+            self.entity_data.pos,
+            self.entity_data.pos.add(Point2::up().mul(40.0)),
+        ).into();
         dt.render(ctx);
     }
-    fn receive_message(&mut self, _sender: MessageSender, _message: Message) {
+    fn receive_message(&mut self, _sender: MessageSender, _message: Message) {}
+    fn get_tag(&self) -> EntityTag {
+        EntityTag::Enemy
     }
-    fn get_tag(&self) -> EntityTag { EntityTag::Enemy }
 }
