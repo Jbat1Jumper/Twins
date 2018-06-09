@@ -1,7 +1,7 @@
-use ggez::Context;
-use ggez::graphics::Point2;
-use math::VectorUtils;
 use entities::Renderable;
+use ggez::graphics::Point2;
+use ggez::Context;
+use math::VectorUtils;
 
 #[derive(Debug)]
 pub struct Bezier {
@@ -15,10 +15,7 @@ impl Bezier {
         let mut weights = Vec::<Point2>::new();
         points.push(origin);
         weights.push(weight);
-        Bezier {
-            points,
-            weights,
-        }
+        Bezier { points, weights }
     }
     pub fn to(mut self, p: Point2, w: Point2) -> Self {
         self.points.push(p);
@@ -29,14 +26,11 @@ impl Bezier {
     pub fn get(&self, tt: f32) -> Point2 {
         if self.points.len() == 0 {
             panic!("Bezier points.len() can't be 0")
-        }
-        else if self.points.len() == 1 {
+        } else if self.points.len() == 1 {
             *self.points.get(0).unwrap()
-        }
-        else if tt >= 1.0 {
-            *self.points.get(self.points.len()-1).unwrap()
-        }
-        else {
+        } else if tt >= 1.0 {
+            *self.points.get(self.points.len() - 1).unwrap()
+        } else {
             let n = (self.points.len() - 1) as f32;
             let i = (tt * n).floor() as usize;
             let t = (tt * n) - i as f32;
@@ -44,12 +38,12 @@ impl Bezier {
             let o = self.points.get(i).unwrap();
             let c1 = o.add(*self.weights.get(i).unwrap());
 
-            let d = self.points.get(i+1).unwrap();
-            let c2 = d.sub(*self.weights.get(i+1).unwrap());
+            let d = self.points.get(i + 1).unwrap();
+            let c2 = d.sub(*self.weights.get(i + 1).unwrap());
 
-            let a1 = o.mul((1.0-t).powi(3));
-            let a2 = c1.mul(3.0*(1.0-t).powi(2)*t);
-            let a3 = c2.mul(3.0*(1.0-t)*t.powi(2));
+            let a1 = o.mul((1.0 - t).powi(3));
+            let a2 = c1.mul(3.0 * (1.0 - t).powi(2) * t);
+            let a3 = c2.mul(3.0 * (1.0 - t) * t.powi(2));
             let a4 = d.mul(t.powi(3));
 
             a1.add(a2).add(a3).add(a4)
@@ -68,7 +62,9 @@ impl Renderable for Bezier {
 
         let lines = self.points.len() * precision;
 
-        let v = (0..lines+1).map(|x| self.get(x as f32 / lines as f32)).collect::<Vec<Point2>>();
+        let v = (0..lines + 1)
+            .map(|x| self.get(x as f32 / lines as f32))
+            .collect::<Vec<Point2>>();
 
         graphics::line(ctx, &v, 1.0).unwrap();
     }
