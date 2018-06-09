@@ -1,17 +1,15 @@
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message};
+use messages::{Message, MessageSender};
+use palette::Palette;
 
 use math::VectorUtils;
 
-
-const PRECISION : f32 = 0.5;
-
+const PRECISION: f32 = 0.5;
 
 pub struct MegaRay {
     entity_data: EntityData,
