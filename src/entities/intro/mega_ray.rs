@@ -22,7 +22,7 @@ impl MegaRay {
             entity_data: EntityData {
                 pos: p,
                 z_order: 10.0,
-                .. EntityData::new()
+                ..EntityData::new()
             },
             cycle: 0.0,
         }
