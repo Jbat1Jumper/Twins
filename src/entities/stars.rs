@@ -1,25 +1,24 @@
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
-use ggez::graphics::{Color, Mesh, Drawable};
+use ggez::graphics::{Color, Drawable, Mesh};
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData, EntityTag};
 use math::VectorUtils;
-use messages::{MessageSender, Message, Direction};
+use messages::{Direction, Message, MessageSender};
+use palette::Palette;
 
-use rand::{Rng, StdRng, SeedableRng};
+use rand::{Rng, SeedableRng, StdRng};
 
-use W_WIDTH;
 use W_HEIGHT;
-
+use W_WIDTH;
 
 pub struct Stars {
     entity_data: EntityData,
     cycle: f32,
     stars: Vec<(Point2, f32)>,
     speed: Point2,
-    distance: f32
+    distance: f32,
 }
 
 impl Stars {
@@ -35,12 +34,12 @@ impl Stars {
 
     fn populate(seed: usize) -> Vec<(Point2, f32)> {
         let mut rng = StdRng::from_seed(&[seed, seed, seed, seed]);
-        let mut v : Vec<(Point2, f32)> = Vec::new();
+        let mut v: Vec<(Point2, f32)> = Vec::new();
         for _ in 1..80 {
-            let x : f32 = rng.gen();
-            let y : f32 = rng.gen();
+            let x: f32 = rng.gen();
+            let y: f32 = rng.gen();
             let p = Point2::new(x * (W_WIDTH as f32), y * (W_HEIGHT as f32));
-            let i : f32 = rng.gen();
+            let i: f32 = rng.gen();
             let i = 0.1 + i * 1.0;
             v.push((p, i));
         }
@@ -49,14 +48,18 @@ impl Stars {
 }
 
 impl Entity for Stars {
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, _ctx: &mut Context) {
         self.cycle += 0.1;
 
         if self.speed.norm() > 0.0 {
             for &mut (ref mut point, _) in self.stars.iter_mut() {
-                let npoint = point.add(self.speed.mul(self.distance/10.0));
+                let npoint = point.add(self.speed.mul(self.distance / 10.0));
                 point.x = npoint.x % W_WIDTH as f32;
                 point.y = npoint.y % W_HEIGHT as f32;
             }
@@ -77,8 +80,12 @@ impl Entity for Stars {
 
         for pi in self.stars.iter() {
             let (p, i) = *pi;
-            if cycle < i * 5.0 { continue }
-            if cycle % (10.0 * i) < i { continue }
+            if cycle < i * 5.0 {
+                continue;
+            }
+            if cycle % (10.0 * i) < i {
+                continue;
+            }
             star.draw(ctx, p, 0.0).unwrap();
         }
     }
@@ -90,8 +97,10 @@ impl Entity for Stars {
             Message::Stop => {
                 self.speed = Point2::new(0.0, 0.0);
             }
-            _ => ()
+            _ => (),
         }
     }
-    fn get_tag(&self) -> EntityTag { EntityTag::Stars }
+    fn get_tag(&self) -> EntityTag {
+        EntityTag::Stars
+    }
 }

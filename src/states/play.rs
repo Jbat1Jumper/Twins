@@ -3,14 +3,13 @@ use ggez::graphics::Point2;
 use math::VectorUtils;
 
 use bezier2::Bezier;
-use entities::{Entity, EntityTag, EntityId};
-use messages::{Direction, SendMessageTo, Message};
-use entities::{twin, enemy};
+use entities::{enemy, twin};
+use entities::{Entity, EntityId, EntityTag};
+use messages::{Direction, Message, SendMessageTo};
 
 use std::time::Duration;
 
 use Game;
-
 
 impl EnemyPath for Bezier {
     fn get(&self, t: f32) -> Point2 {
@@ -21,7 +20,7 @@ impl EnemyPath for Bezier {
 #[derive(Debug, Clone)]
 enum State {
     Start,
-    Normal
+    Normal,
 }
 
 #[derive(Debug, Clone)]
@@ -47,8 +46,14 @@ impl PlayState {
             State::Start => {
                 game.send_message(EntityTag::Stars, Message::Move(Direction::Down, 2.0));
 
-                game.add_entity(Box::new(twin::Twin::new(Point2::new(100.0, 500.0), twin::Player::One)));
-                game.add_entity(Box::new(twin::Twin::new(Point2::new(300.0, 500.0), twin::Player::Two)));
+                game.add_entity(Box::new(twin::Twin::new(
+                    Point2::new(100.0, 500.0),
+                    twin::Player::One,
+                )));
+                game.add_entity(Box::new(twin::Twin::new(
+                    Point2::new(300.0, 500.0),
+                    twin::Player::Two,
+                )));
 
                 State::Normal
             }
@@ -56,11 +61,10 @@ impl PlayState {
                 new.tenemy -= game.delta_time();
                 if new.tenemy <= 0.0 {
                     new.tenemy += ENEMY_INTERVAL;
-                    new.enemies.push(
-                        game.add_entity(Box::new(
-                            enemy::Enemy::new(PlayState::random_path(), Duration::from_secs(3))
-                        ))
-                    );
+                    new.enemies.push(game.add_entity(Box::new(enemy::Enemy::new(
+                        PlayState::random_path(),
+                        Duration::from_secs(3),
+                    ))));
                 }
                 State::Normal
             }

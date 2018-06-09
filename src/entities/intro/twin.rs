@@ -1,17 +1,15 @@
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message, Direction};
+use messages::{Direction, Message, MessageSender};
+use palette::Palette;
 
 use math::VectorUtils;
 
-
-const PRECISION : f32 = 0.5;
-
+const PRECISION: f32 = 0.5;
 
 pub struct TwinIntro {
     entity_data: EntityData,
@@ -21,9 +19,12 @@ pub struct TwinIntro {
 }
 
 impl Entity for TwinIntro {
-
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, _ctx: &mut Context) {
         self.cycle += 0.1;
         if let Some(vector) = self.going_to {
@@ -39,13 +40,7 @@ impl Entity for TwinIntro {
     }
     fn render(&mut self, ctx: &mut Context) {
         graphics::set_color(ctx, Color::from(Palette::Player)).unwrap();
-        graphics::circle(
-            ctx,
-            DrawMode::Fill,
-            self.entity_data.pos,
-            20.0,
-            PRECISION
-        ).unwrap();
+        graphics::circle(ctx, DrawMode::Fill, self.entity_data.pos, 20.0, PRECISION).unwrap();
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
         match message {
@@ -53,13 +48,13 @@ impl Entity for TwinIntro {
                 self.going_to = match direction {
                     Direction::Right => Some(Point2::new(distance, 0.0)),
                     Direction::Left => Some(Point2::new(-distance, 0.0)),
-                    _ => None
+                    _ => None,
                 };
             }
             Message::Kill => {
                 self.die();
             }
-            _ => ()
+            _ => (),
         }
     }
 }

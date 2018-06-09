@@ -1,18 +1,15 @@
-
-use ggez::Context;
-use ggez::graphics::{Point2, DrawMode};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData, EntityTag, EntityTagPlayer};
-use messages::{MessageSender, Message, Direction};
+use messages::{Direction, Message, MessageSender};
+use palette::Palette;
 
 use math::VectorUtils;
 
-
-const PRECISION : f32 = 0.5;
-
+const PRECISION: f32 = 0.5;
 
 pub struct Twin {
     entity_data: EntityData,
@@ -24,10 +21,13 @@ pub struct Twin {
 }
 
 impl Entity for Twin {
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
-    fn update(&mut self, _ctx: &mut Context) {
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
     }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
+    fn update(&mut self, _ctx: &mut Context) {}
     fn render(&mut self, ctx: &mut Context) {
         self.cycle += 0.1;
         graphics::set_color(ctx, Color::from(Palette::Player)).unwrap();
@@ -36,7 +36,7 @@ impl Entity for Twin {
             DrawMode::Fill,
             self.entity_data.pos,
             20.0 + (self.cycle * self.animation_speed).sin() * 2.0,
-            PRECISION
+            PRECISION,
         ).unwrap();
     }
     fn receive_message(&mut self, _sender: MessageSender, message: Message) {
@@ -45,20 +45,20 @@ impl Entity for Twin {
                 let pos = self.entity_data.pos.add(axis.mul(self.speed));
                 self.entity_data.pos.set(pos);
             }
-            _ => ()
+            _ => (),
         }
     }
     fn get_tag(&self) -> EntityTag {
         match self.player {
             Player::One => EntityTag::Player(EntityTagPlayer::One),
-            Player::Two => EntityTag::Player(EntityTagPlayer::Two)
+            Player::Two => EntityTag::Player(EntityTagPlayer::Two),
         }
     }
 }
 
 pub enum Player {
     One,
-    Two
+    Two,
 }
 
 impl Twin {
@@ -72,7 +72,7 @@ impl Twin {
             _going_to: Option::None,
             speed: 10.0,
             animation_speed: 2.0,
-            player
+            player,
         }
     }
 }

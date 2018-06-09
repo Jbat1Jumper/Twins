@@ -1,6 +1,6 @@
 use ggez::graphics::Color;
-use std::convert::From;
 use na;
+use std::convert::From;
 
 pub enum Palette {
     Black,
@@ -17,12 +17,10 @@ impl From<Palette> for Color {
             Palette::Light(intensity) => {
                 let i = na::clamp(intensity, 0.0, 1.0);
                 let v = (i * 60.0) as u8;
-                Color::from_rgb(180+v, 150+v, 195+v)
-            },
+                Color::from_rgb(180 + v, 150 + v, 195 + v)
+            }
             Palette::Player => Color::from_rgb(190, 200, 250),
-            Palette::Blink(opacity) => {
-                Color::from_rgba(255, 255, 255, (255.0 * opacity) as u8)
-            },
+            Palette::Blink(opacity) => Color::from_rgba(255, 255, 255, (255.0 * opacity) as u8),
             Palette::DebugA => Color::from_rgb(100, 240, 100),
         }
     }

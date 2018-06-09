@@ -1,5 +1,3 @@
-
-
 #[derive(Debug)]
 pub enum Mekano<Data> {
     End(Data),
@@ -23,4 +21,3 @@ impl<Data> Mekano<Data> {
         }
     }
 }
-

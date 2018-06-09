@@ -1,14 +1,13 @@
 use ggez::graphics::Point2;
-use std::marker::Sized;
+use rand::distributions::{Normal, Sample};
 use rand::Rng;
-use rand::distributions::{Sample, Normal};
-use std::ops::{
-    Add,
-    Mul,
-    Sub,
-};
+use std::marker::Sized;
+use std::ops::{Add, Mul, Sub};
 
-pub trait VectorUtils where Self: Sized {
+pub trait VectorUtils
+where
+    Self: Sized,
+{
     fn rotate(&self, angle: f32) -> Self;
     fn add(&self, other: Self) -> Self;
     fn mul(&self, scalar: f32) -> Self;
@@ -18,13 +17,17 @@ pub trait VectorUtils where Self: Sized {
     fn norm(&self) -> f32;
     fn unit(&self) -> Self {
         let norm = self.norm();
-        self.mul(1.0/norm)
+        self.mul(1.0 / norm)
     }
     fn clamp(&self, amount: f32) -> Self {
         let norm = self.norm();
-        if norm <= 0.0001 { return Self::zero() }
-        let res = match norm < amount { true => norm,
-                                     false => amount };
+        if norm <= 0.0001 {
+            return Self::zero();
+        }
+        let res = match norm < amount {
+            true => norm,
+            false => amount,
+        };
         <Self as VectorUtils>::mul(&self, res / norm)
     }
     fn set(&mut self, other: Self);
@@ -41,8 +44,6 @@ pub trait VectorUtils where Self: Sized {
     fn up() -> Self;
     fn zero() -> Self;
 }
-
-
 
 impl VectorUtils for Point2 {
     fn rotate(&self, angle: f32) -> Point2 {
@@ -114,7 +115,10 @@ impl VectorUtils for f32 {
     }
 }
 
-pub trait Wavize where Self: Sized + Add<Self> + Mul<Self> + Sub<Self> {
+pub trait Wavize
+where
+    Self: Sized + Add<Self> + Mul<Self> + Sub<Self>,
+{
     fn wave(&self, amount: f32, tick: f32, phase: f32) -> Self;
 }
 
@@ -124,12 +128,19 @@ impl Wavize for f32 {
     }
 }
 
-pub trait Randomize<RNG> where Self: Sized + Add<Self> + Mul<Self> + Sub<Self>, RNG: Rng {
+pub trait Randomize<RNG>
+where
+    Self: Sized + Add<Self> + Mul<Self> + Sub<Self>,
+    RNG: Rng,
+{
     fn rand(&self, rng: &mut RNG, amount: f32) -> Self;
     fn gauss(&self, rng: &mut RNG, deviation: f32) -> Self;
 }
 
-impl<RNG> Randomize<RNG> for f32 where RNG: Rng {
+impl<RNG> Randomize<RNG> for f32
+where
+    RNG: Rng,
+{
     fn rand(&self, rng: &mut RNG, amount: f32) -> Self {
         let rand: f32 = rng.gen();
         let delta: f32 = rand * 2.0 - 1.0;
@@ -140,8 +151,6 @@ impl<RNG> Randomize<RNG> for f32 where RNG: Rng {
         dist.sample(rng) as f32
     }
 }
-
-
 
 #[test]
 fn lerp_points() {

@@ -1,8 +1,8 @@
-use ggez::Context;
 use ggez::graphics;
-use ggez::graphics::{Point2, DrawMode};
-use mekano::Mekano;
+use ggez::graphics::{DrawMode, Point2};
+use ggez::Context;
 use math::VectorUtils;
+use mekano::Mekano;
 
 pub trait Render {
     type Data: Data;
@@ -38,7 +38,6 @@ where
     type Data = D;
 
     fn render(&self, ctx: &mut Context) {
-
         {
             const tolerance: f32 = 5.0;
             let data = self.data();
@@ -53,16 +52,9 @@ where
             }
         }
         match self {
-            &Mekano::End(ref d) => {
-
-            }
-            &Mekano::Segment(ref d, ref j) => {
-
-            }
-            &Mekano::Split(ref d, ref j1, ref j2) => {
-
-            }
+            &Mekano::End(ref d) => {}
+            &Mekano::Segment(ref d, ref j) => {}
+            &Mekano::Split(ref d, ref j1, ref j2) => {}
         }
     }
 }
-
