@@ -113,16 +113,20 @@ mod test {
                             Range::Simple(a.max(c), b.min(d))
                         }
                     }
-                }
+                },
             }
         }
         fn union(&self, other: &Self) -> Self {
             match *self {
                 Range::Empty => (*other).clone(),
-                Range::Union(ref s, ref t) => Range::Union(Box::new(s.union(other)), Box::new(s.union(other))),
+                Range::Union(ref s, ref t) => {
+                    Range::Union(Box::new(s.union(other)), Box::new(s.union(other)))
+                }
                 Range::Simple(a, b) => match *other {
                     Range::Empty => (*self).clone(),
-                    Range::Union(ref s, ref t) => Range::Union(Box::new(s.union(self)), Box::new(t.union(self))),
+                    Range::Union(ref s, ref t) => {
+                        Range::Union(Box::new(s.union(self)), Box::new(t.union(self)))
+                    }
                     Range::Simple(c, d) => {
                         if a > d || b < c {
                             Range::Union(Box::new((*self).clone()), Box::new((*other).clone()))
@@ -130,13 +134,16 @@ mod test {
                             Range::Simple(a.min(c), b.max(d))
                         }
                     }
-                }
+                },
             }
         }
         fn lebesgue_measure(&self) -> f32 {
             match *self {
                 Range::Empty => 0.0,
-                Range::Union(ref s, ref t) => s.lebesgue_measure() + t.lebesgue_measure() - s.intersection(&t).lebesgue_measure(),
+                Range::Union(ref s, ref t) => {
+                    s.lebesgue_measure() + t.lebesgue_measure()
+                        - s.intersection(&t).lebesgue_measure()
+                }
                 Range::Simple(a, b) => b - a,
             }
         }
