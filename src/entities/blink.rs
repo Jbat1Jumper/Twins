@@ -1,40 +1,44 @@
-use ggez::Context;
-use ggez::graphics::{DrawMode, Rect};
 use ggez::graphics;
 use ggez::graphics::Color;
+use ggez::graphics::{DrawMode, Rect};
+use ggez::Context;
 
-use palette::Palette;
 use entities::{Entity, EntityData};
-use messages::{MessageSender, Message};
+use messages::{Message, MessageSender};
+use palette::Palette;
 
-use W_WIDTH;
 use W_HEIGHT;
-
+use W_WIDTH;
 
 pub struct Blink {
     entity_data: EntityData,
     remaining_time: f32,
-    total_time: f32
+    total_time: f32,
 }
 
 impl Blink {
     pub fn new(time: f32) -> Self {
-        if time <= 0.0 { panic!("Blink time can't be less or equal than zero") }
+        if time <= 0.0 {
+            panic!("Blink time can't be less or equal than zero")
+        }
         Self {
             total_time: time,
             remaining_time: time,
             entity_data: EntityData {
                 z_order: 100.0,
                 ..EntityData::new()
-            }
+            },
         }
     }
 }
 
 impl Entity for Blink {
-
-    fn entity_data_mut(&mut self) -> &mut EntityData { &mut self.entity_data }
-    fn entity_data(&self) -> &EntityData { &self.entity_data }
+    fn entity_data_mut(&mut self) -> &mut EntityData {
+        &mut self.entity_data
+    }
+    fn entity_data(&self) -> &EntityData {
+        &self.entity_data
+    }
     fn update(&mut self, _ctx: &mut Context) {
         self.remaining_time -= 0.1;
         if self.remaining_time < 0.0 {
