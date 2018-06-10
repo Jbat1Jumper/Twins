@@ -164,7 +164,8 @@ mod test {
         assert_eq!(0.25, va_x.probability_of(Range::new(  0.0,  20.0)));
         assert_eq!(1.00, va_x.probability_of(Range::new(  0.0, 100.0)));
     }
-
+    
+    #[ignore]
     #[test]
     fn transform_random_variables() {
         let va_x = Unif::new(0.0, 10.0);
