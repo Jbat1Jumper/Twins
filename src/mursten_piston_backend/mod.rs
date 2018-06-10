@@ -59,34 +59,30 @@ where
 
             render_chain.render(self, &mut data);
 
-            {
-                let graphics_queue = &self.graphics_queue;
+            let operations = self.graphics_queue.drain(..);
 
-                window.draw_2d(&event, |context, graphics| {
-                    use piston_window::{clear, rectangle};
+            window.draw_2d(&event, |context, graphics| {
+                use piston_window::{clear, rectangle};
 
-                    clear([1.0; 4], graphics);
-                    rectangle([1.0, 0.0, 0.0, 1.0], // red
-                              [0.0, 0.0, 100.0, 100.0],
-                              context.transform,
-                              graphics);
+                clear([1.0; 4], graphics);
+                rectangle([1.0, 0.0, 0.0, 1.0], // red
+                          [0.0, 0.0, 100.0, 100.0],
+                          context.transform,
+                          graphics);
 
-                    for o in graphics_queue {
-                        match *o {
-                            Operation::PutPixel((x, y), (r, g, b)) => {
-                                rectangle(
-                                    [r, g, b, 1.0],
-                                    [x as f64, y as f64, (x + 1) as f64, (y + 1) as f64],
-                                    context.transform,
-                                    graphics
-                                );
-                            }
+                for o in operations {
+                    match o {
+                        Operation::PutPixel((x, y), (r, g, b)) => {
+                            rectangle(
+                                [r, g, b, 1.0],
+                                [x as f64, y as f64, (x + 1) as f64, (y + 1) as f64],
+                                context.transform,
+                                graphics
+                            );
                         }
                     }
-                });
-            }
-
-            self.graphics_queue.clear();
+                }
+            });
         }
 
         data
