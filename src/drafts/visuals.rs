@@ -71,24 +71,13 @@ struct Visual;
 
 impl Renderer<PistonBackend, Variables> for Visual {
     fn render(&mut self, backend: &mut PistonBackend, variables: &Variables) {
-        use piston_window::Context;
-
         let (w, h) = backend.screen_size();
-        let (r, g, b) = variables.current_color;
 
-        backend.draw(Box::new(move |graphics, context: _| {
-            use piston_window::*;
-
-            for y in 0..h {
-                for x in 0..w {
-                    rectangle(
-                        [r, g, b, 1.0],
-                        [x as f64, y as f64, (x + 1) as f64, (y + 1) as f64],
-                        context.transform,
-                        graphics
-                    );
-                }
+        for y in 0..h {
+            for x in 0..w {
+                backend.put_pixel((x, y), variables.current_color);
             }
-        }));
+        }
+
     }
 }
