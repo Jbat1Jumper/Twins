@@ -2,6 +2,7 @@ use piston_window::{
     PistonWindow,
     WindowSettings,
 };
+use piston_window::{G2d, Context};
 
 use mursten::{
     Backend,
@@ -14,9 +15,7 @@ pub struct PistonBackend {
     graphics_queue: Vec<Operation>
 }
 
-enum Operation {
-    PutPixel((u32, u32), (f32, f32, f32)),
-}
+type Operation = Box<FnMut(&mut G2d, Context)>;
 
 impl PistonBackend {
     pub fn new() -> Self {
@@ -29,8 +28,8 @@ impl PistonBackend {
         (300, 200)
     }
 
-    pub fn put_pixel(&mut self, pos: (u32, u32), color: (f32, f32, f32)) {
-        self.graphics_queue.push(Operation::PutPixel(pos, color));
+    pub fn draw(&mut self, o: Operation) {
+        self.graphics_queue.push(o);
     }
 }
 
@@ -59,34 +58,23 @@ where
 
             render_chain.render(self, &mut data);
 
-            {
-                let graphics_queue = &self.graphics_queue;
+            let l = self.graphics_queue.len();
+            let mut graphics_queue: Vec<Operation> = self.graphics_queue.drain(0..l).collect();
 
-                window.draw_2d(&event, |context, graphics| {
-                    use piston_window::{clear, rectangle};
+            window.draw_2d(&event, |context, graphics| {
+                use piston_window::{clear, rectangle};
 
-                    clear([1.0; 4], graphics);
-                    rectangle([1.0, 0.0, 0.0, 1.0], // red
-                              [0.0, 0.0, 100.0, 100.0],
-                              context.transform,
-                              graphics);
+                clear([1.0; 4], graphics);
+                rectangle([1.0, 0.0, 0.0, 1.0], // red
+                          [0.0, 0.0, 100.0, 100.0],
+                          context.transform,
+                          graphics);
 
-                    for o in graphics_queue {
-                        match *o {
-                            Operation::PutPixel((x, y), (r, g, b)) => {
-                                rectangle(
-                                    [r, g, b, 1.0],
-                                    [x as f64, y as f64, (x + 1) as f64, (y + 1) as f64],
-                                    context.transform,
-                                    graphics
-                                );
-                            }
-                        }
-                    }
-                });
-            }
+                for o in graphics_queue.iter_mut() {
+                    o(graphics, context);
+                }
+            });
 
-            self.graphics_queue.clear();
         }
 
         data
