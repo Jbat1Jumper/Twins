@@ -8,7 +8,7 @@ use mursten::{
     Backend,
     Data,
     UpdateChain,
-//  RenderChain,
+    RenderChain,
 };
 
 pub struct PistonBackend {}
@@ -33,7 +33,7 @@ where
     fn run(
         &mut self,
         mut update_chain: UpdateChain<Self, D>,
-//      mut render_chain: RenderChain<Self, D>,
+        mut render_chain: RenderChain<Self, D>,
         mut data: D,
     ) -> D {
         let mut window: Window = WindowSettings::new(
@@ -52,7 +52,7 @@ where
             }
 
             if let Some(_) = e.update_args() {
-//                  render_fn(backend, data);
+                render_chain.render(self, &mut data);
             }
         }
 
