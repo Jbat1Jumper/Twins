@@ -1,10 +1,8 @@
 use ggez::graphics;
-use ggez::graphics::Color;
-use ggez::graphics::{DrawMode, Font, Point2, Text};
+use ggez::graphics::{Font, Point2, Text};
 use ggez::Context;
 
-use entities::{Entity, EntityData, EntityTag, Renderable};
-use palette::Palette;
+use entities::Renderable;
 
 pub struct DebugText {
     text: String,

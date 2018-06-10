@@ -1,15 +1,10 @@
-use ggez::graphics;
-use ggez::graphics::Color;
-use ggez::graphics::{DrawMode, Point2};
+use ggez::graphics::Point2;
 use ggez::timer::get_delta;
 use ggez::Context;
 
 use debug::DebugText;
 use entities::{Entity, EntityData, EntityTag, Renderable};
 use messages::{Message, MessageSender};
-use palette::Palette;
-
-use bezier2::Bezier;
 use math::VectorUtils;
 use std::time::Duration;
 

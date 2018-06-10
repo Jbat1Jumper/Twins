@@ -1,10 +1,10 @@
-use entities::enemy::{Enemy, EnemyPath};
+use entities::enemy::EnemyPath;
 use ggez::graphics::Point2;
 use math::VectorUtils;
 
 use bezier2::Bezier;
 use entities::{enemy, twin};
-use entities::{Entity, EntityId, EntityTag};
+use entities::{EntityId, EntityTag};
 use messages::{Direction, Message, SendMessageTo};
 
 use std::time::Duration;

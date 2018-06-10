@@ -1,8 +1,7 @@
 use entities::blink::Blink;
 use entities::intro::{MegaRay, MotherIntro, TwinIntro};
 use entities::stars::Stars;
-use entities::twin;
-use entities::{EntityId, EntityTag};
+use entities::EntityId;
 use ggez::graphics::Point2;
 use messages::{Direction, Message, SendMessageTo};
 use Game;
