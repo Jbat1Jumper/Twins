@@ -1,6 +1,8 @@
 use mursten::{
     Application,
+    Backend,
     Data,
+    Updater,
     Renderer,
 };
 use mursten_piston_backend::PistonBackend;
@@ -9,6 +11,7 @@ pub fn main() {
     let backend = PistonBackend::new();
     let mut variables = Variables::new((200.0, 200.0));
     Application::new(backend)
+        .add_updater(ColorRotator)
         .add_renderer(Visual)
         .run(variables);
 }
@@ -20,6 +23,7 @@ struct Variables {
     ray_proportion: f32,
     glow_amount: f32,     // < 0
     cross_intensity: f32, // < 0
+    current_color: (f32, f32, f32),
 }
 
 impl Variables {
@@ -40,14 +44,40 @@ impl Default for Variables {
             ray_proportion: 0.5,
             glow_amount: 10.0,
             cross_intensity: 5.0,
+            current_color: (0.1, 0.6, 0.9),
         }
     }
 }
 
 impl Data for Variables {}
 
+struct ColorRotator;
+
+impl<B> Updater<B, Variables> for ColorRotator
+where
+    B: Backend<Variables>
+{
+    fn update(
+        &mut self,
+        backend: &mut B,
+        variables: &mut Variables,
+    ) {
+        let (r, g, b) = variables.current_color;
+        variables.current_color = (g, b, r);
+    }
+}
+
 struct Visual;
 
 impl Renderer<PistonBackend, Variables> for Visual {
-    fn render(&mut self, backend: &mut PistonBackend, variables: &Variables) {}
+    fn render(&mut self, backend: &mut PistonBackend, variables: &Variables) {
+        let (w, h) = backend.screen_size();
+
+        for y in 0..h {
+            for x in 0..w {
+                backend.put_pixel((x, y), variables.current_color);
+            }
+        }
+
+    }
 }

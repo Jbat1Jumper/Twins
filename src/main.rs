@@ -1,10 +1,7 @@
 extern crate ggez;
-extern crate rand;
-
-extern crate glutin_window;
 extern crate graphics;
-extern crate opengl_graphics;
-extern crate piston;
+extern crate piston_window;
+extern crate rand;
 
 use ggez::event::{Keycode, Mod};
 use ggez::graphics::Color;
@@ -219,7 +216,8 @@ impl event::EventHandler for Main {
 
 pub fn main() {
     //main2::main();
-    mani();
+    //mani();
+    drafts::visuals::main();
 }
 
 pub fn mani() {
