@@ -54,12 +54,10 @@ impl Data for Variables {}
 struct ColorRotator;
 
 impl<B> Updater<B, Variables> for ColorRotator
-where
-    B: Backend<Variables>
 {
     fn update(
         &mut self,
-        backend: &mut B,
+        _: &mut B,
         variables: &mut Variables,
     ) {
         let (r, g, b) = variables.current_color;
@@ -70,7 +68,11 @@ where
 struct Visual;
 
 impl Renderer<PistonBackend, Variables> for Visual {
-    fn render(&mut self, backend: &mut PistonBackend, variables: &Variables) {
+    fn render(
+        &mut self,
+        backend: &mut PistonBackend,
+        variables: &Variables
+    ) {
         let (w, h) = backend.screen_size();
 
         for y in 0..h {
@@ -78,6 +80,5 @@ impl Renderer<PistonBackend, Variables> for Visual {
                 backend.put_pixel((x, y), variables.current_color);
             }
         }
-
     }
 }
