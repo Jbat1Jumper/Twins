@@ -1,5 +1,6 @@
 extern crate ggez;
 extern crate graphics;
+extern crate image;
 extern crate piston_window;
 extern crate rand;
 

@@ -1,6 +1,8 @@
 use piston_window::{
     PistonWindow,
     WindowSettings,
+    Texture,
+    TextureSettings,
 };
 
 use mursten::{
@@ -9,6 +11,9 @@ use mursten::{
     UpdateChain,
     RenderChain,
 };
+
+use image as im;
+
 
 pub struct PistonBackend {
     graphics_queue: Vec<Operation>
@@ -54,34 +59,48 @@ where
             .unwrap();
 
         while let Some(event) = window.next() {
-
             update_chain.update(self, &mut data);
-
             render_chain.render(self, &mut data);
 
-            let operations = self.graphics_queue.drain(..);
-
-            window.draw_2d(&event, |context, graphics| {
-                use piston_window::{clear, rectangle};
-
-                clear([1.0; 4], graphics);
-                rectangle([1.0, 0.0, 0.0, 1.0], // red
-                          [0.0, 0.0, 100.0, 100.0],
-                          context.transform,
-                          graphics);
-
-                for o in operations {
-                    match o {
+            let canvas = {
+                let (w, h) = self.screen_size();
+                let mut canvas = im::ImageBuffer::new(w, h);
+                for op in self.graphics_queue.drain(..) {
+                    match op {
                         Operation::PutPixel((x, y), (r, g, b)) => {
-                            rectangle(
-                                [r, g, b, 1.0],
-                                [x as f64, y as f64, (x + 1) as f64, (y + 1) as f64],
-                                context.transform,
-                                graphics
+                            canvas.put_pixel(
+                                x,
+                                y,
+                                im::Rgba([
+                                    (r * 255.0) as u8,
+                                    (g * 255.0) as u8,
+                                    (b * 255.0) as u8,
+                                    255,
+                                ]),
                             );
                         }
                     }
                 }
+                canvas
+            };
+
+            let mut texture = Texture::from_image(
+                    &mut window.factory,
+                    &canvas,
+                    &TextureSettings::new()
+                ).unwrap();
+            
+            texture.update(&mut window.encoder, &canvas).unwrap();
+
+            window.draw_2d(&event, |context, graphics| {
+                use piston_window::{clear, image};
+
+                clear([1.0; 4], graphics);
+                image(
+                    &texture,
+                    context.transform,
+                    graphics,
+                );
             });
         }
 
