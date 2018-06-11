@@ -4,8 +4,8 @@ use ggez::Context;
 
 use debug::DebugText;
 use entities::{Entity, EntityData, EntityTag, Renderable};
-use messages::{Message, MessageSender};
 use math::VectorUtils;
+use messages::{Message, MessageSender};
 use std::time::Duration;
 
 use mekano::Mekano;

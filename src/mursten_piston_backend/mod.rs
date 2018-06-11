@@ -1,23 +1,11 @@
-use piston_window::{
-    PistonWindow,
-    WindowSettings,
-    Texture,
-    TextureSettings,
-    Transformed,
-};
+use piston_window::{PistonWindow, Texture, TextureSettings, Transformed, WindowSettings};
 
-use mursten::{
-    Backend,
-    Data,
-    UpdateChain,
-    RenderChain,
-};
+use mursten::{Backend, Data, RenderChain, UpdateChain};
 
 use image as im;
 
-
 pub struct PistonBackend {
-    graphics_queue: Vec<Operation>
+    graphics_queue: Vec<Operation>,
 }
 
 enum Operation {
@@ -85,23 +73,16 @@ where
                 canvas
             };
 
-            let mut texture = Texture::from_image(
-                    &mut window.factory,
-                    &canvas,
-                    &TextureSettings::new()
-                ).unwrap();
-            
+            let mut texture =
+                Texture::from_image(&mut window.factory, &canvas, &TextureSettings::new()).unwrap();
+
             texture.update(&mut window.encoder, &canvas).unwrap();
 
             window.draw_2d(&event, |context, graphics| {
                 use piston_window::{clear, image};
 
                 clear([1.0; 4], graphics);
-                image(
-                    &texture,
-                    context.zoom(5.0).transform,
-                    graphics,
-                );
+                image(&texture, context.zoom(5.0).transform, graphics);
             });
         }
 

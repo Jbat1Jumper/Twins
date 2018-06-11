@@ -1,10 +1,4 @@
-use mursten::{
-    Application,
-    Backend,
-    Data,
-    Updater,
-    Renderer,
-};
+use mursten::{Application, Backend, Data, Renderer, Updater};
 use mursten_piston_backend::PistonBackend;
 
 use na::*;
@@ -55,21 +49,14 @@ impl Data for Variables {}
 
 struct ColorRotator;
 
-impl<B> Updater<B, Variables> for ColorRotator
-{
-    fn update(
-        &mut self,
-        _: &mut B,
-        var: &mut Variables,
-    ) {
-        var.current_color = Matrix3::new(0.0, 0.0, 1.0,
-                                         1.0, 0.0, 0.0,
-                                         0.0, 1.0, 0.0) * var.current_color;
+impl<B> Updater<B, Variables> for ColorRotator {
+    fn update(&mut self, _: &mut B, var: &mut Variables) {
+        var.current_color =
+            Matrix3::new(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0) * var.current_color;
     }
 }
 
-struct Visual {
-}
+struct Visual {}
 
 impl Visual {
     pub fn new() -> Self {
@@ -78,11 +65,7 @@ impl Visual {
 }
 
 impl Renderer<PistonBackend, Variables> for Visual {
-    fn render(
-        &mut self,
-        backend: &mut PistonBackend,
-        var: &Variables
-    ) {
+    fn render(&mut self, backend: &mut PistonBackend, var: &Variables) {
         let (w, h) = backend.screen_size();
 
         let mut Q: Vec<(Point2<f32>, Rotation2<f32>)> = Vec::new();
@@ -112,14 +95,20 @@ impl Renderer<PistonBackend, Variables> for Visual {
                     let p = Point2::new(x as f32, y as f32);
 
                     let p2 = transform(&p, &var.center, q, rot, var.ray_proportion);
-                    let i = ray_intensity(&p2) * cross_intensity(&(var.center - p.coords), var.cross_intensity);
-                    color += i * Vector3::new(red_intensity(p2.x),
-                                              green_intensity(p2.x),
-                                              blue_intensity(p2.x));
+                    let i = ray_intensity(&p2)
+                        * cross_intensity(&(var.center - p.coords), var.cross_intensity);
+                    color += i * Vector3::new(
+                        red_intensity(p2.x),
+                        green_intensity(p2.x),
+                        blue_intensity(p2.x),
+                    );
                 }
 
-                color += glow_amount((var.center - Point2::new(x as f32, y as f32)).norm(), var.glow_amount) * Vector3::repeat(1.0);
-                color = color.map(|c| { clamp(c, 0.0, 1.0) });
+                color += glow_amount(
+                    (var.center - Point2::new(x as f32, y as f32)).norm(),
+                    var.glow_amount,
+                ) * Vector3::repeat(1.0);
+                color = color.map(|c| clamp(c, 0.0, 1.0));
                 backend.put_pixel((x, y), (color.x, color.y, color.z));
             }
 
@@ -133,20 +122,26 @@ impl Renderer<PistonBackend, Variables> for Visual {
 }
 
 mod equations {
-    use std::f32::EPSILON;
-    use std::f32::consts::{PI, E};
     use na::*;
+    use std::f32::consts::{E, PI};
+    use std::f32::EPSILON;
 
-    pub fn transform(point: &Point2<f32>, center: &Point2<f32>, pivot: &Point2<f32>, rot: &Rotation2<f32>, proportion: f32) -> Point2<f32> {
+    pub fn transform(
+        point: &Point2<f32>,
+        center: &Point2<f32>,
+        pivot: &Point2<f32>,
+        rot: &Rotation2<f32>,
+        proportion: f32,
+    ) -> Point2<f32> {
         let scale = Matrix3::new_nonuniform_scaling(&Vector2::new(1.0 / proportion, 1.0));
         Point2::from_homogeneous(scale * (rot * (point - pivot.coords)).to_homogeneous()).unwrap()
     }
     pub fn ray_intensity(point: &Point2<f32>) -> f32 {
         let (x, y) = (point.x, point.y);
-        E.powf(-4.0 * x.powi(4) + 8.0 * x.powi(3) -4.0 * x.powi(2) -100.0 * y.powi(6))
+        E.powf(-4.0 * x.powi(4) + 8.0 * x.powi(3) - 4.0 * x.powi(2) - 100.0 * y.powi(6))
     }
     pub fn cross_intensity(point: &Point2<f32>, intensity: f32) -> f32 {
-        E.powf(-(0.001/intensity.powi(4)) * (point.x * point.y).powi(2))
+        E.powf(-(0.001 / intensity.powi(4)) * (point.x * point.y).powi(2))
     }
     pub fn red_intensity(scalar: f32) -> f32 {
         (PI * scalar.min(0.5)).cos().powi(2)

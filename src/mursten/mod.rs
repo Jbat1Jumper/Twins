@@ -1,5 +1,5 @@
-pub use mursten::update::{Updater, UpdateChain};
-pub use mursten::render::{Renderer, RenderChain};
+pub use mursten::render::{RenderChain, Renderer};
+pub use mursten::update::{UpdateChain, Updater};
 
 pub struct Application<B, D> {
     backend: B,
@@ -8,7 +8,7 @@ pub struct Application<B, D> {
 }
 
 pub trait Data
-where 
+where
     Self: Sized,
 {
     fn alive(&self) -> bool {
@@ -21,12 +21,7 @@ where
     Self: Sized,
     D: Data,
 {
-    fn run(
-        &mut self,
-        uc: UpdateChain<Self, D>,
-        rc: RenderChain<Self, D>,
-        data: D
-    ) -> D;
+    fn run(&mut self, uc: UpdateChain<Self, D>, rc: RenderChain<Self, D>, data: D) -> D;
 }
 
 impl<B, D> Application<B, D>
@@ -49,18 +44,14 @@ where
             mut render_chain,
         } = self;
 
-        backend.run(
-            update_chain,
-            render_chain,
-            data,
-        )
+        backend.run(update_chain, render_chain, data)
     }
 
     pub fn add_updater<U: 'static + Updater<B, D>>(mut self, updater: U) -> Self {
         self.update_chain.add(updater);
         self
     }
-   
+
     pub fn add_renderer<R: 'static + Renderer<B, D>>(mut self, renderer: R) -> Self {
         self.render_chain.add(renderer);
         self
@@ -69,7 +60,7 @@ where
 
 pub mod update {
     use mursten::{Backend, Data};
-   
+
     pub trait Updater<B, D>
     where
         D: Data,
@@ -90,7 +81,7 @@ pub mod update {
     }
 
     impl<B, D> UpdateChain<B, D>
-    where 
+    where
         B: Backend<D>,
         D: Data,
     {
@@ -105,9 +96,9 @@ pub mod update {
     }
 }
 
-mod render {   
+mod render {
     use mursten::{Backend, Data};
-   
+
     pub trait Renderer<B, D>
     where
         D: Data,
@@ -118,7 +109,7 @@ mod render {
     pub struct RenderChain<B, D> {
         renderers: Vec<Box<Renderer<B, D>>>,
     }
-    
+
     impl<B, D> Default for RenderChain<B, D> {
         fn default() -> Self {
             Self {
@@ -126,9 +117,9 @@ mod render {
             }
         }
     }
-    
+
     impl<B, D> RenderChain<B, D>
-    where 
+    where
         B: Backend<D>,
         D: Data,
     {
@@ -142,4 +133,3 @@ mod render {
         }
     }
 }
-
