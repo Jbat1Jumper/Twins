@@ -52,7 +52,9 @@ struct ColorRotator;
 impl<B> Updater<B, Variables> for ColorRotator {
     fn update(&mut self, _: &mut B, var: &mut Variables) {
         var.current_color =
-            Matrix3::new(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0) * var.current_color;
+            Matrix3::new(0.0, 0.0, 1.0,
+                         1.0, 0.0, 0.0,
+                         0.0, 1.0, 0.0) * var.current_color;
     }
 }
 
