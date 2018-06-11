@@ -3,6 +3,7 @@ use piston_window::{
     WindowSettings,
     Texture,
     TextureSettings,
+    Transformed,
 };
 
 use mursten::{
@@ -31,7 +32,7 @@ impl PistonBackend {
     }
 
     pub fn screen_size(&self) -> (u32, u32) {
-        (300, 200)
+        (180, 120)
     }
 
     pub fn put_pixel(&mut self, pos: (u32, u32), color: (f32, f32, f32)) {
@@ -51,7 +52,7 @@ where
     ) -> D {
         let mut window: PistonWindow = WindowSettings::new(
                 "piston: hello_world",
-                [300, 200]
+                [900, 600]
             )
             .exit_on_esc(true)
             //.opengl(OpenGL::V2_1) // Set a different OpenGl version
@@ -98,7 +99,7 @@ where
                 clear([1.0; 4], graphics);
                 image(
                     &texture,
-                    context.transform,
+                    context.zoom(5.0).transform,
                     graphics,
                 );
             });
