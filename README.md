@@ -1,28 +1,26 @@
 
 # Twins
 
-Game made in Rust for the [Weekly Game Jam](http://www.weeklygamejam.com/), which definitely didn't made the deadline. 
+Game made in Rust for the [Weekly Game Jam](http://www.weeklygamejam.com/),
+which definitely didn't made the deadline. 
 
-## A new keyboard layout
+Currently this repository gives home to many drafts and experiments with rust.
+One of those is `brillito` which is an idea for some visuals and `mursten`
+which is a proof of concept of an abstract game engine. 
 
-```
-                ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______
-               / ±   / / !   / / @   / / #   / / $   / / %   / / ^   / / &   / / *   / / (   / / )   / / _   / / +   /\
-              / § § / / 1 ¡ / / 2 ™ / / 3 £ / / 4 ¢ / / 5 ∞ / / 6 § / / 7 ¶ / / 8 • / / 9 ª / / 0 º / / - – / / = ≠ / /
-              \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\/
-            _________  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______
-           /        / / Q   / / W   / / E   / / R   / / T   / / Y   / / U   / / i   / / O   / / P   / / {   / / }   /\
-          / TAB    / / q œ / / w ∑ / / e ´ / / r ® / / t † / / y ¥ / / u ¨ / / I ˆ / / o ø / / p π / / [ “ / / ] ‘ / /
-          \ _______\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\/
-        ____________  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______
-       /           / / A   / / S   / / D   / / F   / / G   / / H   / / J   / / K   / / L   / / :   / / "   / / |   /\
-      / CAPS LOCK / / a å / / s ß / / d ∂ / / f ƒ / / g © / / h ˙ / / j ∆ / / k ˚ / / l ¬ / / ; … / / ' æ / / \ « / /
-      \ __________\ \ _  _\ \ _  _\ \ _  _\ \ _.._\ \ ____\ \ ____\ \ _.._\ \ _  _\ \ _  _\ \ _  _\ \ ____\ \ ____\/
-    ________  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ______  ____________
-   /       / / ~   / / Z   / / X   / / C   / / V   / / B   / / N   / / M   / / <   / / >   / / ?   / /           /\
-  / MAYUS / / ` ` / / z Ω / / x ≈ / / c ç / / v √ / / b ∫ / / n ˜ / / m µ / / , ≤ / / . ≥ / / / ÷ / / MAYUS     / /
-  \ ______\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ ____\ \ __________\/
+## Howtorunthis?
+
+Currently you will need rust installed and will have to compile the executable
+yourself. Sounds complicated but is pretty simple actually.
+
+In a terminal run:
 
 ```
+curl https://sh.rustup.rs -sSf | sh  # This will prompt for installation options
+git clone git@github.com:Jbat1Jumper/Twins.git twin
+cd twins
+cargo run --bin twins  # Use `--bin brillito` to run another experiment
+```
 
-> Sometimes you need to write things up just to remember them...
+If you are on windows you may need to download rust from https://rustup.rs/
+
