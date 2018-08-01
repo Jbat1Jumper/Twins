@@ -1,0 +1,3 @@
+[x] Definir struct para triangulos, incluyendo vertex color.
+[x] Implementar render de triangulos en VulkanBackend
+[ ] Hacer algo con eso...
