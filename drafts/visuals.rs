@@ -1,10 +1,19 @@
-use mursten::{Application, Backend, Data, Renderer, Updater};
-use mursten_piston_backend::PistonBackend;
+extern crate ggez;
+extern crate graphics;
+extern crate image;
+extern crate markov;
+extern crate mursten;
+extern crate mursten_vulkan_backend;
+extern crate piston_window;
+extern crate rand;
+extern crate reqwest;
 
-use na::*;
+use ggez::nalgebra::*;
+use mursten::{Application, Backend, Data, Renderer, Updater};
+use mursten_vulkan_backend::{VulkanBackend, Triangle};
 
 pub fn main() {
-    let backend = PistonBackend::new();
+    let backend = VulkanBackend::new();
     let mut variables = Variables::default();
     Application::new(backend)
         .add_updater(ColorRotator)
@@ -34,9 +43,9 @@ impl Variables {
 impl Default for Variables {
     fn default() -> Self {
         Variables {
-            center: Point2::new(90.0, 60.0),
-            separation: Vector2::repeat(5.0),
-            matrix_size: Vector2::new(20.0, 15.0),
+            center: Point2::new(0.0, 0.0),
+            separation: Vector2::repeat(0.1),
+            matrix_size: Vector2::new(10.0, 10.0),
             ray_proportion: 4.0,
             glow_amount: 5.0,
             cross_intensity: 6.0,
@@ -52,9 +61,7 @@ struct ColorRotator;
 impl<B> Updater<B, Variables> for ColorRotator {
     fn update(&mut self, _: &mut B, var: &mut Variables) {
         var.current_color =
-            Matrix3::new(0.0, 0.0, 1.0,
-                         1.0, 0.0, 0.0,
-                         0.0, 1.0, 0.0) * var.current_color;
+            Matrix3::new(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0) * var.current_color;
     }
 }
 
@@ -66,9 +73,47 @@ impl Visual {
     }
 }
 
-impl Renderer<PistonBackend, Variables> for Visual {
-    fn render(&mut self, backend: &mut PistonBackend, var: &Variables) {
-        let (w, h) = backend.screen_size();
+fn ray(p: Point2<f32>, r: Rotation2<f32>, len: f32) -> Vec<Triangle> {
+    let v1 = p;
+    let v2 = p + (r * Vector2::new(0.5, 0.2) * len);
+    let v2p = p + (r * Vector2::new(0.5, -0.2) * len);
+
+    let v3 = p + (r * Vector2::x() * len);
+    vec!(
+        Triangle {
+            v1: [v1.x, v1.y, 1.0 * len, 1.0],
+            v2: [v2.x, v2.y, 1.0 * len, 1.0],
+            v3: [v3.x, v3.y, 1.0 * len, 1.0],
+            v1_color: [1.0, 0.0, 0.0, 1.0],
+            v2_color: [0.0, 1.0, 0.0, 1.0],
+            v3_color: [0.0, 0.0, 1.0, 1.0],
+            v1_tex: [1.0, 0.0],
+            v2_tex: [0.0, 1.0],
+            v3_tex: [0.0, 0.0],
+        },
+        Triangle {
+            v1: [v1.x,  v1.y,  1.0 * len, 1.0],
+            v2: [v2p.x, v2p.y, 1.0 * len, 1.0],
+            v3: [v3.x,  v3.y,  1.0 * len, 1.0],
+            v1_color: [1.0, 0.0, 0.0, 1.0],
+            v2_color: [0.0, 1.0, 0.0, 1.0],
+            v3_color: [0.0, 0.0, 1.0, 1.0],
+            v1_tex: [1.0, 0.0],
+            v2_tex: [0.0, 1.0],
+            v3_tex: [0.0, 0.0],
+        },
+    )
+}
+
+impl Renderer<VulkanBackend, Variables> for Visual {
+    fn render(&mut self, backend: &mut VulkanBackend, var: &Variables) {
+        let (w, h) = (20, 20);
+        //let (w, h) = backend.screen_size();
+        
+        use rand::distributions::normal::Normal;
+        use rand::distributions::IndependentSample;
+        let normal = Normal::new(1.0, 0.1);
+        let mut rng = rand::thread_rng();
 
         let mut Q: Vec<(Point2<f32>, Rotation2<f32>)> = Vec::new();
 
@@ -79,52 +124,57 @@ impl Renderer<PistonBackend, Variables> for Visual {
                 }
                 let p = var.matrix_size - Vector2::new(i as f32, j as f32);
                 let q = var.center + p.component_mul(&var.separation);
-                let r = Rotation2::rotation_between(&p, &Vector2::x());
+                let r = Rotation2::rotation_between(&Vector2::x(), &p);
                 Q.push((q, r));
             }
         }
 
-        for y in 0..h {
-            // if y % 200 != self.current_row {
-            //     continue;
-            // }
-            for x in 0..w {
-                use drafts::visuals::equations::*;
-
-                let mut color = Vector3::new(0.0, 0.0, 0.0);
-
-                for (q, rot) in &Q {
-                    let p = Point2::new(x as f32, y as f32);
-
-                    let p2 = transform(&p, &var.center, q, rot, var.ray_proportion);
-                    let i = ray_intensity(&p2)
-                        * cross_intensity(&(var.center - p.coords), var.cross_intensity);
-                    color += i * Vector3::new(
-                        red_intensity(p2.x),
-                        green_intensity(p2.x),
-                        blue_intensity(p2.x),
-                    );
-                }
-
-                color += glow_amount(
-                    (var.center - Point2::new(x as f32, y as f32)).norm(),
-                    var.glow_amount,
-                ) * Vector3::repeat(1.0);
-                color = color.map(|c| clamp(c, 0.0, 1.0));
-                backend.put_pixel((x, y), (color.x, color.y, color.z));
-            }
-
-            use std::io::{stdout, Write};
-            print!("\rRow {} of {}", y, h);
-            stdout().flush().unwrap();
+        for (q, rot) in Q {
+            let (x, y) = (q.x, q.y);
+            let len = normal.ind_sample(&mut rng) as f32 / (q.coords.norm()*10.0);
+            backend.queue_render(ray(q, rot, len));
         }
-        println!(" ..done");
-        // self.current_row = (self.current_row + 1) % 200;
+
+
+        // for y in 0..h {
+        //     // if y % 200 != self.current_row {
+        //     //     continue;
+        //     // }
+        //     for x in 0..w {
+        //         use equations::*;
+
+        //         let mut color = Vector3::new(0.0, 0.0, 0.0);
+
+        //         for (q, rot) in &Q {
+        //             let p = Point2::new(x as f32, y as f32);
+
+        //             let p2 = transform(&p, &var.center, q, rot, var.ray_proportion);
+        //             let i = ray_intensity(&p2)
+        //                 * cross_intensity(&(var.center - p.coords), var.cross_intensity);
+        //             color += i * Vector3::new(
+        //                 red_intensity(p2.x),
+        //                 green_intensity(p2.x),
+        //                 blue_intensity(p2.x),
+        //             );
+        //         }
+
+        //         color += glow_amount(
+        //             (var.center - Point2::new(x as f32, y as f32)).norm(),
+        //             var.glow_amount,
+        //         ) * Vector3::repeat(1.0);
+        //         color = color.map(|c| clamp(c, 0.0, 1.0));
+
+        //     }
+
+        //     use std::io::{stdout, Write};
+        //     print!("\rRow {} of {}", y, h);
+        //     stdout().flush().unwrap();
+        // }
     }
 }
 
 mod equations {
-    use na::*;
+    use ggez::nalgebra::*;
     use std::f32::consts::{E, PI};
     use std::f32::EPSILON;
 
