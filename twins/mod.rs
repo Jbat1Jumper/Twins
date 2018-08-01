@@ -1,8 +1,10 @@
 extern crate ggez;
 extern crate graphics;
 extern crate image;
+extern crate markov;
 extern crate piston_window;
 extern crate rand;
+extern crate reqwest;
 
 use ggez::event::{Keycode, Mod};
 use ggez::graphics::Color;
@@ -15,7 +17,6 @@ pub mod bezier;
 pub mod bezier2;
 pub mod controller;
 pub mod debug;
-pub mod drafts;
 pub mod entities;
 pub mod math;
 pub mod mekano;
@@ -23,9 +24,9 @@ pub mod mekano_renderer;
 pub mod messages;
 pub mod palette;
 pub mod states;
-// pub mod engine;
-pub mod mursten;
-pub mod mursten_piston_backend;
+
+extern crate mursten;
+extern crate mursten_piston_backend;
 
 use controller::Controller;
 use entities::{Entity, EntityId, EntityTag};
@@ -215,13 +216,8 @@ impl event::EventHandler for Main {
     }
 }
 
-pub fn main() {
-    //main2::main();
-    //mani();
-    drafts::visuals::main();
-}
 
-pub fn mani() {
+pub fn main() {
     let mut c = conf::Conf::new();
     c.window_setup.title = "Twins".to_string();
     c.window_mode.width = W_WIDTH;
