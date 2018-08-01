@@ -10,6 +10,7 @@ image = "0.19.0"
 log = "0.4"
 markov = "1.0.2"
 mursten = { path = "../mursten" }
+nalgebra = "0.16"
 piston2d-graphics = "0.26.0"
 piston_window = "0.80.0"
 pretty_env_logger = "0.2"

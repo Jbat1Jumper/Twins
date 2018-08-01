@@ -12,6 +12,7 @@ markov = "1.0.2"
 mursten = { path = "mursten" }
 mursten_piston_backend = { path = "mursten_piston_backend" }
 mursten_vulkan_backend = { path = "mursten_vulkan_backend" }
+nalgebra = "0.16"
 piston2d-graphics = "0.26.0"
 piston_window = "0.80.0"
 pretty_env_logger = "0.2"

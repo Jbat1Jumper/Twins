@@ -1,4 +1,3 @@
-extern crate ggez;
 extern crate graphics;
 extern crate image;
 extern crate markov;
@@ -7,10 +6,12 @@ extern crate mursten_vulkan_backend;
 extern crate piston_window;
 extern crate rand;
 extern crate reqwest;
+extern crate nalgebra;
 
-use ggez::nalgebra::*;
+use nalgebra::*;
 use mursten::{Application, Backend, Data, Renderer, Updater};
-use mursten_vulkan_backend::{VulkanBackend, Triangle};
+use mursten_vulkan_backend::VulkanBackend;
+use mursten_vulkan_backend::geometry::{Triangle, Vertex};
 
 pub fn main() {
     let backend = VulkanBackend::new();
@@ -73,35 +74,43 @@ impl Visual {
     }
 }
 
-fn ray(p: Point2<f32>, r: Rotation2<f32>, len: f32) -> Vec<Triangle> {
-    let v1 = p;
-    let v2 = p + (r * Vector2::new(0.5, 0.2) * len);
-    let v2p = p + (r * Vector2::new(0.5, -0.2) * len);
+fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
 
-    let v3 = p + (r * Vector2::x() * len);
+    // Transformaciones esteticas
+    let scale = 0.04;
+    let rot = {
+        let rpos = rot * pos;
+        Rotation3::rotation_between(&Vector3::new(pos.x, pos.y, 0.0), &Vector3::new(rpos.x, rpos.y, 0.0)).unwrap()
+    };
+    let pos = Point3::new(pos.x, pos.y, 0.0);
+    let len = len.sqrt();
+
+    let r  = Vertex::from( pos + Vector3::z() * len                                ).color(1.0, 0.0, 0.0, 1.0);
+    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, len) * scale ).color(0.0, 1.0, 0.0, 1.0);
+    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, len) * scale ).color(0.0, 0.0, 1.0, 1.0);
+    let v1 = Vertex::from( pos + rot * Vector3::new(-1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v2 = Vertex::from( pos + rot * Vector3::new( 1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v3 = Vertex::from( pos + rot * Vector3::new( 3.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v4 = Vertex::from( pos + rot * Vector3::new( 5.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v5 = Vertex::from( pos + rot * Vector3::new(-1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v6 = Vertex::from( pos + rot * Vector3::new( 1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v7 = Vertex::from( pos + rot * Vector3::new( 3.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v8 = Vertex::from( pos + rot * Vector3::new( 5.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+
+
     vec!(
-        Triangle {
-            v1: [v1.x, v1.y, 1.0 * len, 1.0],
-            v2: [v2.x, v2.y, 1.0 * len, 1.0],
-            v3: [v3.x, v3.y, 1.0 * len, 1.0],
-            v1_color: [1.0, 0.0, 0.0, 1.0],
-            v2_color: [0.0, 1.0, 0.0, 1.0],
-            v3_color: [0.0, 0.0, 1.0, 1.0],
-            v1_tex: [1.0, 0.0],
-            v2_tex: [0.0, 1.0],
-            v3_tex: [0.0, 0.0],
-        },
-        Triangle {
-            v1: [v1.x,  v1.y,  1.0 * len, 1.0],
-            v2: [v2p.x, v2p.y, 1.0 * len, 1.0],
-            v3: [v3.x,  v3.y,  1.0 * len, 1.0],
-            v1_color: [1.0, 0.0, 0.0, 1.0],
-            v2_color: [0.0, 1.0, 0.0, 1.0],
-            v3_color: [0.0, 0.0, 1.0, 1.0],
-            v1_tex: [1.0, 0.0],
-            v2_tex: [0.0, 1.0],
-            v3_tex: [0.0, 0.0],
-        },
+        Triangle::new( r, v2, v1),
+        Triangle::new( r, v1, v5),
+        Triangle::new( r, v5, v6),
+        Triangle::new(v2,  r,  g),
+        Triangle::new(v6,  g,  r),
+        Triangle::new( g, v3, v2),
+        Triangle::new( g, v6, v7),
+        Triangle::new(v3,  g,  b),
+        Triangle::new(v7,  b,  g),
+        Triangle::new( b, v4, v3),
+        Triangle::new( b, v8, v4),
+        Triangle::new( b, v7, v8),
     )
 }
 
@@ -129,52 +138,18 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             }
         }
 
+        Q.sort_by(|a, b| { b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap() });
+
         for (q, rot) in Q {
             let (x, y) = (q.x, q.y);
             let len = normal.ind_sample(&mut rng) as f32 / (q.coords.norm()*10.0);
             backend.queue_render(ray(q, rot, len));
         }
-
-
-        // for y in 0..h {
-        //     // if y % 200 != self.current_row {
-        //     //     continue;
-        //     // }
-        //     for x in 0..w {
-        //         use equations::*;
-
-        //         let mut color = Vector3::new(0.0, 0.0, 0.0);
-
-        //         for (q, rot) in &Q {
-        //             let p = Point2::new(x as f32, y as f32);
-
-        //             let p2 = transform(&p, &var.center, q, rot, var.ray_proportion);
-        //             let i = ray_intensity(&p2)
-        //                 * cross_intensity(&(var.center - p.coords), var.cross_intensity);
-        //             color += i * Vector3::new(
-        //                 red_intensity(p2.x),
-        //                 green_intensity(p2.x),
-        //                 blue_intensity(p2.x),
-        //             );
-        //         }
-
-        //         color += glow_amount(
-        //             (var.center - Point2::new(x as f32, y as f32)).norm(),
-        //             var.glow_amount,
-        //         ) * Vector3::repeat(1.0);
-        //         color = color.map(|c| clamp(c, 0.0, 1.0));
-
-        //     }
-
-        //     use std::io::{stdout, Write};
-        //     print!("\rRow {} of {}", y, h);
-        //     stdout().flush().unwrap();
-        // }
     }
 }
 
 mod equations {
-    use ggez::nalgebra::*;
+    use nalgebra::*;
     use std::f32::consts::{E, PI};
     use std::f32::EPSILON;
 

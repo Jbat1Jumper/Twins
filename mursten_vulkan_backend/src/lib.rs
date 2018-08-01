@@ -11,6 +11,8 @@ extern crate pretty_env_logger;
 
 extern crate mursten;
 
+extern crate nalgebra;
+
 
 use vulkano_win::VkSurfaceBuild;
 
@@ -53,6 +55,103 @@ use std::mem;
 use mursten::{Backend, Data, RenderChain, UpdateChain};
 
 
+pub mod geometry {
+    #[derive(Debug, Clone, Copy)]
+    pub struct Vertex {
+        pub position: [f32; 4],
+        pub color: [f32; 4],
+        pub texture: [f32; 2],
+    }
+    impl_vertex!(Vertex, position, color, texture);
+
+    impl Default for Vertex {
+        fn default() -> Self {
+            Vertex {
+                position: [0.0, 0.0, 0.0, 1.0],
+                color:    [1.0, 1.0, 1.0, 1.0],
+                texture:  [0.0, 0.0],
+            }
+        }
+    }
+
+    impl Vertex {
+        pub fn at(x: f32, y: f32, z: f32) -> Self {
+            Vertex {
+                position: [x, y, z, 1.0],
+                ..Self::default()
+            }
+        }
+
+        pub fn color(self: Vertex, r: f32, g: f32, b: f32, a: f32) -> Vertex {
+            Vertex {
+                color: [r, g, b, a],
+                ..self
+            }
+        }
+    }
+
+    use nalgebra::geometry::{Point2, Point3};
+
+    impl From<Point2<f32>> for Vertex {
+        fn from(point: Point2<f32>) -> Self {
+            Vertex {
+                position: [point.x, point.y, 1.0, 1.0],
+                ..Self::default()
+            }
+        }
+    }
+
+    impl From<Point3<f32>> for Vertex {
+        fn from(point: Point3<f32>) -> Self {
+            Vertex {
+                position: [point.x, point.y, point.z, 1.0],
+                ..Self::default()
+            }
+        }
+    }
+
+    pub struct Triangle {
+        pub v1: Vertex,
+        pub v2: Vertex,
+        pub v3: Vertex,
+    }
+
+    impl Triangle {
+        pub fn new(v1: Vertex, v2: Vertex, v3: Vertex) -> Self {
+            Triangle {
+                v1, v2, v3,
+            }
+        }
+    }
+
+    use std::vec;
+
+    impl IntoIterator for Triangle {
+        type Item = Vertex;
+        type IntoIter = vec::IntoIter<Vertex>;
+
+        fn into_iter(self) -> Self::IntoIter {
+            vec!(
+                self.v1, self.v2, self.v3
+            ).into_iter()
+        }
+    }
+
+    impl Default for Triangle {
+        fn default() -> Self {
+            Triangle {
+                v1: Vertex::default(),
+                v2: Vertex::default(),
+                v3: Vertex::default(),
+            }
+        }
+    }
+
+}
+
+use geometry::Triangle;
+use geometry::Vertex;
+
 pub struct VulkanBackend {
     triangles_queue: Vec<Triangle>,
     dimensions: (u32, u32),
@@ -73,43 +172,6 @@ impl VulkanBackend {
 
     pub fn queue_render(&mut self, triangles: Vec<Triangle>) {
         self.triangles_queue.extend(triangles);
-    }
-}
-
-pub struct Triangle {
-    pub v1: [f32; 4],
-    pub v2: [f32; 4],
-    pub v3: [f32; 4],
-    pub v1_color: [f32; 4],
-    pub v2_color: [f32; 4],
-    pub v3_color: [f32; 4],
-    pub v1_tex: [f32; 2],
-    pub v2_tex: [f32; 2],
-    pub v3_tex: [f32; 2],
-}
-
-impl Triangle {
-    pub fn white(v1: [f32; 4], v2: [f32; 4], v3: [f32; 4]) -> Self {
-        Self {
-            v1, v2, v3,
-            ..Self::default()
-        }
-    }
-}
-
-impl Default for Triangle {
-    fn default() -> Self {
-        Triangle {
-            v1: [0.0, 0.0, 0.0, 1.0],
-            v2: [0.0, 0.0, 0.0, 1.0],
-            v3: [0.0, 0.0, 0.0, 1.0],
-            v1_color: [1.0, 1.0, 1.0, 1.0],
-            v2_color: [1.0, 1.0, 1.0, 1.0],
-            v3_color: [1.0, 1.0, 1.0, 1.0],
-            v1_tex: [0.0, 0.0],
-            v2_tex: [0.0, 0.0],
-            v3_tex: [0.0, 0.0],
-        }
     }
 }
 
@@ -211,8 +273,7 @@ where
             previous_frame_end.cleanup_finished();
 
             let vertex_buffer = {
-                let vertexes: Vec<Vertex> = self.triangles_queue.iter().flat_map(|t| { t.vertexes() }).collect();
-                self.triangles_queue.clear();
+                let vertexes: Vec<Vertex> = self.triangles_queue.drain(..).flat_map(|t| { t.into_iter() }).collect();
                 CpuAccessibleBuffer::from_iter(device.clone(), BufferUsage::all(), vertexes.iter().cloned()).expect("failed to create buffer")
             };
 
@@ -296,24 +357,6 @@ where
         data
     }
 
-}
-
-#[derive(Debug, Clone)]
-struct Vertex {
-    position: [f32; 4],
-    color: [f32; 4],
-    texture: [f32; 2],
-}
-impl_vertex!(Vertex, position, color, texture);
-
-impl Triangle {
-    fn vertexes(&self) -> Vec<Vertex> {
-        vec!(
-            Vertex { position: self.v1, color: self.v1_color, texture: self.v1_tex, },
-            Vertex { position: self.v2, color: self.v2_color, texture: self.v2_tex, },
-            Vertex { position: self.v3, color: self.v3_color, texture: self.v3_tex, },
-        )
-    }
 }
 
 pub mod shaders {
