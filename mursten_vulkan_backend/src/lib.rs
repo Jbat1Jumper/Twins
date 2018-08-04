@@ -30,7 +30,6 @@ use vulkano::framebuffer::RenderPassAbstract;
 use vulkano::framebuffer::Subpass;
 use vulkano::image::SwapchainImage;
 use vulkano::instance::Instance;
-use vulkano::instance::InstanceExtensions;
 use vulkano::instance::PhysicalDevice;
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::pipeline::vertex::SingleBufferDefinition;
@@ -153,9 +152,13 @@ pub mod geometry {
 use geometry::Triangle;
 use geometry::Vertex;
 
+const VK_LAYER_LUNARG_standard_validation: &'static str = "VK_LAYER_LUNARG_standard_validation";
+
 pub struct VulkanBackend {
     triangles_queue: Vec<Triangle>,
     dimensions: (u32, u32),
+
+    enable_validation_layers: bool,
 }
 
 
@@ -164,6 +167,7 @@ impl VulkanBackend {
         Self {
             triangles_queue: Vec::new(),
             dimensions: (0, 0),
+            enable_validation_layers: false,
         }
     }
 
@@ -189,6 +193,8 @@ where
 
         let instance = {
             let required_extensions = {
+                use vulkano::instance::InstanceExtensions;
+
                 let required = vulkano_win::required_extensions();
                 println!("Required extensions: {:?}", required);  // Change this to trace!
                 let supported = InstanceExtensions::supported_by_core().unwrap();
@@ -200,7 +206,30 @@ where
                 }
                 required
             };
-            Instance::new(None, &required_extensions, None).expect("failed to create Vulkan instance")
+
+            let validation_layers = {
+                use vulkano::instance::layers_list;
+                use vulkano::instance::LayerProperties;
+
+                if self.enable_validation_layers {
+                    let mut layers: Vec<LayerProperties> = layers_list().unwrap().collect();
+                    println!("There are {} validation layers available:", layers.len());
+                    for layer in layers.iter() {
+                        println!("  Layer: {}, Description: {}", layer.name(), layer.description());
+                    };
+
+                    let desired_layer = &VK_LAYER_LUNARG_standard_validation;
+                    if layers.iter().all(|layer| { layer.name() != *desired_layer }) {
+                        panic!("The layer {} is not listed. Remember that validation layers are not available for Mac yet.", desired_layer);
+                    }
+                    vec![desired_layer]
+                }
+                else {
+                    vec![]
+                }
+            };
+
+            Instance::new(None, &required_extensions, validation_layers.into_iter()).expect("failed to create Vulkan instance")
         };
 
         let mut physical_devices = vulkano::instance::PhysicalDevice::enumerate(&instance);
