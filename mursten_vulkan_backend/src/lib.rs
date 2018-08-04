@@ -152,13 +152,12 @@ pub mod geometry {
 use geometry::Triangle;
 use geometry::Vertex;
 
-const VK_LAYER_LUNARG_standard_validation: &'static str = "VK_LAYER_LUNARG_standard_validation";
-
 pub struct VulkanBackend {
     triangles_queue: Vec<Triangle>,
     dimensions: (u32, u32),
 
     enable_validation_layers: bool,
+    desired_validation_layer: &'static str,
 }
 
 
@@ -168,6 +167,7 @@ impl VulkanBackend {
             triangles_queue: Vec::new(),
             dimensions: (0, 0),
             enable_validation_layers: false,
+            desired_validation_layer: "VK_LAYER_LUNARG_standard_validation",
         }
     }
 
@@ -218,11 +218,10 @@ where
                         println!("  Layer: {}, Description: {}", layer.name(), layer.description());
                     };
 
-                    let desired_layer = &VK_LAYER_LUNARG_standard_validation;
-                    if layers.iter().all(|layer| { layer.name() != *desired_layer }) {
-                        panic!("The layer {} is not listed. Remember that validation layers are not available for Mac yet.", desired_layer);
+                    if layers.iter().all(|layer| { layer.name() != self.desired_validation_layer }) {
+                        panic!("The layer {} is not listed. Remember that validation layers are not available for Mac yet.", self.desired_validation_layer);
                     }
-                    vec![desired_layer]
+                    vec![&self.desired_validation_layer]
                 }
                 else {
                     vec![]
