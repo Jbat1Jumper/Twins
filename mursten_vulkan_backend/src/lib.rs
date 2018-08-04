@@ -30,6 +30,7 @@ use vulkano::framebuffer::RenderPassAbstract;
 use vulkano::framebuffer::Subpass;
 use vulkano::image::SwapchainImage;
 use vulkano::instance::Instance;
+use vulkano::instance::InstanceExtensions;
 use vulkano::instance::PhysicalDevice;
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::pipeline::vertex::SingleBufferDefinition;
@@ -187,8 +188,19 @@ where
     ) -> D {
 
         let instance = {
-            let extensions = vulkano_win::required_extensions();
-            Instance::new(None, &extensions, None).expect("failed to create Vulkan instance")
+            let required_extensions = {
+                let required = vulkano_win::required_extensions();
+                println!("Required extensions: {:?}", required);  // Change this to trace!
+                let supported = InstanceExtensions::supported_by_core().unwrap();
+                println!("Supported extensions: {:?}", supported);  // Change this to trace!
+                let in_common = supported.intersection(&required);
+                if required != in_common {
+                    let missing = supported.difference(&required);
+                    panic!("Missing extensions: {:?}", missing);
+                }
+                required
+            };
+            Instance::new(None, &required_extensions, None).expect("failed to create Vulkan instance")
         };
 
         let mut physical_devices = vulkano::instance::PhysicalDevice::enumerate(&instance);
