@@ -243,8 +243,8 @@ where
             [width, height]
         };
 
-        let queue = physical.queue_families().find(|&q| {
-            q.supports_graphics() && window.is_supported(q).unwrap_or(false)
+        let queue_family = physical.queue_families().find(|&qf| {
+            qf.supports_graphics() && window.is_supported(qf).unwrap_or(false)
         }).expect("couldn't find a graphical queue family");
 
         let (device, mut queues) = {
@@ -254,7 +254,7 @@ where
             };
 
             Device::new(physical, physical.supported_features(), &device_ext,
-                        [(queue, 0.5)].iter().cloned()).expect("failed to create device")
+                        [(queue_family, 0.5)].iter().cloned()).expect("failed to create device")
         };
         let queue = queues.next().unwrap();
 
