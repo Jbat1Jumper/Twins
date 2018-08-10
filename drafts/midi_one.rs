@@ -96,73 +96,71 @@ pub mod keyboard {
             let keys = [
                 " A ", " A#", " B ", " C ",
                 " C#", " D ", " D#", " E ",
-                " F ", " F#", " G ", " G#"];
+                " F ", " F#", " G ", " G#",
+            ];
             for (key, key_state) in scene.keyboard.iter().skip(12).take(48).enumerate() {
                 let key = keys[(key + 3) % 12];
-                print!("{}", if *key_state > 0 { key } else { "   " });
+                // print!("{}", if *key_state > 0 { key } else { "   " });
             }
-            println!("");
+            // println!("");
             thread::sleep(time::Duration::from_millis(20));
         }
     }
 }
 
 
-struct Visual {}
+struct Visual {
+    last_keyboard: Vec<u8>,
+}
 
 impl Visual {
     pub fn new() -> Self {
-        Visual {}
+        Visual {
+            last_keyboard: (0..36).collect(),
+        }
     }
 }
 
-fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
+fn interpolate(new: Vec<u8>, old: Vec<u8>) -> Vec<u8> {
+    new.iter().cloned().zip(old.iter().cloned()).map(|(new, old)| {
+        if new > old {
+            new
+        } else {
+            (new + old) / 2
+        }
+    }).collect()
+}
 
-    // Transformaciones esteticas
-    let scale = 0.04;
-    let rot = {
-        let rpos = rot * pos;
-        Rotation3::rotation_between(&Vector3::new(pos.x, pos.y, 0.0), &Vector3::new(rpos.x, rpos.y, 0.0)).unwrap()
-    };
-    let pos = Point3::new(pos.x, pos.y, 0.0);
-    let len = len.sqrt();
-
-    let r  = Vertex::from( pos + Vector3::z() * len                                ).color(1.0, 0.0, 0.0, 1.0);
-    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, len) * scale ).color(0.0, 1.0, 0.0, 1.0);
-    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, len) * scale ).color(0.0, 0.0, 1.0, 1.0);
-    let v1 = Vertex::from( pos + rot * Vector3::new(-1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v2 = Vertex::from( pos + rot * Vector3::new( 1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v3 = Vertex::from( pos + rot * Vector3::new( 3.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v4 = Vertex::from( pos + rot * Vector3::new( 5.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v5 = Vertex::from( pos + rot * Vector3::new(-1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v6 = Vertex::from( pos + rot * Vector3::new( 1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v7 = Vertex::from( pos + rot * Vector3::new( 3.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v8 = Vertex::from( pos + rot * Vector3::new( 5.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-
-
-    vec!(
-        Triangle::new( r, v1, v2),
-        Triangle::new( r, v5, v1),
-        Triangle::new( r, v6, v5),
-        Triangle::new(v2,  g,  r),
-        Triangle::new(v6,  r,  g),
-        Triangle::new( g, v2, v3),
-        Triangle::new( g, v7, v6),
-        Triangle::new(v3,  b,  g),
-        Triangle::new(v7,  g,  b),
-        Triangle::new( b, v3, v4),
-        Triangle::new( b, v4, v8),
-        Triangle::new( b, v8, v7),
-    )
+fn spiral_points(keyboard: Vec<u8>) -> Vec<Vertex> {
+    let len = keyboard.len();
+    keyboard.iter().rev().enumerate().map(|(key, vel)| {
+        let rotation = Rotation2::new(f32::two_pi()/12.0).powf(key as f32);
+        let len = (key + 1) as f32 / (1 + len) as f32;
+        let strength = *vel as f32 / 127.0;
+        let pressed = strength * 0.2;
+        let pos = rotation * Point2::new(0.0, len + pressed);
+        let v = Vertex::at(pos.x, pos.y, 0.0);
+        v.color(0.0, 1.0 - 0.8 * strength, 0.3 + 0.7 * strength, 1.0)
+    }).collect()
 }
 
 impl Renderer<VulkanBackend, Scene> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, scene: &Scene) {
+        let keyboard = interpolate(scene.keyboard.iter().skip(24).take(36).cloned().collect(), self.last_keyboard.clone());
+        self.last_keyboard = keyboard.clone();
+        let points = spiral_points(keyboard);
+        
+        let triangles: Vec<Triangle> = points.iter().cloned().skip(1).zip(points.iter().cloned()).map(|(a, b)| {
+            let c = Vertex::at(0.0, 0.0, 0.0).color(1.0, 0.0, 0.2, 1.0);
+            Triangle::new(a, b, c)
+        }).collect();
+        
+        backend.queue_render(triangles.into_iter().rev().collect());
+
     }
 }
 
 mod updaters {
-
     pub mod time {
         use std::time::{SystemTime, UNIX_EPOCH, Duration};
 
