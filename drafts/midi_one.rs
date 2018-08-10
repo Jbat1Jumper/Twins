@@ -12,7 +12,7 @@ use mursten_vulkan_backend::geometry::{Triangle, Vertex};
 use mursten_vulkan_backend::VulkanBackend;
 use nalgebra::*;
 
-use updaters::time::{Clock, ClockUpdater, Tick};
+use updaters::time::{Clock, ClockUpdater, OnTick, Tick};
 
 
 pub fn main() {
@@ -22,13 +22,11 @@ pub fn main() {
     loop {
         let messages = midi_handler.get_messages();
 
-        //println!("Received {} messages.", messages.len());
-
         for msg in messages {
             println!("{:?}", msg);
         }
 
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(20));
     };
 
     let backend = VulkanBackend::new();
@@ -42,6 +40,8 @@ pub fn main() {
 
 struct Scene {
     clock: Clock,
+    paused: bool,
+    keyboard: [u8; 128],
 }
 
 impl Scene {
@@ -54,112 +54,23 @@ impl Default for Scene {
     fn default() -> Self {
         Scene {
             clock: Clock::new(),
+            paused: false,
+            keyboard: [0; 128],
         }
     }
 }
 
 impl Data for Scene {}
 
-impl updaters::time::OnTick for Scene {
-
+impl OnTick for Scene {
     fn on_tick(&mut self, tick: Tick) {
-
-    }
-}
-
-mod updaters {
-
-    pub mod time {
-        use std::time::{SystemTime, UNIX_EPOCH, Duration};
-
-        pub type Time = SystemTime;
-
-        pub const CREATION_TIME: Time = UNIX_EPOCH;
-
-        pub struct Clock {
-            time: Time,
-            delta: Duration,
-            system_time: Time,
-            system_delta: Duration,
-        }
-
-        impl Clock {
-            pub fn new() -> Clock {
-                Clock {
-                    time: CREATION_TIME,
-                    delta: Duration::new(0, 0),
-                    system_time: Time::now(),
-                    system_delta: Duration::new(0, 0),
-                }
-            }
-            pub fn system_time(&self) -> Time {
-                self.system_time
-            }
-            pub fn system_delta(&self) -> Duration {
-                self.system_delta
-            }
-            pub fn time(&self) -> Time {
-                self.time
-            }
-            pub fn delta(&self) -> Duration {
-                self.delta
-            }
-        }
-
-        use std::ops::Add;
-
-        impl Add<Tick> for Clock {
-            type Output = Clock;
-            fn add(self, tick: Tick) -> Clock {
-                Clock {
-                    system_delta: tick.system_time.duration_since(self.system_time).unwrap(),
-                    system_time: tick.system_time,
-                    time: self.time + tick.delta,
-                    delta: tick.delta,
-                }
-            }
-        }
-
-        pub struct Tick {
-            system_time: Time,
-            delta: Duration,
-        }
-        
-        pub trait OnTick {
-            fn on_tick(&mut self, tick: Tick);
-        }
-
-        pub struct ClockUpdater {
-            last_system_time: Time,
-        }
-
-        impl ClockUpdater {
-            pub fn new() -> ClockUpdater {
-                ClockUpdater {
-                    last_system_time: CREATION_TIME,
-                }
-            }
-        }
-
-        use mursten::{Updater, Data};
-
-        impl<B, D> Updater<B, D> for ClockUpdater 
-        where D: Data + OnTick {
-            fn update(&mut self, _: &mut B, data: &mut D) {
-                let system_time = SystemTime::now();
-                let delta = if self.last_system_time == CREATION_TIME {
-                    system_time.duration_since(self.last_system_time).unwrap()
-                } else {
-                    Duration::new(0, 0)
-                };
-
-                let tick = Tick { system_time, delta };
-                data.on_tick(tick);
-                self.last_system_time = system_time;
-            }
+        if !self.paused {
+            self.clock += tick;
         }
     }
 }
+
+
 
 struct Visual {}
 
@@ -211,6 +122,111 @@ fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
 
 impl Renderer<VulkanBackend, Scene> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, scene: &Scene) {
+    }
+}
+
+mod updaters {
+
+    pub mod time {
+        use std::time::{SystemTime, UNIX_EPOCH, Duration};
+
+        pub type Time = SystemTime;
+
+        pub const CREATION_TIME: Time = UNIX_EPOCH;
+
+        pub struct Clock {
+            time: Time,
+            delta: Duration,
+            system_time: Time,
+            system_delta: Duration,
+        }
+
+        impl Clock {
+            pub fn new() -> Clock {
+                Clock {
+                    time: CREATION_TIME,
+                    delta: Duration::new(0, 0),
+                    system_time: Time::now(),
+                    system_delta: Duration::new(0, 0),
+                }
+            }
+            pub fn system_time(&self) -> Time {
+                self.system_time
+            }
+            pub fn system_delta(&self) -> Duration {
+                self.system_delta
+            }
+            pub fn time(&self) -> Time {
+                self.time
+            }
+            pub fn delta(&self) -> Duration {
+                self.delta
+            }
+        }
+
+        use std::ops::{Add, AddAssign};
+
+        impl Add<Tick> for Clock {
+            type Output = Clock;
+            fn add(self, tick: Tick) -> Clock {
+                Clock {
+                    system_delta: tick.system_time.duration_since(self.system_time).unwrap(),
+                    system_time: tick.system_time,
+                    time: self.time + tick.delta,
+                    delta: tick.delta,
+                }
+            }
+        }
+
+        impl AddAssign<Tick> for Clock {
+            fn add_assign(&mut self, tick: Tick) {
+                *self = Clock {
+                    system_delta: tick.system_time.duration_since(self.system_time).unwrap(),
+                    system_time: tick.system_time,
+                    time: self.time + tick.delta,
+                    delta: tick.delta,
+                };
+            }
+        }
+
+        pub struct Tick {
+            system_time: Time,
+            delta: Duration,
+        }
+        
+        pub trait OnTick {
+            fn on_tick(&mut self, tick: Tick);
+        }
+
+        pub struct ClockUpdater {
+            last_system_time: Time,
+        }
+
+        impl ClockUpdater {
+            pub fn new() -> ClockUpdater {
+                ClockUpdater {
+                    last_system_time: CREATION_TIME,
+                }
+            }
+        }
+
+        use mursten::{Updater, Data};
+
+        impl<B, D> Updater<B, D> for ClockUpdater 
+        where D: Data + OnTick {
+            fn update(&mut self, _: &mut B, data: &mut D) {
+                let system_time = SystemTime::now();
+                let delta = if self.last_system_time == CREATION_TIME {
+                    system_time.duration_since(self.last_system_time).unwrap()
+                } else {
+                    Duration::new(0, 0)
+                };
+
+                let tick = Tick { system_time, delta };
+                data.on_tick(tick);
+                self.last_system_time = system_time;
+            }
+        }
     }
 }
 
@@ -303,7 +319,6 @@ mod midi {
         let (transmitter, receiver) = channel();
 
         let midi_connection = midi_in.connect(in_port, "midir-forward", move |stamp, message, _| {
-            println!("{}: {:?} (len = {})", stamp, message, message.len());
             if let Some(message) = MidiMessage::from(message) {
                 transmitter.send(message);
             }
