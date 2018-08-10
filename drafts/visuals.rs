@@ -3,15 +3,15 @@ extern crate image;
 extern crate markov;
 extern crate mursten;
 extern crate mursten_vulkan_backend;
+extern crate nalgebra;
 extern crate piston_window;
 extern crate rand;
 extern crate reqwest;
-extern crate nalgebra;
 
-use nalgebra::*;
 use mursten::{Application, Backend, Data, Renderer, Updater};
-use mursten_vulkan_backend::VulkanBackend;
 use mursten_vulkan_backend::geometry::{Triangle, Vertex};
+use mursten_vulkan_backend::VulkanBackend;
+use nalgebra::*;
 
 pub fn main() {
     let backend = VulkanBackend::new();
@@ -99,18 +99,18 @@ fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
 
 
     vec!(
-        Triangle::new( r, v2, v1),
-        Triangle::new( r, v1, v5),
-        Triangle::new( r, v5, v6),
-        Triangle::new(v2,  r,  g),
-        Triangle::new(v6,  g,  r),
-        Triangle::new( g, v3, v2),
-        Triangle::new( g, v6, v7),
-        Triangle::new(v3,  g,  b),
-        Triangle::new(v7,  b,  g),
-        Triangle::new( b, v4, v3),
-        Triangle::new( b, v8, v4),
-        Triangle::new( b, v7, v8),
+        Triangle::new( r, v1, v2),
+        Triangle::new( r, v5, v1),
+        Triangle::new( r, v6, v5),
+        Triangle::new(v2,  g,  r),
+        Triangle::new(v6,  r,  g),
+        Triangle::new( g, v2, v3),
+        Triangle::new( g, v7, v6),
+        Triangle::new(v3,  b,  g),
+        Triangle::new(v7,  g,  b),
+        Triangle::new( b, v3, v4),
+        Triangle::new( b, v4, v8),
+        Triangle::new( b, v8, v7),
     )
 }
 
@@ -138,11 +138,11 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             }
         }
 
-        Q.sort_by(|a, b| { b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap() });
+        //Q.sort_by(|a, b| b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap());
 
         for (q, rot) in Q {
             let (x, y) = (q.x, q.y);
-            let len = normal.ind_sample(&mut rng) as f32 / (q.coords.norm()*10.0);
+            let len = normal.ind_sample(&mut rng) as f32 / (q.coords.norm() * 10.0);
             backend.queue_render(ray(q, rot, len));
         }
     }
