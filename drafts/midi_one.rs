@@ -13,26 +13,16 @@ use mursten_vulkan_backend::VulkanBackend;
 use nalgebra::*;
 
 use updaters::time::{Clock, ClockUpdater, OnTick, Tick};
-
+use keyboard::UpdateKeyboard;
 
 pub fn main() {
 
-    let midi_handler = midi::listen_from_port().unwrap();
-
-    loop {
-        let messages = midi_handler.get_messages();
-
-        for msg in messages {
-            println!("{:?}", msg);
-        }
-
-        std::thread::sleep(std::time::Duration::from_millis(20));
-    };
 
     let backend = VulkanBackend::new();
     let mut scene = Scene::default();
     Application::new(backend)
         .add_updater(ClockUpdater::new())
+        .add_updater(UpdateKeyboard::new())
         .add_renderer(Visual::new())
         .run(scene);
 }
@@ -70,6 +60,52 @@ impl OnTick for Scene {
     }
 }
 
+
+pub mod keyboard {
+    use mursten::Updater;
+    use midi::{MidiHandle, MidiMessage, listen_from_port};
+    use std::{thread, time};
+    use Scene;
+
+    pub struct UpdateKeyboard {
+        midi_handle: MidiHandle,
+    }
+
+    impl UpdateKeyboard {
+        pub fn new() -> Self {
+            Self {
+                midi_handle: listen_from_port().unwrap(),
+            }
+        }
+    }
+
+    impl<B> Updater<B, Scene> for UpdateKeyboard {
+        fn update(&mut self, _: &mut B, scene: &mut Scene) {
+            for msg in self.midi_handle.get_messages() {
+                // println!("{:?}", msg);
+                match msg {
+                    MidiMessage::NoteOn(key, vel) => {
+                        scene.keyboard[key as usize] = vel;
+                    }
+                    MidiMessage::NoteOff(key, _) => {
+                        scene.keyboard[key as usize] = 0;
+                    },
+                    _ => {}
+                }
+            }
+            let keys = [
+                " A ", " A#", " B ", " C ",
+                " C#", " D ", " D#", " E ",
+                " F ", " F#", " G ", " G#"];
+            for (key, key_state) in scene.keyboard.iter().skip(12).take(48).enumerate() {
+                let key = keys[(key + 3) % 12];
+                print!("{}", if *key_state > 0 { key } else { "   " });
+            }
+            println!("");
+            thread::sleep(time::Duration::from_millis(20));
+        }
+    }
+}
 
 
 struct Visual {}
