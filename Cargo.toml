@@ -9,6 +9,7 @@ ggez = "0.4"
 image = "0.19.0"
 log = "0.4"
 markov = "1.0.2"
+midir = "0.5"
 mursten = { path = "mursten" }
 mursten_piston_backend = { path = "mursten_piston_backend" }
 mursten_vulkan_backend = { path = "mursten_vulkan_backend" }
@@ -31,4 +32,8 @@ path = "drafts/visuals.rs"
 [[bin]]
 name = "twins"
 path = "twins/mod.rs"
+
+[[bin]]
+name = "midi_one"
+path = "drafts/midi_one.rs"
 
