@@ -1,6 +1,6 @@
+extern crate image;
 extern crate mursten;
 extern crate piston_window;
-extern crate image;
 
 use piston_window::{PistonWindow, Texture, TextureSettings, Transformed, WindowSettings};
 
