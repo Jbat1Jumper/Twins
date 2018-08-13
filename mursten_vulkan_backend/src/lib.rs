@@ -22,12 +22,16 @@ use vulkano::command_buffer::DynamicState;
 use vulkano::descriptor::PipelineLayoutAbstract;
 use vulkano::device::Device;
 use vulkano::device::Queue;
+use vulkano::format::Format;
 use vulkano::framebuffer::Framebuffer;
 use vulkano::framebuffer::RenderPass;
 use vulkano::framebuffer::RenderPassAbstract;
 use vulkano::framebuffer::RenderPassDesc;
 use vulkano::framebuffer::Subpass;
 use vulkano::image::SwapchainImage;
+use vulkano::image::ImageUsage;
+use vulkano::image::traits::ImageAccess;
+use vulkano::image::attachment::AttachmentImage;
 use vulkano::instance::Instance;
 use vulkano::instance::PhysicalDevice;
 use vulkano::pipeline::vertex::SingleBufferDefinition;
@@ -300,11 +304,17 @@ where
                     store: Store,
                     format: swapchain.format(),
                     samples: 1,
+                },
+                 depth: {
+                    load: Clear,
+                    store: DontCare,
+                    format: Format::D16Unorm,
+                    samples: 1,
                 }
             },
             pass: {
                 color: [color],
-                depth_stencil: {}
+                depth_stencil: {depth}
             }
         ).unwrap(),
         );
@@ -373,9 +383,24 @@ where
                     images
                         .iter()
                         .map(|image| {
+                            let attachment_usage = ImageUsage {
+                                transient_attachment: true,
+                                input_attachment: false,
+                                ..ImageUsage::none()
+                            };
+                            let img_dims = ImageAccess::dimensions(&image).width_height();
+                            let depth_buffer = AttachmentImage::with_usage(
+                                queue.device().clone(),
+                                img_dims,
+                                Format::D16Unorm,
+                                attachment_usage
+                            ).unwrap();
+
                             Arc::new(
                                 Framebuffer::start(render_pass.clone())
                                     .add(image.clone())
+                                    .unwrap()
+                                    .add(depth_buffer.clone())
                                     .unwrap()
                                     .build()
                                     .unwrap(),
@@ -402,7 +427,7 @@ where
                     .begin_render_pass(
                         framebuffers.as_ref().unwrap()[image_num].clone(),
                         false,
-                        vec![[0.1, 0.1, 0.1, 1.0].into()],
+                        vec![[0.1, 0.1, 0.1, 1.0].into(), 1.0f32.into()],
                     )
                     .unwrap()
                     .draw(
