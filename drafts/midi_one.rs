@@ -9,7 +9,7 @@ use std::error::Error;
 
 
 use mursten_vulkan_backend::geometry::{Triangle, Vertex};
-use mursten_vulkan_backend::VulkanBackend;
+use mursten_vulkan_backend::{Constants, VulkanBackend};
 use nalgebra::*;
 
 use updaters::time::{Clock, ClockUpdater, OnTick, Tick};
@@ -154,6 +154,12 @@ impl Renderer<VulkanBackend, Scene> for Visual {
             let c = Vertex::at(0.0, 0.0, 0.0).color(1.0, 0.0, 0.2, 1.0);
             Triangle::new(a, b, c)
         }).collect();
+
+        {
+            let t = scene.clock.time_in_sec();
+            let zoom = t.sin() * 0.4 + 0.5 + (t * 200.0 * t.sin()).sin() * 0.1;
+            backend.set_constants(Constants { zoom });
+        }
         
         backend.queue_render(vec![
             Triangle::new(
@@ -180,6 +186,7 @@ mod updaters {
 
         pub const CREATION_TIME: Time = UNIX_EPOCH;
 
+        #[derive(Debug)]
         pub struct Clock {
             time: Time,
             delta: Duration,
@@ -210,6 +217,17 @@ mod updaters {
             }
         }
 
+        impl Clock {
+            pub fn system_time_in_sec(&self) -> f32 {
+                let d = self.system_time.duration_since(CREATION_TIME).unwrap();
+                d.as_secs() as f32 + d.subsec_millis() as f32 / 1000.0
+            }
+            pub fn time_in_sec(&self) -> f32 {
+                let d = self.time.duration_since(CREATION_TIME).unwrap();
+                d.as_secs() as f32 + d.subsec_millis() as f32 / 1000.0
+            }
+        }
+
         use std::ops::{Add, AddAssign};
 
         impl Add<Tick> for Clock {
@@ -235,6 +253,7 @@ mod updaters {
             }
         }
 
+        #[derive(Debug)]
         pub struct Tick {
             system_time: Time,
             delta: Duration,
@@ -263,9 +282,9 @@ mod updaters {
             fn update(&mut self, _: &mut B, data: &mut D) {
                 let system_time = SystemTime::now();
                 let delta = if self.last_system_time == CREATION_TIME {
-                    system_time.duration_since(self.last_system_time).unwrap()
-                } else {
                     Duration::new(0, 0)
+                } else {
+                    system_time.duration_since(self.last_system_time).unwrap()
                 };
 
                 let tick = Tick { system_time, delta };
