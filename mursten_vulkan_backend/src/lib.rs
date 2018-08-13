@@ -19,6 +19,7 @@ use vulkano::buffer::BufferUsage;
 use vulkano::buffer::CpuAccessibleBuffer;
 use vulkano::command_buffer::AutoCommandBufferBuilder;
 use vulkano::command_buffer::DynamicState;
+use vulkano::descriptor::descriptor_set::PersistentDescriptorSet;
 use vulkano::descriptor::PipelineLayoutAbstract;
 use vulkano::device::Device;
 use vulkano::device::Queue;
@@ -149,9 +150,25 @@ pub mod geometry {
 use geometry::Triangle;
 use geometry::Vertex;
 
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct Constants {
+    pub zoom: f32,
+}
+
+
+impl Default for Constants {
+    fn default() -> Self {
+        Self {
+            zoom: 1.0,
+        }
+    }
+}
+
 pub struct VulkanBackend {
     triangles_queue: Vec<Triangle>,
     dimensions: (u32, u32),
+    constants: Constants,
 
     enable_validation_layers: bool,
     desired_validation_layer: &'static str,
@@ -162,6 +179,7 @@ impl VulkanBackend {
         Self {
             triangles_queue: Vec::new(),
             dimensions: (0, 0),
+            constants: Constants::default(),
             enable_validation_layers: false,
             desired_validation_layer: "VK_LAYER_LUNARG_standard_validation",
         }
@@ -169,6 +187,10 @@ impl VulkanBackend {
 
     pub fn screen_size(&self) -> (u32, u32) {
         self.dimensions
+    }
+
+    pub fn set_constants(&mut self, constants: Constants) {
+        self.constants = constants;
     }
 
     pub fn queue_render(&mut self, triangles: Vec<Triangle>) {
@@ -443,7 +465,7 @@ where
                         },
                         vertex_buffer.clone(),
                         (),
-                        (),
+                        self.constants,
                     )
                     .unwrap()
                     .end_render_pass()
@@ -490,8 +512,13 @@ pub mod shaders {
             layout(location = 8) in vec2 texture;
             layout(location = 0) out vec4 outColor;
 
+            layout(push_constant) uniform pushConstants {
+                float zoom;
+            } push_const;
+
             void main() {
-                gl_Position = position;
+                float zoom = push_const.zoom;
+                gl_Position = vec4(position.xyz * zoom, position.w);
                 outColor = color;
             }
         "]
