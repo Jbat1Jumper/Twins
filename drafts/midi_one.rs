@@ -139,7 +139,7 @@ fn spiral_points(keyboard: Vec<u8>) -> Vec<Vertex> {
         let strength = *vel as f32 / 127.0;
         let pressed = strength * 0.2;
         let pos = rotation * Point2::new(0.0, len + pressed);
-        let v = Vertex::at(pos.x, pos.y, len);
+        let v = Vertex::at(pos.x, pos.y, 0.0);
         v.color(0.0, 1.0 - 0.8 * strength, 0.3 + 0.7 * strength, 1.0)
     }).collect()
 }
@@ -151,7 +151,7 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         let points = spiral_points(keyboard);
         
         let triangles: Vec<Triangle> = points.iter().cloned().skip(1).zip(points.iter().cloned()).map(|(a, b)| {
-            let c = Vertex::at(0.0, 0.0, 0.0).color(1.0, 0.0, 0.2, 1.0);
+            let c = Vertex::at(0.0, 0.0, 1.0).color(1.0, 0.0, 0.2, 1.0);
             Triangle::new(a, b, c)
         }).collect();
 
@@ -165,12 +165,12 @@ impl Renderer<VulkanBackend, Scene> for Visual {
             Triangle::new(
                 Vertex::at(1.0, 1.0, 0.0).color(0.0, 0.0, 1.0, 1.0),
                 Vertex::at(1.0, 0.9, 0.2).color(0.0, 0.0, 1.0, 1.0),
-                Vertex::at(0.9, 1.0, 0.2).color(0.0, 0.0, 1.0, 1.0)
+                Vertex::at(0.9, 1.0, 0.2).color(0.0, 0.0, 1.0, 1.0),
             ),
             Triangle::new(
                 Vertex::at(1.0, 1.0, 0.1).color(1.0, 0.0, 0.0, 1.0),
                 Vertex::at(1.0, 0.9, 0.1).color(1.0, 0.0, 0.0, 1.0),
-                Vertex::at(0.9, 1.0, 0.1).color(1.0, 0.0, 0.0, 1.0)
+                Vertex::at(0.9, 1.0, 0.1).color(1.0, 0.0, 0.0, 1.0),
             ),
         ]);
         backend.queue_render(triangles.into_iter().collect());
