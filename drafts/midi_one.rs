@@ -8,7 +8,7 @@ use mursten::{Application, Backend, Data, Renderer, Updater};
 use std::error::Error;
 
 
-use mursten_vulkan_backend::geometry::{Triangle, Vertex};
+use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 use nalgebra::*;
 
@@ -139,7 +139,7 @@ fn spiral_points(keyboard: Vec<u8>) -> Vec<Vertex> {
         let strength = *vel as f32 / 127.0;
         let pressed = strength * 0.2;
         let pos = rotation * Point2::new(0.0, len + pressed);
-        let v = Vertex::at(pos.x, pos.y, 0.0);
+        let v = Vertex::at(Point3::new(pos.x, pos.y, 1.0));
         v.color(0.0, 1.0 - 0.8 * strength, 0.3 + 0.7 * strength, 1.0)
     }).collect()
 }
@@ -149,31 +149,42 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         let keyboard = interpolate(scene.keyboard.iter().skip(24).take(36).cloned().collect(), self.last_keyboard.clone());
         self.last_keyboard = keyboard.clone();
         let points = spiral_points(keyboard);
-        
-        let triangles: Vec<Triangle> = points.iter().cloned().skip(1).zip(points.iter().cloned()).map(|(a, b)| {
-            let c = Vertex::at(0.0, 0.0, 1.0).color(1.0, 0.0, 0.2, 1.0);
-            Triangle::new(a, b, c)
-        }).collect();
 
-        {
-            let t = scene.clock.time_in_sec();
-            let zoom = t.sin() * 0.4 + 0.5 + (t * 200.0 * t.sin()).sin() * 0.1;
-            backend.set_constants(Constants { zoom });
-        }
-        
-        backend.queue_render(vec![
-            Triangle::new(
-                Vertex::at(1.0, 1.0, 0.0).color(0.0, 0.0, 1.0, 1.0),
-                Vertex::at(1.0, 0.9, 0.2).color(0.0, 0.0, 1.0, 1.0),
-                Vertex::at(0.9, 1.0, 0.2).color(0.0, 0.0, 1.0, 1.0),
-            ),
-            Triangle::new(
-                Vertex::at(1.0, 1.0, 0.1).color(1.0, 0.0, 0.0, 1.0),
-                Vertex::at(1.0, 0.9, 0.1).color(1.0, 0.0, 0.0, 1.0),
-                Vertex::at(0.9, 1.0, 0.1).color(1.0, 0.0, 0.0, 1.0),
-            ),
-        ]);
-        backend.queue_render(triangles.into_iter().collect());
+        // Reference triangle
+        let mesh = Mesh {
+            triangles: vec![
+                Triangle::new(
+                    Vertex::at(Point3::new(1.0, 1.0, -1.8)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 0.9, -2.2)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(0.9, 1.0, -2.2)).color(0.0, 0.0, 1.0, 1.0),
+                ),
+                Triangle::new(
+                    Vertex::at(Point3::new(1.0, 1.0, -2.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 0.9, -2.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(0.9, 1.0, -2.0)).color(1.0, 0.0, 0.0, 1.0),
+                ),
+            ],
+            transform: Transform3::identity(),
+        };
+        backend.queue_render(mesh);
+
+        // Rose (?
+        let mesh = Mesh {
+            triangles: points.iter().cloned().skip(1).zip(points.iter().cloned()).map(|(a, b)| {
+                let c = Vertex::at(Point3::new(0.0, 0.0, -1.0)).color(1.0, 0.0, 0.2, 1.0);
+                Triangle::new(a, b, c)
+            }).collect(),
+            transform: {
+                let t = scene.clock.time_in_sec();
+                let height = t.sin() * 1.0;
+                let distance = (5.0 * t).sin() * 2.0 - 6.0;
+                let rotation_y = t.sin() * 1.0;
+                let rotation_z = (t * 3.0).sin();
+                //backend.set_constants(Constants { scale, ..Constants::default() });
+                Transform3::identity() * Translation3::new(0.0, height, distance) * Rotation3::from_euler_angles(0.0, rotation_z, rotation_y)
+            },
+        };
+        backend.queue_render(mesh);
 
     }
 }

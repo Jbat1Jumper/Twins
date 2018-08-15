@@ -58,18 +58,19 @@ use std::sync::Arc;
 use mursten::{Backend, Data, RenderChain, UpdateChain};
 
 pub mod geometry {
+    use nalgebra::geometry::{Point2, Point3};
+
     #[derive(Debug, Clone, Copy)]
     pub struct Vertex {
-        pub position: [f32; 4],
+        pub position: Point3<f32>,
         pub color: [f32; 4],
         pub texture: [f32; 2],
     }
-    impl_vertex!(Vertex, position, color, texture);
 
     impl Default for Vertex {
         fn default() -> Self {
             Vertex {
-                position: [0.0, 0.0, 0.0, 1.0],
+                position: Point3::origin(),
                 color: [1.0, 1.0, 1.0, 1.0],
                 texture: [0.0, 0.0],
             }
@@ -77,11 +78,8 @@ pub mod geometry {
     }
 
     impl Vertex {
-        pub fn at(x: f32, y: f32, z: f32) -> Self {
-            Vertex {
-                position: [x, y, z, 1.0],
-                ..Self::default()
-            }
+        pub fn at(position: Point3<f32>) -> Self {
+            Vertex { position, ..Self::default() }
         }
 
         pub fn color(self: Vertex, r: f32, g: f32, b: f32, a: f32) -> Vertex {
@@ -92,23 +90,19 @@ pub mod geometry {
         }
     }
 
-    use nalgebra::geometry::{Point2, Point3};
 
     impl From<Point2<f32>> for Vertex {
-        fn from(point: Point2<f32>) -> Self {
+        fn from(position: Point2<f32>) -> Self {
             Vertex {
-                position: [point.x, point.y, 1.0, 1.0],
+                position: Point3::new(position.x, position.y, 0.0),
                 ..Self::default()
             }
         }
     }
 
     impl From<Point3<f32>> for Vertex {
-        fn from(point: Point3<f32>) -> Self {
-            Vertex {
-                position: [point.x, point.y, point.z, 1.0],
-                ..Self::default()
-            }
+        fn from(position: Point3<f32>) -> Self {
+            Vertex::at(position)
         }
     }
 
@@ -145,22 +139,55 @@ pub mod geometry {
         }
     }
 
+    use nalgebra::Transform3;
+
+    pub struct Mesh {
+        pub triangles: Vec<Triangle>,
+        pub transform: Transform3<f32>,
+    }
 }
 
-use geometry::Triangle;
+
 use geometry::Vertex;
+use geometry::Triangle;
+use geometry::Mesh;
+
+use nalgebra::{Perspective3, Matrix4, MatrixArray, Point3, U4, Vector3};
+
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Constants {
-    pub zoom: f32,
+    pub world: Matrix4<f32>,
+    pub view: Matrix4<f32>,
+    pub projection: Perspective3<f32>,
+    pub scale: f32,
 }
 
 
 impl Default for Constants {
     fn default() -> Self {
         Self {
-            zoom: 1.0,
+            scale: 1.0,
+            world: Matrix4::new(
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+            ),
+            view: Matrix4::new(
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+            ),
+            projection: Perspective3::new(1.0, 1.27, 1.0, 100.0),
+            //projection: Matrix4::new(
+            //    1.0, 0.0, 0.0, 0.0,
+            //    0.0, 1.0, 0.0, 0.0,
+            //    0.0, 0.0, 1.0, 0.0,
+            //    0.0, 0.0, 0.0, 1.0,
+            //),
         }
     }
 }
@@ -193,7 +220,25 @@ impl VulkanBackend {
         self.constants = constants;
     }
 
-    pub fn queue_render(&mut self, triangles: Vec<Triangle>) {
+    pub fn queue_render(&mut self, mesh: Mesh) {
+        let Mesh { triangles, transform } = mesh;
+        eprintln!(" transform: {:?}", transform);
+        let triangles: Vec<Triangle> = triangles.into_iter().map(|t| {
+            Triangle {
+                v1: Vertex {
+                    position: transform * t.v1.position,
+                    ..t.v1
+                },
+                v2: Vertex {
+                    position: transform * t.v2.position,
+                    ..t.v2
+                },
+                v3: Vertex {
+                    position: transform * t.v3.position,
+                    ..t.v3
+                },
+            }
+        }).collect();
         self.triangles_queue.extend(triangles);
     }
 }
@@ -315,8 +360,33 @@ where
             ).expect("failed to create swapchain")
         };
 
+        #[derive(Debug, Clone, Copy)]
+        pub struct GPUVertex {
+            pub position: [f32; 4],
+            pub color: [f32; 4],
+            pub texture: [f32; 2],
+        }
+        impl_vertex!(GPUVertex, position, color, texture);
+
+        impl From<Vertex> for GPUVertex {
+            fn from(v: Vertex) -> GPUVertex {
+                GPUVertex {
+                    position: [
+                        v.position.x,
+                        v.position.y,
+                        v.position.z,
+                        1.0,
+                    ],
+                    color: v.color,
+                    texture: v.texture,
+                }
+            }
+        }
+
         let vs = shaders::vs::Shader::load(device.clone()).expect("failed to create shader module");
         let fs = shaders::fs::Shader::load(device.clone()).expect("failed to create shader module");
+
+        //eprintln!("swapchain format {:?}", swapchain.format());
 
         let render_pass = Arc::new(
             single_pass_renderpass!(device.clone(),
@@ -347,7 +417,7 @@ where
                 .vertex_shader(vs.main_entry_point(), ())
                 .triangle_list()
                 .viewports_dynamic_scissors_irrelevant(1)
-                .cull_mode_back()
+                //.cull_mode_back()
                 .depth_stencil_simple_depth()
                 .fragment_shader(fs.main_entry_point(), ())
                 .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
@@ -373,7 +443,7 @@ where
                 CpuAccessibleBuffer::from_iter(
                     device.clone(),
                     BufferUsage::all(),
-                    vertexes.iter().cloned(),
+                    vertexes.into_iter().map(GPUVertex::from),
                 ).expect("failed to create buffer")
             };
 
@@ -507,6 +577,10 @@ pub mod shaders {
         #[ty = "vertex"]
         #[src = "
             #version 450
+            
+            const float PI = 3.1415926535897932384626433832795;
+            const float PI_2 = 1.57079632679489661923;
+            const float PI_4 = 0.785398163397448309616;
 
             layout(location = 0) in vec4 position;
             layout(location = 4) in vec4 color;
@@ -514,12 +588,20 @@ pub mod shaders {
             layout(location = 0) out vec4 outColor;
 
             layout(push_constant) uniform pushConstants {
-                float zoom;
-            } push_const;
+                mat4 world;
+                mat4 view;
+                mat4 projection;
+                float scale;
+            } c;
 
             void main() {
-                float zoom = push_const.zoom;
-                gl_Position = vec4(position.xyz * zoom, position.w);
+                mat4 scale = mat4(
+                    c.scale, 0, 0, 0,
+                    0, c.scale, 0, 0,
+                    0, 0, c.scale, 0,
+                    0, 0, 0, 1
+                );
+                gl_Position = c.projection * c.view * c.world * scale * position;
                 outColor = color;
             }
         "]
