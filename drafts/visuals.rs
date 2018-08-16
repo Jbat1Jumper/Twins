@@ -9,8 +9,8 @@ extern crate rand;
 extern crate reqwest;
 
 use mursten::{Application, Backend, Data, Renderer, Updater};
-use mursten_vulkan_backend::geometry::{Triangle, Vertex};
-use mursten_vulkan_backend::VulkanBackend;
+use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
+use mursten_vulkan_backend::{VulkanBackend, Constants};
 use nalgebra::*;
 
 pub fn main() {
@@ -74,7 +74,7 @@ impl Visual {
     }
 }
 
-fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
+fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Mesh {
 
     // Transformaciones esteticas
     let scale = 0.04;
@@ -82,42 +82,48 @@ fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Vec<Triangle> {
         let rpos = rot * pos;
         Rotation3::rotation_between(&Vector3::new(pos.x, pos.y, 0.0), &Vector3::new(rpos.x, rpos.y, 0.0)).unwrap()
     };
-    let pos = Point3::new(pos.x, pos.y, 0.0);
+    let pos = Point3::new(pos.x, pos.y, -600.0 + len.abs() * 3.0);
     let len = len.sqrt();
 
-    let r  = Vertex::from( pos + Vector3::z() * len                                ).color(1.0, 0.0, 0.0, 1.0);
-    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, len) * scale ).color(0.0, 1.0, 0.0, 1.0);
-    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, len) * scale ).color(0.0, 0.0, 1.0, 1.0);
-    let v1 = Vertex::from( pos + rot * Vector3::new(-1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v2 = Vertex::from( pos + rot * Vector3::new( 1.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v3 = Vertex::from( pos + rot * Vector3::new( 3.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v4 = Vertex::from( pos + rot * Vector3::new( 5.0 * len,  0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v5 = Vertex::from( pos + rot * Vector3::new(-1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v6 = Vertex::from( pos + rot * Vector3::new( 1.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v7 = Vertex::from( pos + rot * Vector3::new( 3.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
-    let v8 = Vertex::from( pos + rot * Vector3::new( 5.0 * len, -0.4, len) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let r  = Vertex::from( pos                                                     ).color(1.0, 0.0, 0.0, 1.0);
+    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, 0.0) * scale ).color(0.0, 1.0, 0.0, 1.0);
+    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, 0.0) * scale ).color(0.0, 0.0, 1.0, 1.0);
+    let v1 = Vertex::from( pos + rot * Vector3::new(-1.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v2 = Vertex::from( pos + rot * Vector3::new( 1.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v3 = Vertex::from( pos + rot * Vector3::new( 3.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v4 = Vertex::from( pos + rot * Vector3::new( 5.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v5 = Vertex::from( pos + rot * Vector3::new(-1.0 * len, -0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v6 = Vertex::from( pos + rot * Vector3::new( 1.0 * len, -0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v7 = Vertex::from( pos + rot * Vector3::new( 3.0 * len, -0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
+    let v8 = Vertex::from( pos + rot * Vector3::new( 5.0 * len, -0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
 
-
-    vec!(
-        Triangle::new( r, v1, v2),
-        Triangle::new( r, v5, v1),
-        Triangle::new( r, v6, v5),
-        Triangle::new(v2,  g,  r),
-        Triangle::new(v6,  r,  g),
-        Triangle::new( g, v2, v3),
-        Triangle::new( g, v7, v6),
-        Triangle::new(v3,  b,  g),
-        Triangle::new(v7,  g,  b),
-        Triangle::new( b, v3, v4),
-        Triangle::new( b, v4, v8),
-        Triangle::new( b, v8, v7),
-    )
+    Mesh {
+        triangles: vec!(
+            Triangle::new( r, v1, v2),
+            Triangle::new( r, v5, v1),
+            Triangle::new( r, v6, v5),
+            Triangle::new(v2,  g,  r),
+            Triangle::new(v6,  r,  g),
+            Triangle::new( g, v2, v3),
+            Triangle::new( g, v7, v6),
+            Triangle::new(v3,  b,  g),
+            Triangle::new(v7,  g,  b),
+            Triangle::new( b, v3, v4),
+            Triangle::new( b, v4, v8),
+            Triangle::new( b, v8, v7),
+        ),
+        transform: Transform3::identity(),
+    }
 }
 
 impl Renderer<VulkanBackend, Variables> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, var: &Variables) {
         let (w, h) = (20, 20);
         //let (w, h) = backend.screen_size();
+        backend.set_constants(Constants {
+            projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, 10.0, 900.0).to_homogeneous(),
+            ..Constants::default()
+        });
         
         use rand::distributions::normal::Normal;
         use rand::distributions::IndependentSample;
@@ -145,6 +151,10 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             let len = normal.ind_sample(&mut rng) as f32 / (q.coords.norm() * 10.0);
             backend.queue_render(ray(q, rot, len));
         }
+
+        //
+        use std::{thread, time};
+        thread::sleep(time::Duration::from_millis(20));
     }
 }
 

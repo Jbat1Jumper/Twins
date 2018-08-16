@@ -150,6 +150,11 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         self.last_keyboard = keyboard.clone();
         let points = spiral_points(keyboard);
 
+        backend.set_constants(Constants {
+            projection: Perspective3::new(1.0, 1.27, 1.0, 100.0).to_homogeneous(),
+            ..Constants::default()
+        });
+
         // Reference triangle
         let mesh = Mesh {
             triangles: vec![
@@ -167,7 +172,6 @@ impl Renderer<VulkanBackend, Scene> for Visual {
             transform: Transform3::identity(),
         };
         backend.queue_render(mesh);
-
         // Rose (?
         let mesh = Mesh {
             triangles: points.iter().cloned().skip(1).zip(points.iter().cloned()).map(|(a, b)| {
@@ -180,7 +184,6 @@ impl Renderer<VulkanBackend, Scene> for Visual {
                 let distance = (5.0 * t).sin() * 2.0 - 6.0;
                 let rotation_y = t.sin() * 1.0;
                 let rotation_z = (t * 3.0).sin();
-                //backend.set_constants(Constants { scale, ..Constants::default() });
                 Transform3::identity() * Translation3::new(0.0, height, distance) * Rotation3::from_euler_angles(0.0, rotation_z, rotation_y)
             },
         };

@@ -152,15 +152,15 @@ use geometry::Vertex;
 use geometry::Triangle;
 use geometry::Mesh;
 
-use nalgebra::{Perspective3, Matrix4, MatrixArray, Point3, U4, Vector3};
-
+use nalgebra::{Matrix4, MatrixArray, Point3, U4, Vector3};
+use nalgebra::geometry::{Orthographic3};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct Constants {
     pub world: Matrix4<f32>,
     pub view: Matrix4<f32>,
-    pub projection: Perspective3<f32>,
+    pub projection: Matrix4<f32>,
     pub scale: f32,
 }
 
@@ -181,13 +181,7 @@ impl Default for Constants {
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0,
             ),
-            projection: Perspective3::new(1.0, 1.27, 1.0, 100.0),
-            //projection: Matrix4::new(
-            //    1.0, 0.0, 0.0, 0.0,
-            //    0.0, 1.0, 0.0, 0.0,
-            //    0.0, 0.0, 1.0, 0.0,
-            //    0.0, 0.0, 0.0, 1.0,
-            //),
+            projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous(),
         }
     }
 }
@@ -222,7 +216,7 @@ impl VulkanBackend {
 
     pub fn queue_render(&mut self, mesh: Mesh) {
         let Mesh { triangles, transform } = mesh;
-        eprintln!(" transform: {:?}", transform);
+        //eprintln!(" transform: {:?}", transform);
         let triangles: Vec<Triangle> = triangles.into_iter().map(|t| {
             Triangle {
                 v1: Vertex {
@@ -425,6 +419,11 @@ where
                 .unwrap(),
         );
 
+        // let descriptor_set = Arc::new(PersistentDescriptorSet::start(pipeline.clone(), 0)
+        //     .add_buffer(data_buffer.clone()).unwrap()
+        //     .build().unwrap()
+        // );
+
         let mut framebuffers: Option<Vec<Arc<vulkano::framebuffer::Framebuffer<_, _>>>> = None;
         let mut previous_frame_end = Box::new(now(device.clone())) as Box<GpuFuture>;
         let mut recreate_swapchain = false;
@@ -513,6 +512,8 @@ where
                     }
                     Err(err) => panic!("{:?}", err),
                 };
+
+            //eprintln!(" constants: {:?}", self.constants);
 
             let command_buffer =
                 AutoCommandBufferBuilder::primary_one_time_submit(device.clone(), queue.family())
