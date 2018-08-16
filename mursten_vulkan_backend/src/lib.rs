@@ -319,6 +319,8 @@ where
                 ..vulkano::device::DeviceExtensions::none()
             };
 
+            //eprintln!("Supported features: {:?}", physical.supported_features());
+
             Device::new(
                 physical,
                 physical.supported_features(),
@@ -415,6 +417,7 @@ where
                 .depth_stencil_simple_depth()
                 .fragment_shader(fs.main_entry_point(), ())
                 .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+                .blend_alpha_blending()
                 .build(device.clone())
                 .unwrap(),
         );

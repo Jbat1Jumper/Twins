@@ -124,6 +124,22 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, 10.0, 900.0).to_homogeneous(),
             ..Constants::default()
         });
+
+
+        backend.queue_render({
+            let lu = Vertex::at(Point3::new(-1.0, -1.0, 0.0)).color(0.05, 0.05, 0.05, 1.0);
+            let ru = Vertex::at(Point3::new( 1.0, -1.0, 0.0)).color(0.05, 0.05, 0.05, 1.0);
+            let ld = Vertex::at(Point3::new(-1.0,  1.0, 0.0)).color(0.05, 0.05, 0.05, 1.0);
+            let rd = Vertex::at(Point3::new( 1.0,  1.0, 0.0)).color(0.05, 0.05, 0.05, 1.0);
+            Mesh {
+                triangles: vec![
+                    Triangle::new(lu, ru, ld),
+                    Triangle::new(ld, ru, rd),
+                ],
+                transform: Transform3::identity() * Translation3::new(0.0, 0.0, -800.0),
+            }
+        });
+
         
         use rand::distributions::normal::Normal;
         use rand::distributions::IndependentSample;
@@ -144,7 +160,7 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             }
         }
 
-        //Q.sort_by(|a, b| b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap());
+        Q.sort_by(|a, b| b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap());
 
         for (q, rot) in Q {
             let (x, y) = (q.x, q.y);
