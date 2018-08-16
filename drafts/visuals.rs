@@ -85,9 +85,9 @@ fn ray(pos: Point2<f32>, rot: Rotation2<f32>, len: f32) -> Mesh {
     let pos = Point3::new(pos.x, pos.y, -600.0 + len.abs() * 3.0);
     let len = len.sqrt();
 
-    let r  = Vertex::from( pos                                                     ).color(1.0, 0.0, 0.0, 1.0);
-    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, 0.0) * scale ).color(0.0, 1.0, 0.0, 1.0);
-    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, 0.0) * scale ).color(0.0, 0.0, 1.0, 1.0);
+    let r  = Vertex::from( pos                                                     ).color(1.0, 0.0, 0.0, 0.8);
+    let g  = Vertex::from( pos + rot * Vector3::new( 2.0 * len,  0.0, 0.0) * scale ).color(0.0, 1.0, 0.0, 0.8);
+    let b  = Vertex::from( pos + rot * Vector3::new( 4.0 * len,  0.0, 0.0) * scale ).color(0.0, 0.0, 1.0, 0.8);
     let v1 = Vertex::from( pos + rot * Vector3::new(-1.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
     let v2 = Vertex::from( pos + rot * Vector3::new( 1.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
     let v3 = Vertex::from( pos + rot * Vector3::new( 3.0 * len,  0.4, 0.0) * scale ).color(0.0, 0.0, 0.0, 0.0);
