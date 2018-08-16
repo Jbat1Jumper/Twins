@@ -2,12 +2,12 @@
 
 ## Round 2
 
-[x] Arreglar brillito
-[ ] Hacer funcionar alpha blending para brillito
-[ ] Función continua 
-[ ] Recibir parametros desde afuera del loop
-[ ] Separar y reorganizar archivos
-[ ] Interfaz con cursive
+- [x] Arreglar brillito
+- [ ] Hacer funcionar alpha blending para brillito
+- [ ] Función continua 
+- [ ] Recibir parametros desde afuera del loop
+- [ ] Separar y reorganizar archivos
+- [ ] Interfaz con cursive
 
 ### Función continua
 
@@ -76,15 +76,15 @@ actualizar cuando los parametros cambien.
 
 ## Round 1.5
 
-[x] Tomar input de midi
-[x] Experimentar con un tipo Clock
-[x] Generar un mesh en base al input midi
+- [x] Tomar input de midi
+- [x] Experimentar con un tipo Clock
+- [x] Generar un mesh en base al input midi
 
 
 ## Round 1
 
-[x] Definir struct para triangulos, incluyendo vertex color.
-[x] Implementar render de triangulos en VulkanBackend
-[x] Hacer algo con eso... rehacer brillito
-[x] Implementar z-buffer en el backend y borrar el sort de los rayos de brillito
+- [x] Definir struct para triangulos, incluyendo vertex color.
+- [x] Implementar render de triangulos en VulkanBackend
+- [x] Hacer algo con eso... rehacer brillito
+- [x] Implementar z-buffer en el backend y borrar el sort de los rayos de brillito
 
