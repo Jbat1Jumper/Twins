@@ -3,7 +3,7 @@
 ## Round 2
 
 - [x] Arreglar brillito
-- [ ] Hacer funcionar alpha blending para brillito
+- [x] Hacer funcionar alpha blending para brillito
 - [ ] Función continua 
 - [ ] Recibir parametros desde afuera del loop
 - [ ] Separar y reorganizar archivos
@@ -29,11 +29,11 @@ fn scale(m: Mesh, w: f32) -> Mesh {
 }
 ```
 
-En nuestro caso queremos cómo entrada `t: f32`. Nuestra transformación va a
-ser, en el caso de que la compomente `x` de la posición del vertice sea menor
-que 0, multiplicar esa componente por el resultado de la función `fn plot(t:
-f32) -> f32` en `plot(t + z)`, donde `z` es otra componente de la pocición del
-vertice.
+En nuestro caso queremos cómo entrada `t: i32`, la cantidad de milisegundos desde
+el inicio de la visualización. Nuestra transformación va a ser, en el caso de
+que la compomente `x` de la posición del vertice sea menor que 0, multiplicar
+esa componente por el resultado de la función `fn plot(t: i32) -> f32` en
+`plot(t + z)`, donde `z` es otra componente de la pocición del vertice.
 
 Visto desde arriba queremos lograr algo así:
 

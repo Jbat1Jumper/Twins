@@ -38,3 +38,7 @@ path = "twins/mod.rs"
 name = "midi_one"
 path = "drafts/midi_one.rs"
 
+[[bin]]
+name = "plot"
+path = "drafts/plot.rs"
+
