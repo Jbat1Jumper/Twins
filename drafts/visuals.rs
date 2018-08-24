@@ -45,8 +45,8 @@ impl Default for Variables {
     fn default() -> Self {
         Variables {
             center: Point2::new(0.0, 0.0),
-            separation: Vector2::repeat(0.1),
-            matrix_size: Vector2::new(10.0, 10.0),
+            separation: Vector2::repeat(0.06),
+            matrix_size: Vector2::new(15.0, 15.0),
             ray_proportion: 4.0,
             glow_amount: 5.0,
             cross_intensity: 6.0,
@@ -160,7 +160,7 @@ impl Renderer<VulkanBackend, Variables> for Visual {
             }
         }
 
-        Q.sort_by(|a, b| b.0.coords.norm().partial_cmp(&a.0.coords.norm()).unwrap());
+        Q.sort_by(|a, b| (b.0.coords.norm() * -1.0).partial_cmp(&a.0.coords.norm()).unwrap());
 
         for (q, rot) in Q {
             let (x, y) = (q.x, q.y);
