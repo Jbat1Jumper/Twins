@@ -264,119 +264,56 @@ pub mod property_editor {
 }
 
 pub mod properties {
-    use std::collections::HashMap;
+    use std::slice::Iter;
 
     pub trait GetProperties<'a> {
-        fn properties(&'a mut self) -> Vec<Property<'a>>;
+        fn properties(&'a mut self) -> Properties;
     }
 
-    pub trait Properties<'a> {
-        fn add_float(self, name: &'static str, value: &'a mut f32) -> Self;
-        fn add_int(self, name: &'static str, value: &'a mut i32) -> Self;
-        fn add_bool(self, name: &'static str, value: &'a mut bool) -> Self;
+    pub struct Properties<'a> {
+        properties: Vec<Box<Property<'a> + 'a>>,
     }
 
-    impl<'a> Properties<'a> for Vec<Property<'a>> {
-        fn add_float(mut self, name: &'static str, value: &'a mut f32) -> Self {
-            self.retain(|a| { a.name != name });
-            self.push(Property {
-                name,
-                reference: Reference::Float(value),
-            });
+    impl<'a> Properties<'a> { 
+        fn new() -> Self {
+            Self {
+                properties: Vec::new(),
+            }
+        }
+        fn add<T>(mut self, name: &'static str, reference: &'a mut T) -> Self
+        where T: Clone + From<Value> + Into<Value> {
+            self.properties.retain(|p| { p.name() != name });
+            let property_reference = PropertyReference { name, reference };
+            self.properties.push(Box::new(property_reference));
             self
         }
-        fn add_int(mut self, name: &'static str, value: &'a mut i32) -> Self {
-            self.retain(|a| { a.name != name });
-            self.push(Property {
-                name,
-                reference: Reference::Integer(value),
-            });
-            self
+        fn iter(&self) -> Iter<Box<Property<'a> + 'a>> {
+            self.properties.iter()
         }
-        fn add_bool(mut self, name: &'static str, value: &'a mut bool) -> Self {
-            self.retain(|a| { a.name != name });
-            self.push(Property {
-                name,
-                reference: Reference::Bool(value),
-            });
-            self
-        }
-        //fn set(&mut self, HashMap<string, Value>
     }
 
-    pub struct Property<'a> {
+    pub trait Property<'a> {
+        fn name(&self) -> &'static str;
+        fn set(&mut self, value: Value);
+        fn get(&self) -> Value;
+    }
+
+    pub struct PropertyReference<'a, T>
+    where T: 'a {
         name: &'static str,
-        reference: Reference<'a>,
+        reference: &'a mut T,
     }
 
-    impl<'a> Property<'a> {
-        pub fn set_float(&mut self, value: f32) {
-            self.reference.set(Value::Float(value))
+    impl<'a, T> Property<'a> for PropertyReference<'a, T>
+    where T: Clone + From<Value> + Into<Value> {
+        fn name(&self) -> &'static str {
+            self.name
         }
-        pub fn set_integer(&mut self, value: i32) {
-            self.reference.set(Value::Integer(value))
-        }
-        pub fn set_bool(&mut self, value: bool) {
-            self.reference.set(Value::Bool(value))
-        }
-        pub fn get_float(&mut self) -> Option<f32> {
-            match self.reference.get() {
-                Value::Float(v) => Some(v),
-                _ => None,
-            }
-        }
-        pub fn get_integer(&mut self) -> Option<i32> {
-            match self.reference.get() {
-                Value::Integer(v) => Some(v),
-                _ => None,
-            }
-        }
-        pub fn get_bool(&mut self) -> Option<bool> {
-            match self.reference.get() {
-                Value::Bool(v) => Some(v),
-                _ => None,
-            }
-        }
-    }
-
-    pub enum Reference<'a> {
-        Float(&'a mut f32),
-        Integer(&'a mut i32),
-        Bool(&'a mut bool),
-    }
-
-    impl<'a> Reference<'a> {
         fn set(&mut self, value: Value) {
-            match self {
-                Reference::Float(r) => {
-                    if let Value::Float(v) = value {
-                        **r = v;
-                    }
-                },
-                Reference::Integer(r) => {
-                    if let Value::Integer(v) = value {
-                        **r = v;
-                    }
-                },
-                Reference::Bool(r) => {
-                    if let Value::Bool(v) = value {
-                        **r = v;
-                    }
-                },
-            }
+            *(self.reference) = value.into();
         }
         fn get(&self) -> Value {
-            match self {
-                Reference::Float(r) => {
-                    Value::Float(**r)
-                },
-                Reference::Integer(r) => {
-                    Value::Integer(**r)
-                },
-                Reference::Bool(r) => {
-                    Value::Bool(**r)
-                },
-            }
+            (*(self.reference)).clone().into()
         }
     }
 
