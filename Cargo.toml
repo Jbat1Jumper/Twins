@@ -11,6 +11,7 @@ log = "0.4"
 markov = "1.0.2"
 midir = "0.5"
 mursten = { path = "mursten" }
+mursten_blocks = { path = "mursten_blocks" }
 mursten_piston_backend = { path = "mursten_piston_backend" }
 mursten_vulkan_backend = { path = "mursten_vulkan_backend" }
 nalgebra = "0.16"

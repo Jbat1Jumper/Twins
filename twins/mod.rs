@@ -216,7 +216,6 @@ impl event::EventHandler for Main {
     }
 }
 
-
 pub fn main() {
     let mut c = conf::Conf::new();
     c.window_setup.title = "Twins".to_string();
