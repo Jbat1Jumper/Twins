@@ -274,6 +274,19 @@ pub mod properties {
         properties: Vec<Box<Property<'a> + 'a>>,
     }
 
+    pub trait Property<'a> {
+        fn name(&self) -> &'static str;
+        fn set(&mut self, value: Value);
+        fn get(&self) -> Value;
+    }
+
+    #[derive(Debug)]
+    pub enum Value {
+        Float(f32),
+        Integer(i32),
+        Bool(bool),
+    }
+
     impl<'a> Properties<'a> { 
         fn new() -> Self {
             Self {
@@ -292,13 +305,7 @@ pub mod properties {
         }
     }
 
-    pub trait Property<'a> {
-        fn name(&self) -> &'static str;
-        fn set(&mut self, value: Value);
-        fn get(&self) -> Value;
-    }
-
-    pub struct PropertyReference<'a, T>
+    struct PropertyReference<'a, T>
     where T: 'a {
         name: &'static str,
         reference: &'a mut T,
@@ -317,9 +324,18 @@ pub mod properties {
         }
     }
 
-    pub enum Value {
-        Float(f32),
-        Integer(i32),
-        Bool(bool),
+    impl From<Value> for f32 {
+        fn from(v: Value) -> f32 {
+            match v {
+                Value::Float(f) => f,
+                v => panic!("Invalid cast from {:?} to f32", v),
+            }
+        }
+    }
+
+    impl Into<Value> for f32 {
+        fn into(self) -> Value {
+            Value::Float(self)
+        }
     }
 }
