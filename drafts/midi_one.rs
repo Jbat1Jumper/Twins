@@ -19,7 +19,7 @@ pub fn main() {
     let scene = Scene::default();
     Application::new(backend)
         .add_updater(ClockUpdater::new())
-        .add_updater(MidiUpdater::new())
+        .add_updater(MidiUpdater::prompt())
         .add_renderer(Visual::new())
         .run(scene);
 }
