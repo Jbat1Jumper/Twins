@@ -37,7 +37,7 @@ where
     D: Data,
 {
     fn run(
-        &mut self,
+        mut self,
         mut update_chain: UpdateChain<Self, D>,
         mut render_chain: RenderChain<Self, D>,
         mut data: D,
@@ -52,8 +52,8 @@ where
             .unwrap();
 
         while let Some(event) = window.next() {
-            update_chain.update(self, &mut data);
-            render_chain.render(self, &mut data);
+            update_chain.update(&mut self, &mut data);
+            render_chain.render(&mut self, &mut data);
 
             let canvas = {
                 let (w, h) = self.screen_size();
@@ -91,5 +91,9 @@ where
         }
 
         data
+    }
+
+    fn quit(&mut self) {
+        panic!("A delicate exit");
     }
 }

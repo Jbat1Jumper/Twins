@@ -242,7 +242,7 @@ where
     D: Data,
 {
     fn run(
-        &mut self,
+        mut self,
         mut update_chain: UpdateChain<Self, D>,
         mut render_chain: RenderChain<Self, D>,
         mut data: D,
@@ -432,8 +432,8 @@ where
         let mut recreate_swapchain = false;
 
         loop {
-            update_chain.update(self, &mut data);
-            render_chain.render(self, &data);
+            update_chain.update(&mut self, &mut data);
+            render_chain.render(&mut self, &data);
 
             previous_frame_end.cleanup_finished();
 
@@ -572,6 +572,10 @@ where
         }
 
         data
+    }
+
+    fn quit(&mut self) {
+        panic!("A delicate exit");
     }
 }
 

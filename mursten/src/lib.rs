@@ -21,7 +21,8 @@ where
     Self: Sized,
     D: Data,
 {
-    fn run(&mut self, uc: UpdateChain<Self, D>, rc: RenderChain<Self, D>, data: D) -> D;
+    fn run(self, uc: UpdateChain<Self, D>, rc: RenderChain<Self, D>, data: D) -> D;
+    fn quit(&mut self);
 }
 
 impl<B, D> Application<B, D>
@@ -37,11 +38,11 @@ where
         }
     }
 
-    pub fn run(mut self, data: D) -> D {
+    pub fn run(self, data: D) -> D {
         let Application {
-            mut backend,
-            mut update_chain,
-            mut render_chain,
+            backend,
+            update_chain,
+            render_chain,
         } = self;
 
         backend.run(update_chain, render_chain, data)
