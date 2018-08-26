@@ -277,12 +277,11 @@ pub mod property_editor {
     use mursten::{Updater, Data};
     use properties::{Property, GetProperties};
     
-
     pub struct PropertyEditor {
     }
 
-    impl<'a, B, D> Updater<B, D> for PropertyEditor
-    where D: Data + GetProperties<'a> {
+    impl<B, D> Updater<B, D> for PropertyEditor
+    where D: Data + GetProperties {
         fn update(&mut self, _: &mut B, data: &mut D) {
         }
     }
@@ -290,10 +289,10 @@ pub mod property_editor {
 }
 
 pub mod properties {
-    use std::slice::Iter;
+    use std::slice::{Iter, IterMut};
 
-    pub trait GetProperties<'a> {
-        fn properties(&'a mut self) -> Properties;
+    pub trait GetProperties {
+        fn properties<'a>(&'a mut self) -> Properties;
     }
 
     pub struct Properties<'a> {
@@ -314,20 +313,23 @@ pub mod properties {
     }
 
     impl<'a> Properties<'a> { 
-        fn new() -> Self {
+        pub fn new() -> Self {
             Self {
                 properties: Vec::new(),
             }
         }
-        fn add<T>(mut self, name: &'static str, reference: &'a mut T) -> Self
+        pub fn add<T>(mut self, name: &'static str, reference: &'a mut T) -> Self
         where T: Clone + From<Value> + Into<Value> {
             self.properties.retain(|p| { p.name() != name });
             let property_reference = PropertyReference { name, reference };
             self.properties.push(Box::new(property_reference));
             self
         }
-        fn iter(&self) -> Iter<Box<Property<'a> + 'a>> {
+        pub fn iter(&self) -> Iter<Box<Property<'a> + 'a>> {
             self.properties.iter()
+        }
+        pub fn iter_mut(&mut self) -> IterMut<Box<Property<'a> + 'a>> {
+            self.properties.iter_mut()
         }
     }
 
@@ -362,6 +364,36 @@ pub mod properties {
     impl Into<Value> for f32 {
         fn into(self) -> Value {
             Value::Float(self)
+        }
+    }
+
+    impl From<Value> for bool {
+        fn from(v: Value) -> bool {
+            match v {
+                Value::Bool(b) => b,
+                v => panic!("Invalid cast from {:?} to bool", v),
+            }
+        }
+    }
+
+    impl Into<Value> for bool {
+        fn into(self) -> Value {
+            Value::Bool(self)
+        }
+    }
+
+    impl From<Value> for i32 {
+        fn from(v: Value) -> i32 {
+            match v {
+                Value::Integer(i) => i,
+                v => panic!("Invalid cast from {:?} to i32", v),
+            }
+        }
+    }
+
+    impl Into<Value> for i32 {
+        fn into(self) -> Value {
+            Value::Integer(self)
         }
     }
 }
