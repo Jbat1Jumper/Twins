@@ -17,7 +17,7 @@ pub fn main() {
     let scene = Scene::new();
     Application::new(backend)
         .add_updater(ClockUpdater::new())
-        .add_updater(MidiUpdater::new())
+        //.add_updater(MidiUpdater::prompt())
         .add_renderer(Visual::new())
         .run(scene);
 }

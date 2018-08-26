@@ -193,9 +193,17 @@ pub mod midi {
     }
 
     impl MidiUpdater {
-        pub fn new() -> Self {
+        pub fn prompt() -> Self {
+            let midi_in = create_midi_input();
+            let name = prompt_port(&midi_in);
             Self {
-                midi_handle: listen_from_port().unwrap(),
+                midi_handle: listen_from_port(midi_in, &name).unwrap(),
+            }
+        }
+        pub fn new(name: &str) -> Self {
+            let midi_in = create_midi_input();
+            Self {
+                midi_handle: listen_from_port(midi_in, name).unwrap(),
             }
         }
     }
@@ -209,40 +217,58 @@ pub mod midi {
         }
     }
 
-    fn listen_from_port() -> Result<MidiHandle, ()> {
-        println!("\n# Please connect to a MIDI input\n");
+    fn create_midi_input() -> MidiInput {
         let mut midi_in = MidiInput::new("midi_one input port").unwrap();
         midi_in.ignore(Ignore::None);
-        
-        println!("Available input ports:");
+        midi_in
+    }
+
+    fn prompt_port(midi_in: &MidiInput) -> String {
+        println!("\n# Please connect to a MIDI input\n#");
+        println!("# Available input ports:");
         for i in 0..midi_in.port_count() {
-            println!("{}: {}", i, midi_in.port_name(i).unwrap());
+            println!("#   {}: {}", i, midi_in.port_name(i).unwrap());
         }
-        print!("Please select input port: ");
+        print!("# Please select input port: ");
         stdout().flush().unwrap();
         let in_port: usize = {
             let mut input = String::new();
             stdin().read_line(&mut input).unwrap();
             input.trim().parse().unwrap()
         };
-        
-        println!("\nOpening connection");
-        let in_port_name = midi_in.port_name(in_port).unwrap();
+        midi_in.port_name(in_port).unwrap()
+    }
 
+    fn listen_from_port(midi_in: MidiInput, name: &str) -> Result<MidiHandle, ()> {
 
         let (transmitter, receiver) = channel();
 
-        let midi_connection = midi_in.connect(in_port, "midir-forward", move |stamp, message, _| {
-            if let Some(message) = MidiMessage::from(message) {
-                transmitter.send(message);
+        let port_index = |midi_in: &MidiInput, name| {
+            let mut res = None;
+            for i in 0..midi_in.port_count() {
+                if name == midi_in.port_name(i).unwrap() {
+                    res = Some(i);
+                }
             }
-        }, ()).unwrap();
-        
-        println!("Connection open, listening to '{}'", in_port_name);
+            res
+        };
 
-
-        
-        Ok( MidiHandle { receiver, midi_connection } )
+        println!("# \nOpening connection");
+        match port_index(&midi_in, name) {
+            Some(port_index) => {
+                let midi_connection = midi_in.connect(port_index, "midir-forward", move |stamp, message, _| {
+                    if let Some(message) = MidiMessage::from(message) {
+                        transmitter.send(message);
+                    }
+                }, ()).unwrap();
+                println!("# Connection open, listening to '{}'", name);
+                Ok( MidiHandle { receiver, midi_connection } )
+            },
+            None => {
+                println!("# No port found by the name of '{}'", name);
+                Err(())
+            }
+        }
     }
 
 }
