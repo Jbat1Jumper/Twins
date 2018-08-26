@@ -6,6 +6,7 @@ extern crate nalgebra;
 use mursten::{Application, Backend, Data, Renderer, Updater};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
+use mursten_blocks::properties::{Properties, GetProperties};
 use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 
@@ -30,6 +31,17 @@ struct Scene {
     x: f32,
     y: f32,
     z: f32,
+}
+
+impl GetProperties for Scene {
+    fn properties<'a>(&'a mut self) -> Properties {
+        Properties::new()
+            .add("w", &mut self.w)
+            .add("x", &mut self.x)
+            .add("y", &mut self.y)
+            .add("z", &mut self.z)
+            .add("paused", &mut self.paused)
+    }
 }
 
 #[derive(Debug)]
