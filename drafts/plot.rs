@@ -6,21 +6,34 @@ extern crate nalgebra;
 use mursten::{Application, Backend, Data, Renderer, Updater};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
+use mursten_blocks::repl::{create_repl};
 use mursten_blocks::properties::{Properties, GetProperties};
 use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 
 use nalgebra::*;
+use std::thread;
 
 
 pub fn main() {
+
+    let (repl_client, repl_server) = create_repl();
+
+    let main_thread = thread::current();
+    let repl_thread = thread::spawn(move || {
+        repl_client.run();
+    });
+
     let backend = VulkanBackend::new();
     let scene = Scene::new();
     Application::new(backend)
         .add_updater(ClockUpdater::new())
         //.add_updater(MidiUpdater::prompt())
+        .add_updater(repl_server)
         .add_renderer(Visual::new())
         .run(scene);
+
+    repl_thread.join();
 }
 
 struct Scene {
