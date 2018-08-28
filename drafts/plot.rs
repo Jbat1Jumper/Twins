@@ -5,18 +5,16 @@ extern crate nalgebra;
 
 use mursten::{Application, Backend, Data, Renderer, Updater};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
+use mursten_blocks::properties::{GetProperties, Properties};
+use mursten_blocks::repl::create_repl;
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
-use mursten_blocks::repl::{create_repl};
-use mursten_blocks::properties::{Properties, GetProperties};
 use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 
 use nalgebra::*;
 use std::thread;
 
-
 pub fn main() {
-
     let (repl_client, repl_server) = create_repl();
 
     let main_thread = thread::current();
@@ -65,7 +63,7 @@ enum Track {
     Z,
 }
 
-impl Data for Scene { }
+impl Data for Scene {}
 
 impl Scene {
     pub fn new() -> Self {
@@ -95,16 +93,16 @@ impl OnMidiMessage for Scene {
         match msg {
             MidiMessage::NoteOn(28, _) => {
                 self.active_track = Track::W;
-            },
+            }
             MidiMessage::NoteOn(29, _) => {
                 self.active_track = Track::X;
-            },
+            }
             MidiMessage::NoteOn(30, _) => {
                 self.active_track = Track::Y;
-            },
+            }
             MidiMessage::NoteOn(31, _) => {
                 self.active_track = Track::Z;
-            },
+            }
             MidiMessage::PitchBendChange(amount) => {
                 let value = amount as f32 / 16383.0;
                 println!("{:?}: {}", self.active_track, value);
@@ -114,22 +112,23 @@ impl OnMidiMessage for Scene {
                     Track::Y => self.y = value,
                     Track::Z => self.z = value,
                 }
-            },
-            msg => { println!("{:?}", msg); },
+            }
+            msg => {
+                println!("{:?}", msg);
+            }
         }
     }
 }
 
-struct Visual { }
+struct Visual {}
 
 impl Visual {
     pub fn new() -> Self {
-        Visual { }
+        Visual {}
     }
 }
 
 fn tesselated_rectangle(divisions: u32) -> Mesh {
-
     let quads = divisions + 1;
 
     let upper_triangles = (0..quads).map(|i| {
@@ -138,7 +137,7 @@ fn tesselated_rectangle(divisions: u32) -> Mesh {
         Triangle {
             v1: Point3::new(-1.0, 0.0, -z_0).into(),
             v2: Point3::new(-1.0, 0.0, -z_1).into(),
-            v3: Point3::new( 1.0, 0.0, -z_0).into(),
+            v3: Point3::new(1.0, 0.0, -z_0).into(),
         }
     });
 
@@ -147,8 +146,8 @@ fn tesselated_rectangle(divisions: u32) -> Mesh {
         let z_1 = (i + 1) as f32 / quads as f32;
         Triangle {
             v1: Point3::new(-1.0, 0.0, -z_1).into(),
-            v2: Point3::new( 1.0, 0.0, -z_1).into(),
-            v3: Point3::new( 1.0, 0.0, -z_0).into(),
+            v2: Point3::new(1.0, 0.0, -z_1).into(),
+            v3: Point3::new(1.0, 0.0, -z_0).into(),
         }
     });
 
@@ -156,8 +155,8 @@ fn tesselated_rectangle(divisions: u32) -> Mesh {
         // triangles: upper_triangles.chain(lower_triangles).collect(),
         triangles: vec![Triangle {
             v1: Point3::new(-1.0, 0.0, 1.0).into(),
-            v2: Point3::new( 1.0, 0.0, -1.0).into(),
-            v3: Point3::new( 1.0, 0.0, 1.0).into(),
+            v2: Point3::new(1.0, 0.0, -1.0).into(),
+            v3: Point3::new(1.0, 0.0, 1.0).into(),
         }],
         transform: Transform3::identity(),
     }
@@ -165,12 +164,11 @@ fn tesselated_rectangle(divisions: u32) -> Mesh {
 
 impl Renderer<VulkanBackend, Scene> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, scene: &Scene) {
-
         // Units are in centimeters
         //let eye = Point3::new(40.0, 40.0, 40.0);
         let eye = Point3::new(
-            scene.x * 400.0 - 200.0, 
-            scene.y * 400.0 - 200.0, 
+            scene.x * 400.0 - 200.0,
+            scene.y * 400.0 - 200.0,
             scene.z * 400.0 - 200.0,
         );
         let target = Point3::new(0.0, 0.0, 0.0);
@@ -178,7 +176,8 @@ impl Renderer<VulkanBackend, Scene> for Visual {
 
         backend.set_constants(Constants {
             projection: Perspective3::new(1.0, 1.57, 1.0, 900.0).to_homogeneous(),
-            view: Matrix4::from_euler_angles(0.0, scene.w * 6.0 - 3.0, 0.0) * Matrix4::new_translation(&eye.coords),
+            view: Matrix4::from_euler_angles(0.0, scene.w * 6.0 - 3.0, 0.0)
+                * Matrix4::new_translation(&eye.coords),
             ..Constants::default()
         });
 
@@ -188,69 +187,69 @@ impl Renderer<VulkanBackend, Scene> for Visual {
             triangles: vec![
                 // +Z
                 Triangle::new(
-                    Vertex::at(Point3::new(-1.0, -1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, -1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0, -1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0,  1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, 1.0)).color(0.0, 0.0, 1.0, 1.0),
                 ),
                 // -Z
                 Triangle::new(
                     Vertex::at(Point3::new(-1.0, -1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0, -1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, -1.0)).color(1.0, 1.0, 0.0, 1.0),
                 ),
                 // +Y
                 Triangle::new(
-                    Vertex::at(Point3::new(-1.0,  1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0,  1.0)).color(0.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, 1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0,  1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0,  1.0)).color(0.0, 1.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0,  1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, -1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, 1.0)).color(0.0, 1.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, 1.0)).color(0.0, 1.0, 0.0, 1.0),
                 ),
                 // -Y
                 Triangle::new(
                     Vertex::at(Point3::new(-1.0, -1.0, -1.0)).color(1.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0, -1.0,  1.0)).color(1.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0, -1.0)).color(1.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, -1.0, 1.0)).color(1.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, -1.0)).color(1.0, 0.0, 1.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0, -1.0, -1.0)).color(1.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0, -1.0,  1.0)).color(1.0, 0.0, 1.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0,  1.0)).color(1.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, -1.0)).color(1.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, -1.0, 1.0)).color(1.0, 0.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, 1.0)).color(1.0, 0.0, 1.0, 1.0),
                 ),
                 // +X
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0, -1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0,  1.0)).color(1.0, 0.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, 1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new( 1.0,  1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0, -1.0,  1.0)).color(1.0, 0.0, 0.0, 1.0),
-                    Vertex::at(Point3::new( 1.0,  1.0,  1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, -1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, -1.0, 1.0)).color(1.0, 0.0, 0.0, 1.0),
+                    Vertex::at(Point3::new(1.0, 1.0, 1.0)).color(1.0, 0.0, 0.0, 1.0),
                 ),
                 // -X
                 Triangle::new(
                     Vertex::at(Point3::new(-1.0, -1.0, -1.0)).color(0.0, 1.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0, -1.0,  1.0)).color(0.0, 1.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0, -1.0)).color(0.0, 1.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, -1.0, 1.0)).color(0.0, 1.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, -1.0)).color(0.0, 1.0, 1.0, 1.0),
                 ),
                 Triangle::new(
-                    Vertex::at(Point3::new(-1.0,  1.0, -1.0)).color(0.0, 1.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0, -1.0,  1.0)).color(0.0, 1.0, 1.0, 1.0),
-                    Vertex::at(Point3::new(-1.0,  1.0,  1.0)).color(0.0, 1.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, -1.0)).color(0.0, 1.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, -1.0, 1.0)).color(0.0, 1.0, 1.0, 1.0),
+                    Vertex::at(Point3::new(-1.0, 1.0, 1.0)).color(0.0, 1.0, 1.0, 1.0),
                 ),
             ],
         };
@@ -281,7 +280,5 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         backend.queue_render(reference);
         backend.queue_render(floor);
         //backend.queue_render(plot);
-
     }
 }
-
