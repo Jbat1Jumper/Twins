@@ -7,7 +7,6 @@ authors = ["Nikita Zdanovitch <nzdanovitch@gmail.com>"]
 log = "0.4"
 midir = "0.5"
 mursten = { path = "../mursten" }
-mursten_vulkan_backend = { path = "../mursten_vulkan_backend" }
 nalgebra = "0.16"
 pretty_env_logger = "0.2"
 rand = "0.4"
