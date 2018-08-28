@@ -2,6 +2,7 @@ extern crate graphics;
 extern crate image;
 extern crate markov;
 extern crate mursten;
+extern crate mursten_blocks;
 extern crate mursten_vulkan_backend;
 extern crate nalgebra;
 extern crate piston_window;
@@ -9,7 +10,7 @@ extern crate rand;
 extern crate reqwest;
 
 use mursten::{Application, Backend, Data, Renderer, Updater};
-use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
+use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 use nalgebra::*;
 

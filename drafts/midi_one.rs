@@ -8,10 +8,10 @@ extern crate rand;
 use mursten::{Application, Data, Renderer};
 use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
 use mursten_blocks::camera::stock::{PerspectiveCamera, BasicCamera};
+use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
-use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
-use mursten_vulkan_backend::{Constants, VulkanBackend};
+use mursten_vulkan_backend::VulkanBackend;
 
 use nalgebra::*;
 

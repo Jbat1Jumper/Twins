@@ -4,11 +4,11 @@ extern crate mursten_vulkan_backend;
 extern crate nalgebra;
 
 use mursten::{Application, Backend, Data, Renderer, Updater};
+use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
 use mursten_blocks::properties::{GetProperties, Properties};
 use mursten_blocks::repl::create_repl;
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
-use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
 use mursten_vulkan_backend::{Constants, VulkanBackend};
 
 use nalgebra::*;

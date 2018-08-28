@@ -1,11 +1,7 @@
-use geometry::Mesh;
-use geometry::Triangle;
-use geometry::Vertex;
-
 use mursten::{Backend, Data, RenderChain, UpdateChain};
+use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 
-use nalgebra::geometry::Orthographic3;
-use nalgebra::{Matrix4, MatrixArray, Point3, U4, Vector3};
+use nalgebra::*;
 
 use shaders;
 

@@ -1,4 +1,5 @@
-use nalgebra::geometry::{Point2, Point3};
+use nalgebra::*;
+use std::vec;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
@@ -60,8 +61,6 @@ impl Triangle {
     }
 }
 
-use std::vec;
-
 impl IntoIterator for Triangle {
     type Item = Vertex;
     type IntoIter = vec::IntoIter<Vertex>;
@@ -80,8 +79,6 @@ impl Default for Triangle {
         }
     }
 }
-
-use nalgebra::Transform3;
 
 pub struct Mesh {
     pub triangles: Vec<Triangle>,

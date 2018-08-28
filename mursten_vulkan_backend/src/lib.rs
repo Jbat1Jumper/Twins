@@ -11,7 +11,6 @@ extern crate vulkano_win;
 extern crate winit;
 
 pub mod backend;
-pub mod geometry;
 pub mod shaders;
 
 pub use backend::Constants;
