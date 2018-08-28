@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH, Duration};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 pub type Time = SystemTime;
 
@@ -93,10 +93,12 @@ impl ClockUpdater {
     }
 }
 
-use mursten::{Updater, Data};
+use mursten::{Data, Updater};
 
-impl<B, D> Updater<B, D> for ClockUpdater 
-where D: Data + OnTick {
+impl<B, D> Updater<B, D> for ClockUpdater
+where
+    D: Data + OnTick,
+{
     fn update(&mut self, _: &mut B, data: &mut D) {
         let system_time = SystemTime::now();
         let delta = if self.last_system_time == CREATION_TIME {

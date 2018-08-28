@@ -21,15 +21,17 @@ pub enum Value {
     Bool(bool),
 }
 
-impl<'a> Properties<'a> { 
+impl<'a> Properties<'a> {
     pub fn new() -> Self {
         Self {
             properties: Vec::new(),
         }
     }
     pub fn add<T>(mut self, name: &'static str, reference: &'a mut T) -> Self
-    where T: Clone + From<Value> + Into<Value> {
-        self.properties.retain(|p| { p.name() != name });
+    where
+        T: Clone + From<Value> + Into<Value>,
+    {
+        self.properties.retain(|p| p.name() != name);
         let property_reference = PropertyReference { name, reference };
         self.properties.push(Box::new(property_reference));
         self
@@ -43,13 +45,17 @@ impl<'a> Properties<'a> {
 }
 
 struct PropertyReference<'a, T>
-where T: 'a {
+where
+    T: 'a,
+{
     name: &'static str,
     reference: &'a mut T,
 }
 
 impl<'a, T> Property<'a> for PropertyReference<'a, T>
-where T: Clone + From<Value> + Into<Value> {
+where
+    T: Clone + From<Value> + Into<Value>,
+{
     fn name(&self) -> &'static str {
         self.name
     }

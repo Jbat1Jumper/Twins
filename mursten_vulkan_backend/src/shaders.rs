@@ -1,4 +1,3 @@
-
 pub mod vs {
     #[derive(VulkanoShader)]
     #[ty = "vertex"]

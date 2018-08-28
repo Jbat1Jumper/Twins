@@ -1,7 +1,6 @@
 use mursten::Data;
 use nalgebra::{Point2, Vector2};
 
-
 pub trait OnKeyboard {
     fn handle(&mut self, ev: KeyboardEvent) {}
 }
@@ -11,8 +10,7 @@ pub enum KeyboardEvent {
     Released(Key, KeyModifiers),
 }
 
-pub struct KeyModifiers {
-}
+pub struct KeyModifiers {}
 
 pub enum Key {
     A,
@@ -40,13 +38,17 @@ pub enum MouseButton {
     Middle,
 }
 
-
 pub trait NoKeyboard {}
 pub trait NoMouse {}
 
 impl<D> OnKeyboard for D
-where D: Data + NoKeyboard {}
+where
+    D: Data + NoKeyboard,
+{
+}
 
 impl<D> OnMouse for D
-where D: Data + NoMouse {}
-
+where
+    D: Data + NoMouse,
+{
+}

@@ -19,7 +19,10 @@ impl Default for Vertex {
 
 impl Vertex {
     pub fn at(position: Point3<f32>) -> Self {
-        Vertex { position, ..Self::default() }
+        Vertex {
+            position,
+            ..Self::default()
+        }
     }
 
     pub fn color(self: Vertex, r: f32, g: f32, b: f32, a: f32) -> Vertex {
@@ -29,7 +32,6 @@ impl Vertex {
         }
     }
 }
-
 
 impl From<Point2<f32>> for Vertex {
     fn from(position: Point2<f32>) -> Self {

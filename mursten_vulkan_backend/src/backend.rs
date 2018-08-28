@@ -1,20 +1,19 @@
-use geometry::Vertex;
-use geometry::Triangle;
 use geometry::Mesh;
+use geometry::Triangle;
+use geometry::Vertex;
 
 use mursten::{Backend, Data, RenderChain, UpdateChain};
 
+use nalgebra::geometry::Orthographic3;
 use nalgebra::{Matrix4, MatrixArray, Point3, U4, Vector3};
-use nalgebra::geometry::{Orthographic3};
 
 use shaders;
 
 use std::mem;
 use std::sync::Arc;
 
-use vulkano_win::VkSurfaceBuild;
 use vulkano_win::required_extensions;
-
+use vulkano_win::VkSurfaceBuild;
 
 use vulkano::buffer::BufferUsage;
 use vulkano::buffer::CpuAccessibleBuffer;
@@ -31,10 +30,10 @@ use vulkano::framebuffer::RenderPass;
 use vulkano::framebuffer::RenderPassAbstract;
 use vulkano::framebuffer::RenderPassDesc;
 use vulkano::framebuffer::Subpass;
-use vulkano::image::SwapchainImage;
-use vulkano::image::ImageUsage;
-use vulkano::image::traits::ImageAccess;
 use vulkano::image::attachment::AttachmentImage;
+use vulkano::image::traits::ImageAccess;
+use vulkano::image::ImageUsage;
+use vulkano::image::SwapchainImage;
 use vulkano::instance::Instance;
 use vulkano::instance::PhysicalDevice;
 use vulkano::pipeline::vertex::SingleBufferDefinition;
@@ -50,12 +49,11 @@ use vulkano::swapchain::SwapchainCreationError;
 use vulkano::sync::now;
 use vulkano::sync::GpuFuture;
 
+use winit::Event;
 use winit::EventsLoop;
 use winit::Window;
 use winit::WindowBuilder;
-use winit::Event;
 use winit::WindowEvent;
-
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -66,22 +64,15 @@ pub struct Constants {
     pub scale: f32,
 }
 
-
 impl Default for Constants {
     fn default() -> Self {
         Self {
             scale: 1.0,
             world: Matrix4::new(
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             ),
             view: Matrix4::new(
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             ),
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous(),
         }
@@ -117,10 +108,14 @@ impl VulkanBackend {
     }
 
     pub fn queue_render(&mut self, mesh: Mesh) {
-        let Mesh { triangles, transform } = mesh;
+        let Mesh {
+            triangles,
+            transform,
+        } = mesh;
         //eprintln!(" transform: {:?}", transform);
-        let triangles: Vec<Triangle> = triangles.into_iter().map(|t| {
-            Triangle {
+        let triangles: Vec<Triangle> = triangles
+            .into_iter()
+            .map(|t| Triangle {
                 v1: Vertex {
                     position: transform * t.v1.position,
                     ..t.v1
@@ -133,8 +128,8 @@ impl VulkanBackend {
                     position: transform * t.v3.position,
                     ..t.v3
                 },
-            }
-        }).collect();
+            })
+            .collect();
         self.triangles_queue.extend(triangles);
     }
 }
@@ -269,12 +264,7 @@ where
         impl From<Vertex> for GPUVertex {
             fn from(v: Vertex) -> GPUVertex {
                 GPUVertex {
-                    position: [
-                        v.position.x,
-                        v.position.y,
-                        v.position.z,
-                        1.0,
-                    ],
+                    position: [v.position.x, v.position.y, v.position.z, 1.0],
                     color: v.color,
                     texture: v.texture,
                 }
@@ -390,7 +380,7 @@ where
                                 queue.device().clone(),
                                 img_dims,
                                 Format::D16Unorm,
-                                attachment_usage
+                                attachment_usage,
                             ).unwrap();
 
                             Arc::new(
@@ -483,4 +473,3 @@ where
         panic!("A delicate exit");
     }
 }
-

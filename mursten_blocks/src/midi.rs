@@ -1,7 +1,7 @@
+use midir::{Ignore, MidiInput, MidiInputConnection};
+use mursten::{Data, Updater};
 use std::io::{stdin, stdout, Write};
 use std::sync::mpsc::{channel, Receiver};
-use mursten::{Updater, Data};
-use midir::{MidiInput, MidiInputConnection, Ignore};
 
 struct MidiHandle {
     receiver: Receiver<MidiMessage>,
@@ -55,13 +55,17 @@ impl MidiMessage {
                 let h = bytes.next()? as u16;
                 let value = h * 128 + l;
                 MidiMessage::PitchBendChange(value)
-            },
+            }
             0b1111 => match b1 {
                 0xFA => MidiMessage::Start,
                 0xFC => MidiMessage::Stop,
-                _ => { return None; },
+                _ => {
+                    return None;
+                }
             },
-            _ => { return None; },
+            _ => {
+                return None;
+            }
         };
         Some(msg)
     }
@@ -88,7 +92,9 @@ impl MidiUpdater {
 }
 
 impl<B, D> Updater<B, D> for MidiUpdater
-where D: Data + OnMidiMessage {
+where
+    D: Data + OnMidiMessage,
+{
     fn update(&mut self, _: &mut B, data: &mut D) {
         for msg in self.midi_handle.get_messages() {
             data.on_midi_message(msg);
@@ -119,7 +125,6 @@ fn prompt_port(midi_in: &MidiInput) -> String {
 }
 
 fn listen_from_port(midi_in: MidiInput, name: &str) -> Result<MidiHandle, ()> {
-
     let (transmitter, receiver) = channel();
 
     let port_index = |midi_in: &MidiInput, name| {
@@ -135,18 +140,27 @@ fn listen_from_port(midi_in: MidiInput, name: &str) -> Result<MidiHandle, ()> {
     println!("# \nOpening connection");
     match port_index(&midi_in, name) {
         Some(port_index) => {
-            let midi_connection = midi_in.connect(port_index, "midir-forward", move |stamp, message, _| {
-                if let Some(message) = MidiMessage::from(message) {
-                    transmitter.send(message);
-                }
-            }, ()).unwrap();
+            let midi_connection = midi_in
+                .connect(
+                    port_index,
+                    "midir-forward",
+                    move |stamp, message, _| {
+                        if let Some(message) = MidiMessage::from(message) {
+                            transmitter.send(message);
+                        }
+                    },
+                    (),
+                )
+                .unwrap();
             println!("# Connection open, listening to '{}'", name);
-            Ok( MidiHandle { receiver, midi_connection } )
-        },
+            Ok(MidiHandle {
+                receiver,
+                midi_connection,
+            })
+        }
         None => {
             println!("# No port found by the name of '{}'", name);
             Err(())
         }
     }
 }
-

@@ -1,16 +1,22 @@
-use std::time::Duration;
-use mursten::{Backend, Updater, Data};
+use mursten::{Backend, Data, Updater};
 use properties::{GetProperties, Property, Value};
-use rustyline::Editor;
 use rustyline::error::ReadlineError;
-use std::sync::mpsc::{channel, Sender, Receiver, RecvTimeoutError};
+use rustyline::Editor;
+use std::sync::mpsc::{channel, Receiver, RecvTimeoutError, Sender};
+use std::time::Duration;
 
 pub fn create_repl() -> (Client, Server) {
     let (client_tx, server_rx) = channel();
     let (server_tx, client_rx) = channel();
     (
-        Client { tx: client_tx, rx: client_rx },
-        Server { tx: server_tx, rx: server_rx }
+        Client {
+            tx: client_tx,
+            rx: client_rx,
+        },
+        Server {
+            tx: server_tx,
+            rx: server_rx,
+        },
     )
 }
 
@@ -50,21 +56,24 @@ impl Client {
                             Some(key) => match parse_value(words.next()) {
                                 Some(value) => {
                                     self.tx.send(Request::Set(key.to_string(), value));
-                                    self.rx.recv_timeout(Duration::from_secs(10))
-                                        .map_err(|err| {
-                                            match err {
-                                                RecvTimeoutError::Timeout => ErrKind::Response("No response after 10 seconds."),
-                                                RecvTimeoutError::Disconnected => ErrKind::Response("No response, disconnected from server."),
+                                    self.rx
+                                        .recv_timeout(Duration::from_secs(10))
+                                        .map_err(|err| match err {
+                                            RecvTimeoutError::Timeout => {
+                                                ErrKind::Response("No response after 10 seconds.")
                                             }
+                                            RecvTimeoutError::Disconnected => ErrKind::Response(
+                                                "No response, disconnected from server.",
+                                            ),
                                         })
-                                        .and_then(|res| {
-                                            match res {
-                                                Response::Ok => Ok(()),
-                                                Response::PropertyNotFound => Err(ErrKind::Response("Property not found.")),
-                                                _ => Err(ErrKind::Response("Unknown response."))
+                                        .and_then(|res| match res {
+                                            Response::Ok => Ok(()),
+                                            Response::PropertyNotFound => {
+                                                Err(ErrKind::Response("Property not found."))
                                             }
+                                            _ => Err(ErrKind::Response("Unknown response.")),
                                         })
-                                },
+                                }
                                 None => Err(ErrKind::Usage("No value provided.")),
                             },
                             None => Err(ErrKind::Usage("No property name provided.")),
@@ -72,40 +81,44 @@ impl Client {
                         Some("get") => match words.next() {
                             Some(key) => {
                                 self.tx.send(Request::Get(key.to_string()));
-                                self.rx.recv_timeout(Duration::from_secs(10))
-                                    .map_err(|err| {
-                                        match err {
-                                            RecvTimeoutError::Timeout => ErrKind::Response("No response after 10 seconds."),
-                                            RecvTimeoutError::Disconnected => ErrKind::Response("No response, disconnected from server."),
+                                self.rx
+                                    .recv_timeout(Duration::from_secs(10))
+                                    .map_err(|err| match err {
+                                        RecvTimeoutError::Timeout => {
+                                            ErrKind::Response("No response after 10 seconds.")
                                         }
+                                        RecvTimeoutError::Disconnected => ErrKind::Response(
+                                            "No response, disconnected from server.",
+                                        ),
                                     })
-                                    .and_then(|res| {
-                                        match res {
-                                            Response::Value(value) => {
-                                                println!("{:?}", value);
-                                                Ok(())
-                                            },
-                                            Response::PropertyNotFound => Err(ErrKind::Response("Property not found.")),
-                                            _ => Err(ErrKind::Response("Unknown response."))
+                                    .and_then(|res| match res {
+                                        Response::Value(value) => {
+                                            println!("{:?}", value);
+                                            Ok(())
                                         }
+                                        Response::PropertyNotFound => {
+                                            Err(ErrKind::Response("Property not found."))
+                                        }
+                                        _ => Err(ErrKind::Response("Unknown response.")),
                                     })
-                            },
+                            }
                             None => Err(ErrKind::Usage("No property name provided.")),
                         },
                         Some("exit") => {
                             self.tx.send(Request::Exit);
-                            self.rx.recv_timeout(Duration::from_secs(10))
+                            self.rx
+                                .recv_timeout(Duration::from_secs(10))
                                 .map_err(|err| {
                                     match err {
                                         RecvTimeoutError::Timeout => ErrKind::Response("No response after 10 seconds. Use `exit!` to force exit."),
                                         RecvTimeoutError::Disconnected => ErrKind::Response("No response, disconnected from server. Use `exit!` to force exit."),
                                     }
                                 })
-                                .and_then(|res| {
-                                    match res {
-                                        Response::ExitSuccessful => Err(ErrKind::Exit),
-                                        _ => Err(ErrKind::Response("Wrong response. Use `exit!` to force exit."))
-                                    }
+                                .and_then(|res| match res {
+                                    Response::ExitSuccessful => Err(ErrKind::Exit),
+                                    _ => Err(ErrKind::Response(
+                                        "Wrong response. Use `exit!` to force exit.",
+                                    )),
                                 })
                         }
                         Some("exit!") => Err(ErrKind::Exit),
@@ -115,15 +128,15 @@ impl Client {
                 });
 
             match res {
-                Ok(_) => { },
+                Ok(_) => {}
                 Err(err) => match err {
                     ErrKind::Readline(err) => {
                         println!("{:?}!", err);
-                        break
-                    },
+                        break;
+                    }
                     ErrKind::Exit => break,
                     ErrKind::Response(msg) | ErrKind::Usage(msg) => println!("{}", msg),
-                }
+                },
             }
         }
         enum ErrKind {
@@ -150,8 +163,10 @@ fn parse_value(s: Option<&str>) -> Option<Value> {
 }
 
 impl<B, D> Updater<B, D> for Server
-where D: Data + GetProperties,
-      B: Backend<D> {
+where
+    D: Data + GetProperties,
+    B: Backend<D>,
+{
     fn update(&mut self, backend: &mut B, data: &mut D) {
         let mut ps = data.properties();
         for request in self.rx.try_iter() {
@@ -160,7 +175,7 @@ where D: Data + GetProperties,
                     Some(p) => {
                         p.set(v);
                         Response::Ok
-                    },
+                    }
                     None => Response::PropertyNotFound,
                 },
                 Request::Get(k) => match ps.iter().find(|p| p.name() == k) {
