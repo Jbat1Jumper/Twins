@@ -10,11 +10,17 @@ extern crate vulkano_shader_derive;
 extern crate vulkano_win;
 extern crate winit;
 
-
 pub mod backend;
 pub mod geometry;
 pub mod shaders;
 
 pub use backend::Constants;
 pub use backend::VulkanBackend;
+
+// This crate should not refer to mursten_blocks directly, but it needs to know
+// the core traits to interact with the camera.
+// I guess that in the future those blocks will go in the mursten core. But first
+// I need to understand what traits are a core part of the framework.
+extern crate mursten_blocks;
+mod mursten_block_implementations;
 
