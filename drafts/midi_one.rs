@@ -6,6 +6,8 @@ extern crate nalgebra;
 extern crate rand;
 
 use mursten::{Application, Data, Renderer};
+use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
+use mursten_blocks::camera::stock::{PerspectiveCamera, BasicCamera};
 use mursten_blocks::midi::{MidiMessage, MidiUpdater, OnMidiMessage};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
 use mursten_vulkan_backend::geometry::{Mesh, Triangle, Vertex};
@@ -17,6 +19,7 @@ pub fn main() {
     let backend = VulkanBackend::new();
     let scene = Scene::default();
     Application::new(backend)
+        .add_updater(CameraUpdater::new())
         .add_updater(ClockUpdater::new())
         .add_updater(MidiUpdater::prompt())
         .add_renderer(Visual::new())
@@ -25,6 +28,7 @@ pub fn main() {
 
 struct Scene {
     clock: Clock,
+    camera: BasicCamera,
     paused: bool,
     keyboard: [u8; 128],
 }
@@ -41,6 +45,7 @@ impl Default for Scene {
             clock: Clock::new(),
             paused: false,
             keyboard: [0; 128],
+            camera: PerspectiveCamera::new(Point3::new(0.0, 1.0, 0.0), Vector3::z()),
         }
     }
 }
@@ -68,6 +73,12 @@ impl OnMidiMessage for Scene {
             }
             _ => {}
         }
+    }
+}
+
+impl GetCamera for Scene {
+    fn get_camera(&self) -> &Camera {
+        &self.camera
     }
 }
 
@@ -118,10 +129,6 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         self.last_keyboard = keyboard.clone();
         let points = spiral_points(keyboard);
 
-        backend.set_constants(Constants {
-            projection: Perspective3::new(1.0, 1.27, 1.0, 100.0).to_homogeneous(),
-            ..Constants::default()
-        });
 
 
         // Reference triangle
