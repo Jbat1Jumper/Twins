@@ -15,23 +15,23 @@ use nalgebra::*;
 use std::thread;
 
 pub fn main() {
-    let (repl_client, repl_server) = create_repl();
+    //let (repl_client, repl_server) = create_repl();
 
-    let main_thread = thread::current();
-    let repl_thread = thread::spawn(move || {
-        repl_client.run();
-    });
+    //let main_thread = thread::current();
+    //let repl_thread = thread::spawn(move || {
+    //    repl_client.run();
+    //});
 
     let backend = VulkanBackend::new();
     let scene = Scene::new();
     Application::new(backend)
         .add_updater(ClockUpdater::new())
-        //.add_updater(MidiUpdater::prompt())
-        .add_updater(repl_server)
+        .add_updater(MidiUpdater::new("nanoKONTROL2 SLIDER/KNOB"))
+        //.add_updater(repl_server)
         .add_renderer(Visual::new())
         .run(scene);
 
-    repl_thread.join();
+    //repl_thread.join();
 }
 
 struct Scene {
