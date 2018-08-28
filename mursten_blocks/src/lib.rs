@@ -3,6 +3,7 @@ extern crate mursten;
 extern crate nalgebra;
 extern crate rustyline;
 
+pub mod camera;
 pub mod input;
 pub mod midi;
 pub mod properties;
