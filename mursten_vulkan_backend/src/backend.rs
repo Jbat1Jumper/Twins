@@ -1,5 +1,4 @@
 use mursten::{Backend, Data, RenderChain, UpdateChain};
-use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 
 use nalgebra::*;
 
@@ -75,8 +74,16 @@ impl Default for Constants {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct Vertex {
+    pub position: [f32; 4],
+    pub color: [f32; 4],
+    pub texture: [f32; 2],
+}
+impl_vertex!(Vertex, position, color, texture);
+
 pub struct VulkanBackend {
-    triangles_queue: Vec<Triangle>,
+    vertex_queue: Vec<Vertex>,
     dimensions: (u32, u32),
     constants: Constants,
 
@@ -87,7 +94,7 @@ pub struct VulkanBackend {
 impl VulkanBackend {
     pub fn new() -> Self {
         Self {
-            triangles_queue: Vec::new(),
+            vertex_queue: Vec::new(),
             dimensions: (0, 0),
             constants: Constants::default(),
             enable_validation_layers: false,
@@ -103,30 +110,8 @@ impl VulkanBackend {
         self.constants = constants;
     }
 
-    pub fn queue_render(&mut self, mesh: Mesh) {
-        let Mesh {
-            triangles,
-            transform,
-        } = mesh;
-        //eprintln!(" transform: {:?}", transform);
-        let triangles: Vec<Triangle> = triangles
-            .into_iter()
-            .map(|t| Triangle {
-                v1: Vertex {
-                    position: transform * t.v1.position,
-                    ..t.v1
-                },
-                v2: Vertex {
-                    position: transform * t.v2.position,
-                    ..t.v2
-                },
-                v3: Vertex {
-                    position: transform * t.v3.position,
-                    ..t.v3
-                },
-            })
-            .collect();
-        self.triangles_queue.extend(triangles);
+    pub fn enqueue_vertexes(&mut self, mut vertexes: Vec<Vertex>) {
+        self.vertex_queue.append(&mut vertexes);
     }
 }
 
@@ -249,24 +234,6 @@ where
             ).expect("failed to create swapchain")
         };
 
-        #[derive(Debug, Clone, Copy)]
-        pub struct GPUVertex {
-            pub position: [f32; 4],
-            pub color: [f32; 4],
-            pub texture: [f32; 2],
-        }
-        impl_vertex!(GPUVertex, position, color, texture);
-
-        impl From<Vertex> for GPUVertex {
-            fn from(v: Vertex) -> GPUVertex {
-                GPUVertex {
-                    position: [v.position.x, v.position.y, v.position.z, 1.0],
-                    color: v.color,
-                    texture: v.texture,
-                }
-            }
-        }
-
         let vs = shaders::vs::Shader::load(device.clone()).expect("failed to create shader module");
         let fs = shaders::fs::Shader::load(device.clone()).expect("failed to create shader module");
 
@@ -326,14 +293,10 @@ where
             previous_frame_end.cleanup_finished();
 
             let vertex_buffer = {
-                let vertexes: Vec<Vertex> = self.triangles_queue
-                    .drain(..)
-                    .flat_map(|t| t.into_iter())
-                    .collect();
                 CpuAccessibleBuffer::from_iter(
                     device.clone(),
                     BufferUsage::all(),
-                    vertexes.into_iter().map(GPUVertex::from),
+                    self.vertex_queue.drain(..),
                 ).expect("failed to create buffer")
             };
 
