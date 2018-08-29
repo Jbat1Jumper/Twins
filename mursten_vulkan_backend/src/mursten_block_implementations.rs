@@ -1,19 +1,19 @@
-use backend::{VulkanBackend, Constants};
-use mursten_blocks::camera::Camera;
-use mursten_blocks::camera::backend::SetCamera;
-use nalgebra::*;
+mod camera {
+    use backend::{VulkanBackend, Constants};
+    use nalgebra::*;
 
-impl SetCamera for VulkanBackend {
-    fn set_camera(&mut self, camera: &Camera) {
-        self.set_constants(Constants {
-            projection: camera.projection().clone(),
-            view: Matrix4::look_at_lh(
-                camera.position(),
-                &(camera.position() + camera.direction()),
-                &Vector3::y(),
-            ),
-            ..Constants::default()
-        });
+    use mursten_blocks::camera::Camera;
+    use mursten_blocks::camera::backend::SetCamera;
+
+    impl SetCamera for VulkanBackend {
+        fn set_camera(&mut self, transform: Matrix4<f32>, camera: &Camera) {
+            self.set_constants(Constants {
+                projection: camera.projection.clone(),
+                view: transform,
+                ..Constants::default()
+            });
+        }
     }
+
 }
 
