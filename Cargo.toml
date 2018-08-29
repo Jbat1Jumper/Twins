@@ -42,3 +42,7 @@ path = "drafts/midi_one.rs"
 name = "plot"
 path = "drafts/plot.rs"
 
+[[bin]]
+name = "first_person_camera"
+path = "drafts/first_person_camera.rs"
+
