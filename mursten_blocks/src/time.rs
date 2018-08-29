@@ -44,6 +44,9 @@ impl Clock {
         let d = self.time.duration_since(CREATION_TIME).unwrap();
         d.as_secs() as f32 + d.subsec_millis() as f32 / 1000.0
     }
+    pub fn delta_as_sec(&self) -> f32 {
+        self.delta.as_secs() as f32 + self.delta.subsec_millis() as f32 / 1000.0
+    }
 }
 
 use std::ops::{Add, AddAssign};
