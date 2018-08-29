@@ -1,3 +1,4 @@
+extern crate alga;
 extern crate midir;
 extern crate mursten;
 extern crate nalgebra;

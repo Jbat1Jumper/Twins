@@ -1,4 +1,5 @@
 use nalgebra::*;
+use alga::linear::Transformation;
 use std::vec;
 
 #[derive(Debug, Clone, Copy)]
@@ -20,15 +21,21 @@ impl Default for Vertex {
 
 impl Vertex {
     pub fn at(position: Point3<f32>) -> Self {
-        Vertex {
+        Self {
             position,
             ..Self::default()
         }
     }
 
-    pub fn color(self: Vertex, r: f32, g: f32, b: f32, a: f32) -> Vertex {
-        Vertex {
+    pub fn color(self, r: f32, g: f32, b: f32, a: f32) -> Self {
+        Self {
             color: [r, g, b, a],
+            ..self
+        }
+    }
+    pub fn transform(self, m: &Matrix4<f32>) -> Self {
+        Self {
+            position: m.transform_point(&self.position),
             ..self
         }
     }
@@ -59,6 +66,14 @@ impl Triangle {
     pub fn new(v1: Vertex, v2: Vertex, v3: Vertex) -> Self {
         Triangle { v1, v2, v3 }
     }
+    pub fn transform(self, m: &Matrix4<f32>) -> Self {
+        Self {
+            v1: self.v1.transform(m),
+            v2: self.v2.transform(m),
+            v3: self.v3.transform(m),
+            ..self
+        }
+    }
 }
 
 impl IntoIterator for Triangle {
@@ -82,5 +97,13 @@ impl Default for Triangle {
 
 pub struct Mesh {
     pub triangles: Vec<Triangle>,
-    pub transform: Transform3<f32>,
 }
+
+impl Mesh {
+    pub fn transform(self, m: &Matrix4<f32>) -> Self {
+        Self {
+            triangles: self.triangles.into_iter().map(|t| t.transform(m)).collect()
+        }
+    }
+}
+

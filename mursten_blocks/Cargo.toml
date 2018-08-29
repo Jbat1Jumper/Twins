@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Nikita Zdanovitch <nzdanovitch@gmail.com>"]
 
 [dependencies]
+alga = "0.7"
 log = "0.4"
 midir = "0.5"
 mursten = { path = "../mursten" }
