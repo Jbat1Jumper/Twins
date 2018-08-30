@@ -49,6 +49,8 @@ use winit::EventsLoop;
 use winit::Window;
 use winit::WindowBuilder;
 use winit::WindowEvent;
+use winit::KeyboardInput;
+
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -84,6 +86,10 @@ impl_vertex!(Vertex, position, color, texture);
 
 pub struct VulkanBackend {
     vertex_queue: Vec<Vertex>,
+
+    keyboard_event_queue: Vec<KeyboardInput>,
+    mouse_event_queue: Vec<WindowEvent>,
+
     dimensions: (u32, u32),
     constants: Constants,
 
@@ -95,6 +101,8 @@ impl VulkanBackend {
     pub fn new() -> Self {
         Self {
             vertex_queue: Vec::new(),
+            keyboard_event_queue: Vec::new(),
+            mouse_event_queue: Vec::new(),
             dimensions: (0, 0),
             constants: Constants::default(),
             enable_validation_layers: false,
@@ -112,6 +120,14 @@ impl VulkanBackend {
 
     pub fn enqueue_vertexes(&mut self, mut vertexes: Vec<Vertex>) {
         self.vertex_queue.append(&mut vertexes);
+    }
+
+    pub fn drain_keyboard_events(&mut self) -> Vec<KeyboardInput> {
+        self.keyboard_event_queue.drain(..).collect()
+    }
+
+    pub fn drain_mouse_events(&mut self) -> Vec<WindowEvent> {
+        self.mouse_event_queue.drain(..).collect()
     }
 }
 
@@ -410,16 +426,17 @@ where
 
             let mut done = false;
             events_loop.poll_events(|ev| {
+
                 //println!("{:?}", ev);
                 match ev {
-                    Event::WindowEvent {
-                        event: WindowEvent::Closed,
-                        ..
-                    } => done = true,
-                    Event::WindowEvent {
-                        event: WindowEvent::Resized(_, _),
-                        ..
-                    } => recreate_swapchain = true,
+                    Event::WindowEvent { event, .. } => match event {
+                        WindowEvent::Closed => done = true,
+                        WindowEvent::Resized(_, _) => recreate_swapchain = true,
+                        WindowEvent::KeyboardInput { input, .. } => {
+                            self.keyboard_event_queue.push(input);
+                        },
+                        _ => (),
+                    }
                     _ => (),
                 }
             });

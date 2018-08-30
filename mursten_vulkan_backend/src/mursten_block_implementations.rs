@@ -46,3 +46,40 @@ mod render {
         }
     }
 }
+
+mod input {
+    use backend;
+    use mursten_blocks::input::{Key, KeyModifiers, KeyboardEvent, MouseEvent};
+    use mursten_blocks::input::backend::{KeyboardEventSource, MouseEventSource};
+    use winit::ElementState;
+    use winit::VirtualKeyCode;
+
+    impl KeyboardEventSource for backend::VulkanBackend {
+        fn drain_events(&mut self) -> Vec<KeyboardEvent> {
+            self.drain_keyboard_events().into_iter().filter_map(|keyboard_input| -> Option<_> {
+                let key = keyboard_input.virtual_keycode.map(|vk| match vk {
+                    VirtualKeyCode::A => Some(Key::A),
+                    VirtualKeyCode::S => Some(Key::S),
+                    VirtualKeyCode::D => Some(Key::D),
+                    VirtualKeyCode::Q => Some(Key::Q),
+                    VirtualKeyCode::W => Some(Key::W),
+                    VirtualKeyCode::E => Some(Key::E),
+                    _ => None
+                })??;
+                let modifiers = KeyModifiers {};
+
+                let event = match keyboard_input.state {
+                    ElementState::Pressed => KeyboardEvent::Pressed(key, modifiers),
+                    ElementState::Released => KeyboardEvent::Released(key, modifiers),
+                };
+                Some(event)
+            }).collect()
+        }
+    }
+
+    impl MouseEventSource for backend::VulkanBackend {
+        fn drain_events(&mut self) -> Vec<MouseEvent> {
+            panic!("MouseEventSource is not implemented yet on vulkan backend")
+        }
+    }
+}
