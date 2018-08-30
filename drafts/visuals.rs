@@ -11,7 +11,7 @@ extern crate reqwest;
 
 use mursten::{Application, Backend, Data, Renderer, Updater};
 use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
-use mursten_vulkan_backend::{Constants, VulkanBackend};
+use mursten_vulkan_backend::{Uniforms, VulkanBackend};
 use nalgebra::*;
 
 pub fn main() {
@@ -133,9 +133,9 @@ impl Renderer<VulkanBackend, Variables> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, var: &Variables) {
         let (w, h) = (20, 20);
         //let (w, h) = backend.screen_size();
-        backend.set_constants(Constants {
+        backend.set_constants(Uniforms {
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, 10.0, 900.0).to_homogeneous(),
-            ..Constants::default()
+            ..Uniforms::default()
         });
 
         backend.queue_render({

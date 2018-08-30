@@ -54,14 +54,14 @@ use winit::KeyboardInput;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct Constants {
+pub struct Uniforms {
     pub world: Matrix4<f32>,
     pub view: Matrix4<f32>,
     pub projection: Matrix4<f32>,
     pub scale: f32,
 }
 
-impl Default for Constants {
+impl Default for Uniforms {
     fn default() -> Self {
         Self {
             scale: 1.0,
@@ -91,7 +91,7 @@ pub struct VulkanBackend {
     mouse_event_queue: Vec<WindowEvent>,
 
     dimensions: (u32, u32),
-    constants: Constants,
+    constants: Uniforms,
 
     enable_validation_layers: bool,
     desired_validation_layer: &'static str,
@@ -104,7 +104,7 @@ impl VulkanBackend {
             keyboard_event_queue: Vec::new(),
             mouse_event_queue: Vec::new(),
             dimensions: (0, 0),
-            constants: Constants::default(),
+            constants: Uniforms::default(),
             enable_validation_layers: false,
             desired_validation_layer: "VK_LAYER_LUNARG_standard_validation",
         }
@@ -114,7 +114,7 @@ impl VulkanBackend {
         self.dimensions
     }
 
-    pub fn set_constants(&mut self, constants: Constants) {
+    pub fn set_constants(&mut self, constants: Uniforms) {
         self.constants = constants;
     }
 

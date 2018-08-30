@@ -13,7 +13,7 @@ extern crate winit;
 pub mod backend;
 pub mod shaders;
 
-pub use backend::Constants;
+pub use backend::Uniforms;
 pub use backend::VulkanBackend;
 
 // This crate should not refer to mursten_blocks directly, but it needs to know
