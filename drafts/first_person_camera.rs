@@ -8,6 +8,7 @@ use mursten::{Application, Backend, Data};
 use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
+use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater};
 use mursten_blocks::mesh_renderer::{GetMeshes, IntoMesh, MeshRenderer};
 use mursten_vulkan_backend::VulkanBackend;
 use std::time::Duration;
@@ -21,6 +22,7 @@ pub fn main() {
     Application::new(backend)
         .add_updater(ClockUpdater::new())
         .add_updater(CameraUpdater::new())
+        .add_updater(KeyboardUpdater::new())
         .add_renderer(MeshRenderer::new())
         .run(scene);
 }
@@ -59,6 +61,9 @@ struct Player {
     camera: Camera,
     height: f32,
     transform: Matrix4<f32>,
+
+    moving_towards: Vector3<f32>,
+    rotating_towards: f32,
 }
 
 impl Player {
@@ -66,6 +71,8 @@ impl Player {
         Player {
             camera: Camera::perspective(),
             height: 1.7,
+            moving_towards: Vector3::new(0.0, 0.0, 0.0),
+            rotating_towards: 0.0,
             transform: Matrix4::new_translation(&position.coords),
         }
     }
@@ -147,8 +154,6 @@ impl OnTick for Scene {
         }
         std::thread::sleep_ms(20);
 
-        self.player.transform *= Matrix4::from_euler_angles(0.0, 0.1 * self.clock.delta_as_sec(), 0.0);
-
         if self.clock.delta() >= self.next_change {
             self.next_change = Duration::from_secs(1);
             {
@@ -177,6 +182,11 @@ impl OnTick for Scene {
             let d = (platform.target_height - y) * self.clock.delta_as_sec() * 10.0;
             platform.position.y += d;
         }
+        
+        const player_speed: f32 = 2.0;
+        let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed;
+        self.player.transform.append_translation_mut(&translation);
+        self.player.transform = Matrix4::from_euler_angles(0.0, self.player.rotating_towards * self.clock.delta_as_sec() * player_speed * 0.3, 0.0) * self.player.transform;
     }
 }
 
@@ -197,5 +207,30 @@ impl GetCamera for Scene {
     }
 }
 
-
+impl OnKeyboard for Scene {
+    fn handle(&mut self, event: KeyboardEvent) {
+        let mt = &mut self.player.moving_towards;
+        let rt = &mut self.player.rotating_towards;
+        match event {
+            KeyboardEvent::Pressed(key, _) => {
+                match key {
+                    Key::A => mt.x = 1.0, //TODO: Invert this axis
+                    Key::S => mt.z = -1.0,
+                    Key::D => mt.x = -1.0,
+                    Key::W => mt.z = 1.0,
+                    Key::Q => *rt = -1.0,
+                    Key::E => *rt = 1.0,
+                };
+            }
+            KeyboardEvent::Released(key, _) => {
+                match key {
+                    Key::A | Key::D => mt.x = 0.0,
+                    Key::S | Key::W => mt.z = 0.0,
+                    Key::Q | Key::E => *rt = 0.0,
+                    _ => (),
+                };
+            }
+        }
+    }
+}
 
