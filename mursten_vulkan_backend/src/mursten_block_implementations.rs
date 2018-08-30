@@ -27,19 +27,27 @@ mod render {
         fn queue_render(&mut self, m: Matrix4<f32>, mesh: Mesh) {
             let vertexes = mesh.transform(&m).triangles.into_iter().fold(Vec::new(), |mut vs, t| {
                 let Triangle { v1, v2, v3 } = t;
-                vs.push(v1.into());
-                vs.push(v2.into());
-                vs.push(v3.into());
+
+                let n1 = (v1.position - v3.position).cross(&(v1.position - v2.position)); // Le podes haber pifiado a la dirección de la normal
+                vs.push((n1, v1).into());
+
+                let n2 = (v2.position - v1.position).cross(&(v2.position - v3.position)); // Le podes haber pifiado a la dirección de la normal
+                vs.push((n2, v2).into());
+
+                let n3 = (v3.position - v2.position).cross(&(v3.position - v1.position)); // Le podes haber pifiado a la dirección de la normal
+                vs.push((n3, v3).into());
                 vs
             });
             self.enqueue_vertexes(vertexes);
         }
     }
 
-    impl From<Vertex> for backend::Vertex {
-        fn from(v: Vertex) -> backend::Vertex {
+    impl From<(Vector3<f32>, Vertex)> for backend::Vertex {
+        fn from(pair: (Vector3<f32>, Vertex)) -> backend::Vertex {
+            let (n, v) = pair;
             backend::Vertex {
-                position: [v.position.x, v.position.y, v.position.z, 1.0],
+                position: v.position.to_homogeneous().into(),
+                normal: n.to_homogeneous().into(),
                 color: v.color,
                 texture: v.texture,
             }

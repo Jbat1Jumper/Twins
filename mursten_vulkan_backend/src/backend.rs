@@ -58,20 +58,40 @@ pub struct Uniforms {
     pub world: Matrix4<f32>,
     pub view: Matrix4<f32>,
     pub projection: Matrix4<f32>,
+
+    pub ambient_color: Vector4<f32>,
+    pub diffuse_color: Vector4<f32>,
+    pub diffuse_direction: Vector4<f32>,
+
     pub scale: f32,
+    pub ambient_strength: f32,
+    pub diffuse_strength: f32,
 }
 
 impl Default for Uniforms {
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     fn default() -> Self {
         Self {
             scale: 1.0,
             world: Matrix4::new(
-                1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
             ),
             view: Matrix4::new(
-                1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
             ),
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous(),
+            ambient_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            ambient_strength: 0.5,
+
+            diffuse_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            diffuse_direction: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            diffuse_strength: 0.5,
         }
     }
 }
@@ -79,10 +99,11 @@ impl Default for Uniforms {
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub position: [f32; 4],
+    pub normal: [f32; 4],
     pub color: [f32; 4],
     pub texture: [f32; 2],
 }
-impl_vertex!(Vertex, position, color, texture);
+impl_vertex!(Vertex, position, normal, color, texture);
 
 pub struct VulkanBackend {
     vertex_queue: Vec<Vertex>,
