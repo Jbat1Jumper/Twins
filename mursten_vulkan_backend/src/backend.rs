@@ -62,10 +62,12 @@ pub struct Uniforms {
     pub ambient_color: Vector4<f32>,
     pub diffuse_color: Vector4<f32>,
     pub diffuse_origin: Vector4<f32>,
+    pub specular_color: Vector4<f32>,
 
     pub scale: f32,
     pub ambient_strength: f32,
     pub diffuse_strength: f32,
+    pub specular_strength: f32,
 }
 
 impl Default for Uniforms {
@@ -92,6 +94,9 @@ impl Default for Uniforms {
             diffuse_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
             diffuse_origin: Vector4::new(10.0, 10.0, -5.0, 1.0),
             diffuse_strength: 0.5,
+
+            specular_strength: 0.5,
+            specular_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
         }
     }
 }

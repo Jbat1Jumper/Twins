@@ -37,7 +37,7 @@ struct Scene {
     player: Player,
     floor: Vec<Platform>,
     skybox: Skybox,
-    sphere: Cube,
+    cube: Cube,
 }
 
 impl Scene {
@@ -57,7 +57,7 @@ impl Scene {
                 v
             },
             skybox: Skybox::new(),
-            sphere: Cube::new(),
+            cube: Cube::new(),
         }
     }
 }
@@ -232,7 +232,7 @@ impl OnTick for Scene {
             platform.position.y += d;
         }
 
-        self.sphere.rotation += 2.0 * self.clock.delta_as_sec();
+        self.cube.rotation += 0.2 * self.clock.delta_as_sec();
         
         const player_speed: f32 = 2.0;
         let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed;
@@ -247,7 +247,7 @@ impl GetMeshes for Scene {
         for platform in self.floor.iter() {
             v.push(platform);
         }
-        v.push(&self.sphere);
+        v.push(&self.cube);
         v.into_iter()
     }
 }

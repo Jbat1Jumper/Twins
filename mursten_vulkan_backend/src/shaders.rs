@@ -24,10 +24,12 @@ pub mod vs {
             vec4 ambient_color;
             vec4 diffuse_color;
             vec4 diffuse_origin;
+            vec4 specular_color;
 
             float scale;
             float ambient_strength;
             float diffuse_strength;
+            float specular_strength;
         } c;
 
         void main() {
@@ -68,10 +70,12 @@ pub mod fs {
             vec4 ambient_color;
             vec4 diffuse_color;
             vec4 diffuse_origin;
+            vec4 specular_color;
 
             float scale;
             float ambient_strength;
             float diffuse_strength;
+            float specular_strength;
         } c;
 
         float rand(vec2 co) {
@@ -86,6 +90,9 @@ pub mod fs {
                  0,  0,  0,  1
             );
 
+            vec4 ambient = c.ambient_strength * c.ambient_color;
+            ambient.w = 1.0;
+
             vec4 norm = normalize(inNormal);
             vec4 diffuse_origin = fix_coordinate_system * c.diffuse_origin;
             vec4 lightDir = normalize(diffuse_origin - inFragPos);  
@@ -93,9 +100,16 @@ pub mod fs {
             float diff = max(dot(norm, lightDir), 0.0);
             vec4 diffuse = diff * c.diffuse_color;
 
-            vec4 ambient = c.ambient_strength * c.ambient_color;
-            ambient.w = 1.0;
-            outColor = inColor * (ambient + diffuse);
+
+            vec4 viewPos = fix_coordinate_system * c.view * vec4(0, 0, 0, 1);
+            vec4 viewDir = normalize(viewPos - inFragPos);
+            vec4 reflectDir = reflect(-lightDir, norm); 
+
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
+            vec4 specular = c.specular_strength * spec * c.specular_color;  
+            specular.w = 1.0;
+
+            outColor = inColor * (ambient + diffuse + specular);
         }
     "]
     struct Dummy;
