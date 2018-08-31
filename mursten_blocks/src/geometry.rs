@@ -5,16 +5,16 @@ use std::vec;
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
     pub position: Point3<f32>,
-    pub color: [f32; 4],
-    pub texture: [f32; 2],
+    pub color: Vector4<f32>,
+    pub texture: Point2<f32>,
 }
 
 impl Default for Vertex {
     fn default() -> Self {
         Vertex {
             position: Point3::origin(),
-            color: [1.0, 1.0, 1.0, 1.0],
-            texture: [0.0, 0.0],
+            color: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            texture: Point2::origin(),
         }
     }
 }
@@ -27,11 +27,8 @@ impl Vertex {
         }
     }
 
-    pub fn color(self, r: f32, g: f32, b: f32, a: f32) -> Self {
-        Self {
-            color: [r, g, b, a],
-            ..self
-        }
+    pub fn color(self, color: Vector4<f32>) -> Self {
+        Self { color, ..self }
     }
     pub fn transform(self, m: &Matrix4<f32>) -> Self {
         Self {
@@ -74,6 +71,14 @@ impl Triangle {
             ..self
         }
     }
+    pub fn color(self, c: Vector4<f32>) -> Self {
+        Self {
+            v1: self.v1.color(c),
+            v2: self.v2.color(c),
+            v3: self.v3.color(c),
+            ..self
+        }
+    }
 }
 
 impl IntoIterator for Triangle {
@@ -102,7 +107,14 @@ pub struct Mesh {
 impl Mesh {
     pub fn transform(self, m: &Matrix4<f32>) -> Self {
         Self {
-            triangles: self.triangles.into_iter().map(|t| t.transform(m)).collect()
+            triangles: self.triangles.into_iter().map(|t| t.transform(m)).collect(),
+            ..self
+        }
+    }
+    pub fn color(self, c: Vector4<f32>) -> Self {
+        Self {
+            triangles: self.triangles.into_iter().map(|t| t.color(c)).collect(),
+            ..self
         }
     }
 }
