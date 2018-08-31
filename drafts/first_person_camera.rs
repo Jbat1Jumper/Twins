@@ -13,6 +13,9 @@ use mursten_blocks::mesh_renderer::{GetMeshes, IntoMesh, MeshRenderer};
 use mursten_vulkan_backend::VulkanBackend;
 use std::time::Duration;
 
+use rand::distributions::normal::Normal;
+use rand::distributions::IndependentSample;
+
 use nalgebra::*;
 
 
@@ -34,6 +37,7 @@ struct Scene {
     player: Player,
     floor: Vec<Platform>,
     skybox: Skybox,
+    sphere: Cube,
 }
 
 impl Scene {
@@ -53,6 +57,7 @@ impl Scene {
                 v
             },
             skybox: Skybox::new(),
+            sphere: Cube::new(),
         }
     }
 }
@@ -84,10 +89,22 @@ struct Platform {
     color: PlatformColor,
 }
 
+#[derive(Clone, Copy)]
 enum PlatformColor {
     Red(bool),
     Green(bool),
     Blue(bool),
+}
+
+impl Into<Vector4<f32>> for PlatformColor {
+    fn into(self) -> Vector4<f32> {
+        use PlatformColor::*;
+        match self {
+            Red(bright) => Vector4::new(if bright { 0.8 } else { 0.3 }, 0.1, 0.1, 1.0),
+            Green(bright) => Vector4::new(0.1, if bright { 0.8 } else { 0.3 }, 0.1, 1.0),
+            Blue(bright) => Vector4::new(0.1, 0.1, if bright { 0.8 } else { 0.3 }, 1.0),
+        }
+    }
 }
 
 
@@ -97,15 +114,6 @@ impl Platform {
             position,
             target_height: 0.0,
             color: PlatformColor::Green(false),
-        }
-    }
-
-    fn set_vertex_color(&self, v: Vertex) -> Vertex {
-        use PlatformColor::*;
-        match self.color {
-            Red(bright) => v.color(if bright { 0.8 } else { 0.3 }, 0.1, 0.1, 1.0),
-            Green(bright) => v.color(0.1, if bright { 0.8 } else { 0.3 }, 0.1, 1.0),
-            Blue(bright) => v.color(0.1, 0.1, if bright { 0.8 } else { 0.3 }, 1.0),
         }
     }
 }
@@ -119,30 +127,73 @@ impl IntoMesh for Platform {
         let v2 = Vertex::at(Point3::new(-0.5, 0.0,  0.5));
         let v3 = Vertex::at(Point3::new( 0.5, 0.0,  0.5));
         let v4 = Vertex::at(Point3::new( 0.5, 0.0, -0.5));
-        let v1 = self.set_vertex_color(v1);
-        let v2 = self.set_vertex_color(v2);
-        let v3 = self.set_vertex_color(v3);
-        let v4 = self.set_vertex_color(v4);
 
         Mesh {
             triangles: vec![
-                Triangle::new(v1, v2, v3),
-                Triangle::new(v1, v3, v4),
+                Triangle::new(v1, v2, v3).color(self.color.into()),
+                Triangle::new(v1, v3, v4).color(self.color.into()),
             ],
         }
     }
 }
 
-struct Skybox {
+struct Cube {
+    position: Point3<f32>,
+    rotation: f32,
+    color: Vector4<f32>,
 }
 
-impl Skybox {
+impl Cube {
     pub fn new() -> Self {
-        Skybox {
+        Self {
+            position: Point3::new(2.0, 1.9, 2.0),
+            rotation: 0.0,
+            color: Vector4::new(0.7, 0.7, 0.9, 1.0),
         }
     }
 }
 
+impl IntoMesh for Cube {
+    fn transform(&self) -> Matrix4<f32> {
+        Matrix4::new_translation(&self.position.coords)
+        * Matrix4::from_euler_angles(self.rotation * 0.2, self.rotation, self.rotation * 0.01)
+    }
+    fn mesh(&self) -> Mesh {
+        let v1 = Vertex::at(Point3::new(-1.0,  1.0, -1.0));
+        let v2 = Vertex::at(Point3::new(-1.0,  1.0,  1.0));
+        let v3 = Vertex::at(Point3::new( 1.0,  1.0,  1.0));
+        let v4 = Vertex::at(Point3::new( 1.0,  1.0, -1.0));
+        let v5 = Vertex::at(Point3::new(-1.0, -1.0, -1.0));
+        let v6 = Vertex::at(Point3::new(-1.0, -1.0,  1.0));
+        let v7 = Vertex::at(Point3::new( 1.0, -1.0,  1.0));
+        let v8 = Vertex::at(Point3::new( 1.0, -1.0, -1.0));
+
+        Mesh {
+            triangles: vec![
+                Triangle::new(v1, v2, v3),
+                Triangle::new(v1, v3, v4),
+                Triangle::new(v5, v1, v4),
+                Triangle::new(v5, v4, v8),
+                Triangle::new(v8, v4, v3),
+                Triangle::new(v8, v3, v7),
+                Triangle::new(v7, v3, v2),
+                Triangle::new(v7, v2, v6),
+                Triangle::new(v6, v2, v1),
+                Triangle::new(v6, v1, v5),
+                Triangle::new(v5, v8, v7),
+                Triangle::new(v5, v7, v6),
+            ],
+        }.color(self.color)
+    }
+}
+
+struct Skybox {}
+
+impl Skybox {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl Data for Scene {}
 
@@ -157,8 +208,6 @@ impl OnTick for Scene {
         if self.clock.delta() >= self.next_change {
             self.next_change = Duration::from_secs(1);
             {
-                use rand::distributions::normal::Normal;
-                use rand::distributions::IndependentSample;
                 let normal = Normal::new(0.2, 0.2);
                 let mut rng = rand::thread_rng();
                 for platform in self.floor.iter_mut() {
@@ -182,6 +231,8 @@ impl OnTick for Scene {
             let d = (platform.target_height - y) * self.clock.delta_as_sec() * 10.0;
             platform.position.y += d;
         }
+
+        self.sphere.rotation += 2.0 * self.clock.delta_as_sec();
         
         const player_speed: f32 = 2.0;
         let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed;
@@ -196,6 +247,7 @@ impl GetMeshes for Scene {
         for platform in self.floor.iter() {
             v.push(platform);
         }
+        v.push(&self.sphere);
         v.into_iter()
     }
 }
