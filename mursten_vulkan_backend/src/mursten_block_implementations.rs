@@ -55,6 +55,24 @@ mod render {
     }
 }
 
+mod light {
+    use backend;
+    use mursten_blocks::light::Light;
+    use mursten_blocks::light::backend::SetLights;
+    use nalgebra::*;
+
+    impl SetLights for backend::VulkanBackend {
+        fn set_light(&mut self, light: Light) {
+            let Light { point, color, strength } = light;
+            let mut uniforms = self.get_uniforms();
+            uniforms.diffuse_origin = Vector4::new(point.x, point.y, point.z, 1.0);
+            uniforms.diffuse_color = Vector4::new(color.x, point.y, point.z, 1.0);
+            uniforms.diffuse_strength = strength;
+            self.set_uniforms(uniforms);
+        }
+    }
+}
+
 mod input {
     use backend;
     use mursten_blocks::input::{Key, KeyModifiers, KeyboardEvent, MouseEvent};

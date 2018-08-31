@@ -7,6 +7,7 @@ extern crate rustyline;
 pub mod camera;
 pub mod geometry;
 pub mod input;
+pub mod light;
 pub mod mesh_renderer;
 pub mod midi;
 pub mod properties;
