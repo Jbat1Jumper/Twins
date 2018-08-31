@@ -22,7 +22,7 @@ pub mod vs {
 
             vec4 ambient_color;
             vec4 diffuse_color;
-            vec4 diffuse_direction;
+            vec4 diffuse_origin;
 
             float scale;
             float ambient_strength;

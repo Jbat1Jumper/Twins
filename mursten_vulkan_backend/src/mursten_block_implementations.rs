@@ -7,7 +7,7 @@ mod camera {
 
     impl SetCamera for VulkanBackend {
         fn set_camera(&mut self, transform: Matrix4<f32>, camera: &Camera) {
-            self.set_constants(Uniforms {
+            self.set_uniforms(Uniforms {
                 projection: camera.projection.clone(),
                 view: transform,
                 ..Uniforms::default()
@@ -48,8 +48,8 @@ mod render {
             backend::Vertex {
                 position: v.position.to_homogeneous().into(),
                 normal: n.to_homogeneous().into(),
-                color: v.color,
-                texture: v.texture,
+                color: v.color.into(),
+                texture: [v.texture.x, v.texture.y],
             }
         }
     }

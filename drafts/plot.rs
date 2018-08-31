@@ -174,7 +174,7 @@ impl Renderer<VulkanBackend, Scene> for Visual {
         let target = Point3::new(0.0, 0.0, 0.0);
         //let up = Vector3::y();
 
-        backend.set_constants(Uniforms {
+        backend.set_uniforms(Uniforms {
             projection: Perspective3::new(1.0, 1.57, 1.0, 900.0).to_homogeneous(),
             view: Matrix4::from_euler_angles(0.0, scene.w * 6.0 - 3.0, 0.0)
                 * Matrix4::new_translation(&eye.coords),

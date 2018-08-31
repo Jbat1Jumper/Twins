@@ -61,7 +61,7 @@ pub struct Uniforms {
 
     pub ambient_color: Vector4<f32>,
     pub diffuse_color: Vector4<f32>,
-    pub diffuse_direction: Vector4<f32>,
+    pub diffuse_origin: Vector4<f32>,
 
     pub scale: f32,
     pub ambient_strength: f32,
@@ -90,7 +90,7 @@ impl Default for Uniforms {
             ambient_strength: 0.5,
 
             diffuse_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
-            diffuse_direction: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            diffuse_origin: Vector4::new(10.0, 10.0, -5.0, 1.0),
             diffuse_strength: 0.5,
         }
     }
@@ -135,8 +135,12 @@ impl VulkanBackend {
         self.dimensions
     }
 
-    pub fn set_constants(&mut self, constants: Uniforms) {
-        self.constants = constants;
+    pub fn set_uniforms(&mut self, uniforms: Uniforms) {
+        self.constants = uniforms;
+    }
+
+    pub fn get_uniforms(&mut self) -> Uniforms {
+        self.constants
     }
 
     pub fn enqueue_vertexes(&mut self, mut vertexes: Vec<Vertex>) {

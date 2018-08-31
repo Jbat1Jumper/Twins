@@ -133,7 +133,7 @@ impl Renderer<VulkanBackend, Variables> for Visual {
     fn render(&mut self, backend: &mut VulkanBackend, var: &Variables) {
         let (w, h) = (20, 20);
         //let (w, h) = backend.screen_size();
-        backend.set_constants(Uniforms {
+        backend.set_uniforms(Uniforms {
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, 10.0, 900.0).to_homogeneous(),
             ..Uniforms::default()
         });
