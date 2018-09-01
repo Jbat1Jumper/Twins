@@ -46,3 +46,7 @@ path = "drafts/plot.rs"
 name = "first_person_camera"
 path = "drafts/first_person_camera.rs"
 
+[[bin]]
+name = "specular_light_test"
+path = "drafts/specular_light_test.rs"
+
