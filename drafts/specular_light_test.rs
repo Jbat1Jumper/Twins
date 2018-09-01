@@ -9,6 +9,7 @@ use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
 use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater};
 use mursten_blocks::mesh_renderer::{GetMeshes, IntoMesh, MeshRenderer};
+use mursten_blocks::light::{Light, GetLights, LightUpdater};
 use mursten_vulkan_backend::VulkanBackend;
 
 use nalgebra::*;
@@ -21,6 +22,7 @@ pub fn main() {
         .add_updater(ClockUpdater::new())
         .add_updater(CameraUpdater::new())
         .add_updater(KeyboardUpdater::new())
+        .add_updater(LightUpdater::new())
         .add_renderer(MeshRenderer::new())
         .run(scene);
 }
@@ -247,7 +249,7 @@ impl Scene {
             clock: Clock::new(),
             player: Player::new(Point3::new(1.0, 0.0, -2.0)),
             floor: Platform::new(Point3::origin()),
-            cube: Cube::new(Point3::new(0.0, 0.8, 0.0), 1.6),
+            cube: Cube::new(Point3::new(0.0, 0.0, 0.0), 0.3),
             gizmo: AxisGizmo::new(Point3::new(0.0, 0.2, 0.0)),
         }
     }
@@ -259,6 +261,8 @@ impl OnTick for Scene {
     fn on_tick(&mut self, tick: Tick) {
         self.clock += tick;
         std::thread::sleep_ms(20);
+
+        self.cube.position = Point3::origin() + Rotation3::from_axis_angle(&Vector3::y_axis(), self.clock.time_in_sec()) * Vector3::new(2.0, 3.0, 0.0);
 
         const player_speed: f32 = 2.0;
         let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed ;
@@ -272,7 +276,7 @@ impl GetMeshes for Scene {
     fn mesh_iter(&self) -> std::vec::IntoIter<&IntoMesh> {
         let mut v: Vec<&IntoMesh> = Vec::new();
         v.push(&self.floor);
-        //v.push(&self.cube);
+        v.push(&self.cube);
         v.push(&self.gizmo);
         v.into_iter()
     }
@@ -288,6 +292,13 @@ impl GetCamera for Scene {
                                 0.0, 0.0,-1.0, 0.0,
                                 0.0, 0.0, 0.0, 1.0) * Matrix4::look_at_lh(&eye, &target, &Vector3::y());
         (view, &self.player.camera)
+    }
+}
+
+impl GetLights for Scene {
+    fn get_light(&self) -> Light {
+        let p = Point3::origin() + Rotation3::from_axis_angle(&Vector3::y_axis(), self.clock.time_in_sec()) * Vector3::new(2.0, 3.0, 0.0);
+        Light::new(p, Vector3::new(1.0, 1.0, 1.0), 0.4)
     }
 }
 
