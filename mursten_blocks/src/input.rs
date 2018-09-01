@@ -28,7 +28,7 @@ pub trait OnMouse {
 pub enum MouseEvent {
     Pressed(MouseButton, Point2<f32>),
     Released(MouseButton, Point2<f32>),
-    Movement(Vector2<f32>, Point2<f32>),
+    Movement(Point2<f32>),
     Wheel(Vector2<f32>),
 }
 

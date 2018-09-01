@@ -112,9 +112,9 @@ impl_vertex!(Vertex, position, normal, color, texture);
 
 pub struct VulkanBackend {
     vertex_queue: Vec<Vertex>,
+    event_queue: Vec<WindowEvent>,
 
-    keyboard_event_queue: Vec<KeyboardInput>,
-    mouse_event_queue: Vec<WindowEvent>,
+    mouse_position: (f64, f64),
 
     dimensions: (u32, u32),
     constants: Uniforms,
@@ -127,8 +127,8 @@ impl VulkanBackend {
     pub fn new() -> Self {
         Self {
             vertex_queue: Vec::new(),
-            keyboard_event_queue: Vec::new(),
-            mouse_event_queue: Vec::new(),
+            event_queue: Vec::new(),
+            mouse_position: (0.0, 0.0),
             dimensions: (0, 0),
             constants: Uniforms::default(),
             enable_validation_layers: false,
@@ -152,12 +152,12 @@ impl VulkanBackend {
         self.vertex_queue.append(&mut vertexes);
     }
 
-    pub fn drain_keyboard_events(&mut self) -> Vec<KeyboardInput> {
-        self.keyboard_event_queue.drain(..).collect()
+    pub fn get_events(&mut self) -> Vec<WindowEvent> {
+        self.event_queue.clone()
     }
 
-    pub fn drain_mouse_events(&mut self) -> Vec<WindowEvent> {
-        self.mouse_event_queue.drain(..).collect()
+    pub fn get_mouse_position(&self) -> (f64, f64) {
+        self.mouse_position
     }
 }
 
@@ -454,19 +454,23 @@ where
                 .unwrap();
             previous_frame_end = Box::new(future) as Box<_>;
 
+            self.event_queue.clear();
+
             let mut done = false;
             events_loop.poll_events(|ev| {
-
-                //println!("{:?}", ev);
                 match ev {
-                    Event::WindowEvent { event, .. } => match event {
-                        WindowEvent::Closed => done = true,
-                        WindowEvent::Resized(_, _) => recreate_swapchain = true,
-                        WindowEvent::KeyboardInput { input, .. } => {
-                            self.keyboard_event_queue.push(input);
-                        },
-                        _ => (),
-                    }
+
+                    Event::WindowEvent { event, .. } => {
+                        self.event_queue.push(event.clone());
+                        match event {
+                            WindowEvent::Closed => done = true,
+                            WindowEvent::Resized(_, _) => recreate_swapchain = true,
+                            WindowEvent::CursorMoved { position, .. } => {
+                                self.mouse_position = position;
+                            },
+                            _ => (),
+                        }
+                    },
                     _ => (),
                 }
             });

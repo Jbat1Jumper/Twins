@@ -14,7 +14,6 @@ mod camera {
             });
         }
     }
-
 }
 
 mod render {
@@ -75,37 +74,78 @@ mod light {
 
 mod input {
     use backend;
-    use mursten_blocks::input::{Key, KeyModifiers, KeyboardEvent, MouseEvent};
+    use mursten_blocks::input::{Key, KeyModifiers, KeyboardEvent, MouseEvent, MouseButton};
     use mursten_blocks::input::backend::{KeyboardEventSource, MouseEventSource};
-    use winit::ElementState;
-    use winit::VirtualKeyCode;
+    use winit;
+    use nalgebra::*;
 
     impl KeyboardEventSource for backend::VulkanBackend {
         fn drain_events(&mut self) -> Vec<KeyboardEvent> {
-            self.drain_keyboard_events().into_iter().filter_map(|keyboard_input| -> Option<_> {
+           self.get_events().into_iter().filter_map(|window_event| {
+
+               match window_event {
+                    winit::WindowEvent::KeyboardInput { input, .. } => Some(input),
+                    _ => None,
+                }
+
+           }).filter_map(|keyboard_input| {
+
                 let key = keyboard_input.virtual_keycode.map(|vk| match vk {
-                    VirtualKeyCode::A => Some(Key::A),
-                    VirtualKeyCode::S => Some(Key::S),
-                    VirtualKeyCode::D => Some(Key::D),
-                    VirtualKeyCode::Q => Some(Key::Q),
-                    VirtualKeyCode::W => Some(Key::W),
-                    VirtualKeyCode::E => Some(Key::E),
+                    winit::VirtualKeyCode::A => Some(Key::A),
+                    winit::VirtualKeyCode::S => Some(Key::S),
+                    winit::VirtualKeyCode::D => Some(Key::D),
+                    winit::VirtualKeyCode::Q => Some(Key::Q),
+                    winit::VirtualKeyCode::W => Some(Key::W),
+                    winit::VirtualKeyCode::E => Some(Key::E),
                     _ => None
                 })??;
                 let modifiers = KeyModifiers {};
 
                 let event = match keyboard_input.state {
-                    ElementState::Pressed => KeyboardEvent::Pressed(key, modifiers),
-                    ElementState::Released => KeyboardEvent::Released(key, modifiers),
+                    winit::ElementState::Pressed => KeyboardEvent::Pressed(key, modifiers),
+                    winit::ElementState::Released => KeyboardEvent::Released(key, modifiers),
                 };
                 Some(event)
+
             }).collect()
         }
     }
 
     impl MouseEventSource for backend::VulkanBackend {
         fn drain_events(&mut self) -> Vec<MouseEvent> {
-            panic!("MouseEventSource is not implemented yet on vulkan backend")
+           self.get_events().into_iter().filter_map(|window_event| {
+
+               match window_event {
+                    winit::WindowEvent::CursorMoved { position, .. } => {
+                        Some(MouseEvent::Movement(Point2::new(position.0 as f32, position.1 as f32)))
+                    },
+                    winit::WindowEvent::MouseWheel { delta, .. } => {
+                        const LINE_SIZE: f32 = 1.0;
+                        Some(MouseEvent::Wheel(
+                            match delta {
+                                winit::MouseScrollDelta::LineDelta(h, v) => Vector2::new(h, v) * LINE_SIZE,
+                                winit::MouseScrollDelta::PixelDelta(h, v) => Vector2::new(h, v),
+                            }
+                        ))
+                    },
+                    winit::WindowEvent::MouseInput { state, button, .. } => {
+                        let button = match button {
+                            winit::MouseButton::Left => MouseButton::Left,
+                            winit::MouseButton::Right => MouseButton::Right,
+                            winit::MouseButton::Middle => MouseButton::Middle,
+                            _ => MouseButton::Left,
+                        };
+                        let position = self.get_mouse_position();
+                        let position = Point2::new(position.0 as f32, position.1 as f32);
+                        match state {
+                            winit::ElementState::Pressed => Some(MouseEvent::Pressed(button, position)),
+                            winit::ElementState::Released => Some(MouseEvent::Released(button, position)),
+                        }
+                    }
+                    _ => None,
+                }
+
+            }).collect()
         }
     }
 }
