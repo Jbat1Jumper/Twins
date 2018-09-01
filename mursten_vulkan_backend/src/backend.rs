@@ -89,13 +89,13 @@ impl Default for Uniforms {
             ),
             projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous(),
             ambient_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
-            ambient_strength: 0.2,
+            ambient_strength: 0.0,
 
             diffuse_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
             diffuse_origin: Vector4::new(3.0, 3.0, -3.0, 1.0),
-            diffuse_strength: 0.4,
+            diffuse_strength: 0.0,
 
-            specular_strength: 0.4,
+            specular_strength: 0.8,
             specular_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
         }
     }
