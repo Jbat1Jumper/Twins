@@ -11,6 +11,8 @@ pub trait Data
 where
     Self: Sized,
 {
+    // TODO: Unimplement this and make scenes implement this explicitly, then try to make a custom
+    // derive for this trait.
     fn alive(&self) -> bool {
         true
     }
