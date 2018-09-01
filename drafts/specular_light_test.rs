@@ -7,7 +7,7 @@ extern crate rand;
 use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
-use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater};
+use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater, MouseEvent, OnMouse, MouseUpdater};
 use mursten_blocks::mesh_renderer::{GetMeshes, IntoMesh, MeshRenderer};
 use mursten_blocks::light::{Light, GetLights, LightUpdater};
 use mursten_vulkan_backend::VulkanBackend;
@@ -22,6 +22,7 @@ pub fn main() {
         .add_updater(ClockUpdater::new())
         .add_updater(CameraUpdater::new())
         .add_updater(KeyboardUpdater::new())
+        .add_updater(MouseUpdater::new())
         .add_updater(LightUpdater::new())
         .add_renderer(MeshRenderer::new())
         .run(scene);
@@ -298,7 +299,7 @@ impl GetCamera for Scene {
 impl GetLights for Scene {
     fn get_light(&self) -> Light {
         let p = Point3::origin() + Rotation3::from_axis_angle(&Vector3::y_axis(), self.clock.time_in_sec()) * Vector3::new(2.0, 3.0, 0.0);
-        Light::new(p, Vector3::new(1.0, 1.0, 1.0), 0.4)
+        Light::new(p, Vector3::new(1.0, 1.0, 1.0), 0.0)
     }
 }
 
@@ -329,3 +330,14 @@ impl OnKeyboard for Scene {
     }
 }
 
+impl OnMouse for Scene {
+    fn handle(&mut self, event: MouseEvent) {
+        match event {
+            MouseEvent::Wheel(displacement) => {
+                let r = Rotation3::rotation_between(&Vector3::z(), &Vector3::new(displacement.x, -displacement.y, 100.0)).unwrap();
+                self.player.direction = r * self.player.direction;
+            },
+            _ => (),
+        }
+    }
+}
