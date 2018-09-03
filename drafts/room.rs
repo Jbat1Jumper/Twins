@@ -125,64 +125,64 @@ impl Desk {
     }
 }
 
-fn desk_leg(position: Point3<f32>, rotation: Rotation3<f32>) -> Vec<Triangle> {
-    let v1 = Vertex::at(position + rotation * Vector3::new(-0.04,  0.99, -0.04));
-    let v2 = Vertex::at(position + rotation * Vector3::new(-0.04,  0.99,  0.02));
-    let v3 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.99,  0.02));
-    let v4 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.99, -0.04));
-    let v5 = Vertex::at(position + rotation * Vector3::new(-0.02,  0.0,  -0.02));
-    let v6 = Vertex::at(position + rotation * Vector3::new(-0.02,  0.0,   0.02));
-    let v7 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.0,   0.02));
-    let v8 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.0,  -0.02));
-
-    vec![
-        Triangle::new(v1, v3, v2),
-        Triangle::new(v1, v4, v3),
-        Triangle::new(v5, v4, v1),
-        Triangle::new(v5, v8, v4),
-        Triangle::new(v8, v3, v4),
-        Triangle::new(v8, v7, v3),
-        Triangle::new(v7, v2, v3),
-        Triangle::new(v7, v6, v2),
-        Triangle::new(v6, v1, v2),
-        Triangle::new(v6, v5, v1),
-        Triangle::new(v5, v7, v8),
-        Triangle::new(v5, v6, v7),
-    ]
-}
-
-fn desk_table() -> Vec<Triangle> {
-    let v1 = Vertex::at(Point3::new(-0.27,  1.0,  -0.52));
-    let v2 = Vertex::at(Point3::new(-0.27,  1.0,   0.52));
-    let v3 = Vertex::at(Point3::new( 0.27,  1.0,   0.52));
-    let v4 = Vertex::at(Point3::new( 0.27,  1.0,  -0.52));
-    let v5 = Vertex::at(Point3::new(-0.27,  0.96, -0.52));
-    let v6 = Vertex::at(Point3::new(-0.27,  0.96,  0.52));
-    let v7 = Vertex::at(Point3::new( 0.27,  0.96,  0.52));
-    let v8 = Vertex::at(Point3::new( 0.27,  0.96, -0.52));
-
-    vec![
-        Triangle::new(v1, v3, v2),
-        Triangle::new(v1, v4, v3),
-        Triangle::new(v5, v4, v1),
-        Triangle::new(v5, v8, v4),
-        Triangle::new(v8, v3, v4),
-        Triangle::new(v8, v7, v3),
-        Triangle::new(v7, v2, v3),
-        Triangle::new(v7, v6, v2),
-        Triangle::new(v6, v1, v2),
-        Triangle::new(v6, v5, v1),
-        Triangle::new(v5, v7, v8),
-        Triangle::new(v5, v6, v7),
-    ]
-}
-
 impl IntoMesh for Desk {
     fn transform(&self) -> Matrix4<f32> {
         Matrix4::new_translation(&self.position.coords) * self.rotation.to_homogeneous()
     }
     fn mesh(&self) -> Mesh {
         let mut triangles = Vec::new();
+
+        let desk_leg = |position, rotation| {
+            let v1 = Vertex::at(position + rotation * Vector3::new(-0.04,  0.99, -0.04));
+            let v2 = Vertex::at(position + rotation * Vector3::new(-0.04,  0.99,  0.02));
+            let v3 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.99,  0.02));
+            let v4 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.99, -0.04));
+            let v5 = Vertex::at(position + rotation * Vector3::new(-0.02,  0.0,  -0.02));
+            let v6 = Vertex::at(position + rotation * Vector3::new(-0.02,  0.0,   0.02));
+            let v7 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.0,   0.02));
+            let v8 = Vertex::at(position + rotation * Vector3::new( 0.02,  0.0,  -0.02));
+
+            vec![
+                Triangle::new(v1, v3, v2),
+                Triangle::new(v1, v4, v3),
+                Triangle::new(v5, v4, v1),
+                Triangle::new(v5, v8, v4),
+                Triangle::new(v8, v3, v4),
+                Triangle::new(v8, v7, v3),
+                Triangle::new(v7, v2, v3),
+                Triangle::new(v7, v6, v2),
+                Triangle::new(v6, v1, v2),
+                Triangle::new(v6, v5, v1),
+                Triangle::new(v5, v7, v8),
+                Triangle::new(v5, v6, v7),
+            ]
+        };
+
+        let desk_table = || {
+            let v1 = Vertex::at(Point3::new(-0.27,  1.0,  -0.52));
+            let v2 = Vertex::at(Point3::new(-0.27,  1.0,   0.52));
+            let v3 = Vertex::at(Point3::new( 0.27,  1.0,   0.52));
+            let v4 = Vertex::at(Point3::new( 0.27,  1.0,  -0.52));
+            let v5 = Vertex::at(Point3::new(-0.27,  0.96, -0.52));
+            let v6 = Vertex::at(Point3::new(-0.27,  0.96,  0.52));
+            let v7 = Vertex::at(Point3::new( 0.27,  0.96,  0.52));
+            let v8 = Vertex::at(Point3::new( 0.27,  0.96, -0.52));
+
+            vec![
+                Triangle::new(v1, v3, v2),
+                Triangle::new(v1, v4, v3),
+                Triangle::new(v5, v4, v1),
+                Triangle::new(v5, v8, v4),
+                Triangle::new(v8, v3, v4),
+                Triangle::new(v8, v7, v3),
+                Triangle::new(v7, v2, v3),
+                Triangle::new(v7, v6, v2),
+                Triangle::new(v6, v1, v2),
+                Triangle::new(v6, v5, v1),
+                Triangle::new(v5, v7, v8),
+                Triangle::new(v5, v6, v7),
+            ]
+        };
 
         triangles.append(&mut desk_leg(Point3::new( 0.23, 0.0,  0.48), Rotation3::from_axis_angle(&Vector3::y_axis(), 0.0)));
         triangles.append(&mut desk_leg(Point3::new(-0.23, 0.0,  0.48), Rotation3::from_axis_angle(&Vector3::y_axis(), -PI/2.0)));
