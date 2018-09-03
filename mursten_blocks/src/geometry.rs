@@ -53,6 +53,7 @@ impl From<Point3<f32>> for Vertex {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Triangle {
     pub v1: Vertex,
     pub v2: Vertex,
@@ -100,6 +101,7 @@ impl Default for Triangle {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Mesh {
     pub triangles: Vec<Triangle>,
 }
