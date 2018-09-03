@@ -216,9 +216,34 @@ impl IntoMesh for Lamp {
         Matrix4::new_translation(&self.position.coords) * self.rotation.to_homogeneous()
     }
     fn mesh(&self) -> Mesh {
-        Mesh {
-            triangles: Vec::new(),
-        }
+        let mut triangles = Vec::new();
+
+        let cylindre = |p1: Point3<f32>, r1: f32, p2: Point3<f32>, r2: f32| {
+            let mut ts = Vec::new();
+            let divisions = 14;
+            let d = p2 - p1;
+            let n = Vector3::z().cross(&d).normalize();
+            for i in 0..divisions {
+                let rot = Rotation3::from_axis_angle(&Unit::new_normalize(d), 2.0 * PI / divisions as f32);
+                let rot1 = rot.powf(i as f32);
+                let rot2 = rot.powf(i as f32 + 1.0);
+                ts.push(Triangle {
+                    v1: (p1 + rot1 * n * r1).into(),
+                    v2: (p2 + rot1 * n * r2).into(),
+                    v3: (p1 + rot2 * n * r1).into(),
+                });
+                ts.push(Triangle {
+                    v1: (p2 + rot2 * n * r2).into(),
+                    v2: (p1 + rot2 * n * r1).into(),
+                    v3: (p2 + rot1 * n * r2).into(),
+                });
+            }
+            ts
+        };
+
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.0, 0.0), 0.2, Point3::new(0.0, 0.3, 0.0), 0.3));
+
+        Mesh { triangles, }.color(Palette::LapisLazuli.into())
     }
 }
 
@@ -255,7 +280,7 @@ impl Scene {
                 .scaled(Vector3::new(6.0, 1.0, 6.0))
                 .colored(roof_color),
             desk: Desk::new(Point3::new(-2.0, 0.0, 0.0)),
-            lamp: Lamp::new(Point3::new(-2.0, 1.0, 1.0)),
+            lamp: Lamp::new(Point3::new(-2.0, 1.0, 0.0)),
         }
     }
 }
@@ -284,6 +309,7 @@ impl GetMeshes for Scene {
             v.push(wall);
         }
         v.push(&self.desk);
+        v.push(&self.lamp);
         v.into_iter()
     }
 }
