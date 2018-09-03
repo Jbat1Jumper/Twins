@@ -218,9 +218,9 @@ impl IntoMesh for Lamp {
     fn mesh(&self) -> Mesh {
         let mut triangles = Vec::new();
 
-        let cylindre = |p1: Point3<f32>, r1: f32, p2: Point3<f32>, r2: f32| {
+        let cylindre = |p1: Point3<f32>, r1: f32, p2: Point3<f32>, r2: f32, color: Vector4<f32>| {
             let mut ts = Vec::new();
-            let divisions = 14;
+            let divisions = 18;
             let d = p2 - p1;
             let n = Vector3::z().cross(&d).normalize();
             for i in 0..divisions {
@@ -231,19 +231,34 @@ impl IntoMesh for Lamp {
                     v1: (p1 + rot1 * n * r1).into(),
                     v2: (p2 + rot1 * n * r2).into(),
                     v3: (p1 + rot2 * n * r1).into(),
-                });
+                }.color(color));
                 ts.push(Triangle {
                     v1: (p2 + rot2 * n * r2).into(),
                     v2: (p1 + rot2 * n * r1).into(),
                     v3: (p2 + rot1 * n * r2).into(),
-                });
+                }.color(color));
             }
             ts
         };
 
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.0, 0.0), 0.2, Point3::new(0.0, 0.3, 0.0), 0.3));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.25, 0.0), 0.06, Point3::new(0.0, 0.27, 0.0), 0.06, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.27, 0.0), 0.06, Point3::new(0.0, 0.32, 0.0), 0.03, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.35, 0.0), 0.03, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.35, 0.0), 0.03, Point3::new(0.0, 0.351, 0.0), 0.0, Palette::LapisLazuli.into()));
 
-        Mesh { triangles, }.color(Palette::LapisLazuli.into())
+        triangles.append(&mut cylindre(Point3::new( 0.02, 0.34, 0.01), 0.005, Point3::new( 0.02, 0.15, 0.25), 0.005, Palette::PewterBlue.into()));
+        triangles.append(&mut cylindre(Point3::new(-0.02, 0.34, 0.01), 0.005, Point3::new(-0.02, 0.15, 0.25), 0.005, Palette::PewterBlue.into()));
+
+        triangles.append(&mut cylindre(Point3::new( 0.02, 0.15, 0.25), 0.005, Point3::new( 0.02, 0.01, 0.20), 0.005, Palette::PewterBlue.into()));
+        triangles.append(&mut cylindre(Point3::new(-0.02, 0.15, 0.25), 0.005, Point3::new(-0.02, 0.01, 0.20), 0.005, Palette::PewterBlue.into()));
+
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.0, 0.20), 0.08, Point3::new(0.0, 0.02, 0.20), 0.08, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.02, 0.20), 0.08, Point3::new(0.0, 0.04, 0.20), 0.03, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.04, 0.20), 0.03, Point3::new(0.0, 0.041, 0.20), 0.00, Palette::LapisLazuli.into()));
+
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.0, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
+
+        Mesh { triangles, }
     }
 }
 
