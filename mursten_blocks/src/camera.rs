@@ -36,7 +36,7 @@ impl Camera {
     }
     pub fn perspective() -> Self {
         Camera {
-            projection: Perspective3::new(1.0, 1.57, 0.1, 900.0).to_homogeneous(),
+            projection: Perspective3::new(1.0, 1.17, 0.1, 900.0).to_homogeneous(),
         }
     }
 }

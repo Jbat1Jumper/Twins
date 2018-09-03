@@ -39,7 +39,7 @@ pub mod vs {
 
             outColor = color;
 
-            outFragPos = position;
+            outFragPos = c.view * position;
 
             outNormal = normal;
         }
@@ -90,7 +90,7 @@ pub mod fs {
             vec4 diffuse = diff * c.diffuse_color;
 
 
-            vec4 viewPos = c.view * vec4(0, 0, 0, 1);
+            vec4 viewPos = vec4(0, 0, 0, 1);
             vec4 viewDir = normalize(viewPos - inFragPos);
             vec4 reflectDir = reflect(-lightDir, norm); 
 
