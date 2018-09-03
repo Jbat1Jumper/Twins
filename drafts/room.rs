@@ -37,6 +37,7 @@ struct Scene {
     roof: Platform,
     desk: Desk,
     lamp: Lamp,
+    painting: Painting,
 }
 
 struct Player {
@@ -262,6 +263,79 @@ impl IntoMesh for Lamp {
     }
 }
 
+
+
+struct Painting {
+    position: Point3<f32>,
+    rotation: Rotation3<f32>,
+}
+
+impl Painting {
+    pub fn new(position: Point3<f32>) -> Self {
+        Self {
+            position,
+            rotation: Rotation3::from_axis_angle(&Vector3::y_axis(), 0.0),
+        }
+    }
+    pub fn rotated(self, rotation: Rotation3<f32>) -> Self {
+        Self { rotation, ..self }
+    }
+}
+
+impl IntoMesh for Painting {
+    fn transform(&self) -> Matrix4<f32> {
+        Matrix4::new_translation(&self.position.coords) * self.rotation.to_homogeneous()
+    }
+    fn mesh(&self) -> Mesh {
+        let mut triangles = Vec::new();
+
+        let frame_segment = |pos: Point3<f32>, len: f32, rot: Rotation3<f32>| {
+
+            let v1 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02,  -0.013)).color(Palette::ZinnwalditeBrown.into());
+            let v2 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02,   0.013)).color(Palette::ZinnwalditeBrown.into());
+            let v3 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02,   0.013)).color(Palette::ZinnwalditeBrown.into());
+            let v4 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02,  -0.013)).color(Palette::ZinnwalditeBrown.into());
+            let v5 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02, -0.02)).color(Palette::ZinnwalditeBrown.into());
+            let v6 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02,  0.02)).color(Palette::ZinnwalditeBrown.into());
+            let v7 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02,  0.02)).color(Palette::ZinnwalditeBrown.into());
+            let v8 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02, -0.02)).color(Palette::ZinnwalditeBrown.into());
+
+            vec![
+                Triangle::new(v1, v3, v2),
+                Triangle::new(v1, v4, v3),
+                Triangle::new(v5, v4, v1),
+                Triangle::new(v5, v8, v4),
+                Triangle::new(v8, v3, v4),
+                Triangle::new(v8, v7, v3),
+                Triangle::new(v7, v2, v3),
+                Triangle::new(v7, v6, v2),
+                Triangle::new(v6, v1, v2),
+                Triangle::new(v6, v5, v1),
+                Triangle::new(v5, v7, v8),
+                Triangle::new(v5, v6, v7),
+            ]
+        };
+
+        triangles.append(&mut frame_segment(Point3::new( 0.0,  1.5, 0.0), 1.0, Rotation3::from_axis_angle(&Vector3::z_axis(), 0.0)));
+        triangles.append(&mut frame_segment(Point3::new( 0.0,  2.0, 0.0), 1.0, Rotation3::from_axis_angle(&Vector3::z_axis(), PI)));
+        triangles.append(&mut frame_segment(Point3::new( 0.5, 1.75, 0.0), 0.5, Rotation3::from_axis_angle(&Vector3::z_axis(), PI/2.0)));
+        triangles.append(&mut frame_segment(Point3::new(-0.5, 1.75, 0.0), 0.5, Rotation3::from_axis_angle(&Vector3::z_axis(), 3.0 * PI/2.0)));
+
+        triangles.push(Triangle {
+            v1: Vertex::at(Point3::new( 0.5,  1.5, 0.0)),
+            v2: Vertex::at(Point3::new(-0.5,  1.5, 0.0)),
+            v3: Vertex::at(Point3::new(-0.5,  2.0, 0.0)),
+        });
+        triangles.push(Triangle {
+            v1: Vertex::at(Point3::new(-0.5,  2.0, 0.0)),
+            v2: Vertex::at(Point3::new( 0.5,  2.0, 0.0)),
+            v3: Vertex::at(Point3::new( 0.5,  1.5, 0.0)),
+        });
+
+        Mesh { triangles, }
+    }
+}
+
 impl Scene {
     pub fn new() -> Self {
         let floor_color = Palette::PewterBlue.into();
@@ -296,6 +370,7 @@ impl Scene {
                 .colored(roof_color),
             desk: Desk::new(Point3::new(-2.0, 0.0, 0.0)),
             lamp: Lamp::new(Point3::new(-2.0, 1.0, 0.0)),
+            painting: Painting::new(Point3::new(0.0, 0.0, 2.98)),
         }
     }
 }
@@ -325,6 +400,7 @@ impl GetMeshes for Scene {
         }
         v.push(&self.desk);
         v.push(&self.lamp);
+        v.push(&self.painting);
         v.into_iter()
     }
 }
