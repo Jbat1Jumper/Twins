@@ -50,3 +50,7 @@ path = "drafts/first_person_camera.rs"
 name = "specular_light_test"
 path = "drafts/specular_light_test.rs"
 
+[[bin]]
+name = "room"
+path = "drafts/room.rs"
+
