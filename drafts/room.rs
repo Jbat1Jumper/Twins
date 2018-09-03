@@ -454,15 +454,15 @@ impl OnKeyboard for Scene {
                     Key::S => mt.z = -1.0,
                     Key::D => mt.x = 1.0,
                     Key::W => mt.z = 1.0,
-                    Key::Q => *rt = -1.0,
-                    Key::E => *rt = 1.0,
+                    Key::Q | Key::J => *rt = -1.0,
+                    Key::E | Key::K => *rt = 1.0,
                 };
             }
             KeyboardEvent::Released(key, _) => {
                 match key {
                     Key::A | Key::D => mt.x = 0.0,
                     Key::S | Key::W => mt.z = 0.0,
-                    Key::Q | Key::E => *rt = 0.0,
+                    Key::Q | Key::E | Key::J | Key::K => *rt = 0.0,
                     _ => (),
                 };
             }

@@ -97,6 +97,8 @@ mod input {
                     winit::VirtualKeyCode::Q => Some(Key::Q),
                     winit::VirtualKeyCode::W => Some(Key::W),
                     winit::VirtualKeyCode::E => Some(Key::E),
+                    winit::VirtualKeyCode::J => Some(Key::J),
+                    winit::VirtualKeyCode::K => Some(Key::K),
                     _ => None
                 })??;
                 let modifiers = KeyModifiers {};

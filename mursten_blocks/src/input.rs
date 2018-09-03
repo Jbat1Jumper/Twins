@@ -19,6 +19,8 @@ pub enum Key {
     Q,
     W,
     E,
+    J,
+    K,
 }
 
 pub trait OnMouse {
