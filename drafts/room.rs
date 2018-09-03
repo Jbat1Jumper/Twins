@@ -383,8 +383,26 @@ impl OnTick for Scene {
         std::thread::sleep_ms(20);
 
         const player_speed: f32 = 2.0;
-        let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed ;
-        self.player.position += Rotation3::rotation_between(&Vector3::z(), &self.player.direction).unwrap() * translation;
+        let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed;
+        let new_position = self.player.position + Rotation3::rotation_between(&Vector3::z(), &self.player.direction).unwrap() * translation;
+
+        let in_room = |position: Point3<f32>| {
+            position.x > -2.88 &&
+            position.x <  2.88 &&
+            position.z > -2.88 &&
+            position.z <  2.88
+        };
+        let in_desk = |position: Point3<f32>| {
+            position.x > -2.45 &&
+            position.x < -1.55 &&
+            position.z > -0.5 &&
+            position.z <  0.5
+        };
+
+        if in_room(new_position) && !in_desk(new_position) {
+            self.player.position = new_position;
+        }
+
         let rotation_angle = self.player.rotating_towards * self.clock.delta_as_sec() * player_speed * 0.3;
         self.player.direction = Rotation3::from_axis_angle(&Vector3::y_axis(), rotation_angle) * self.player.direction;
     }
