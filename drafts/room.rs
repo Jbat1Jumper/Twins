@@ -96,10 +96,10 @@ impl IntoMesh for Platform {
         Matrix4::new_translation(&self.position.coords) * self.rotation.to_homogeneous() * Matrix4::new_nonuniform_scaling(&self.scale)
     }
     fn mesh(&self) -> Mesh {
-        let v1 = Vertex::at(Point3::new(-0.5, 0.0, -0.5));
-        let v2 = Vertex::at(Point3::new(-0.5, 0.0,  0.5));
-        let v3 = Vertex::at(Point3::new( 0.5, 0.0,  0.5));
-        let v4 = Vertex::at(Point3::new( 0.5, 0.0, -0.5));
+        let v1 = Vertex::at(Point3::new(-0.50, 0.0, -0.50));
+        let v2 = Vertex::at(Point3::new(-0.50, 0.0,  0.50));
+        let v3 = Vertex::at(Point3::new( 0.50, 0.0,  0.50));
+        let v4 = Vertex::at(Point3::new( 0.50, 0.0, -0.50));
 
         Mesh {
             triangles: vec![
@@ -223,7 +223,7 @@ impl Lamp {
 
 impl IntoMesh for Lamp {
     fn transform(&self) -> Matrix4<f32> {
-        Matrix4::new_translation(&self.position.coords) * self.rotation.to_homogeneous()
+        Matrix4::new_translation(&(self.position.coords + self.offset)) * self.rotation.to_homogeneous()
     }
     fn mesh(&self) -> Mesh {
         let mut triangles = Vec::new();
@@ -271,7 +271,7 @@ impl IntoMesh for Lamp {
         triangles.append(&mut cylindre(Point3::new(0.0, 0.04, 0.20), 0.03, Point3::new(0.0, 0.041, 0.20), 0.00, color_a));
 
         if self.is_on {
-            triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.0, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
+            triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, -self.offset.y, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
         }
 
         Mesh { triangles, }
@@ -283,6 +283,8 @@ impl IntoMesh for Lamp {
 struct Painting {
     position: Point3<f32>,
     rotation: Rotation3<f32>,
+    is_target: bool,
+    glow: Vector4<f32>,
 }
 
 impl Painting {
@@ -290,6 +292,8 @@ impl Painting {
         Self {
             position,
             rotation: Rotation3::from_axis_angle(&Vector3::y_axis(), 0.0),
+            is_target: false,
+            glow: Vector4::new(0.0, 0.0, 0.0, 0.0),
         }
     }
     pub fn rotated(self, rotation: Rotation3<f32>) -> Self {
@@ -304,16 +308,19 @@ impl IntoMesh for Painting {
     fn mesh(&self) -> Mesh {
         let mut triangles = Vec::new();
 
+        let color: Vector4<f32> = Palette::ZinnwalditeBrown.into();
+        let color = color + self.glow;
+
         let frame_segment = |pos: Point3<f32>, len: f32, rot: Rotation3<f32>| {
 
-            let v1 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02,  -0.013)).color(Palette::ZinnwalditeBrown.into());
-            let v2 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02,   0.013)).color(Palette::ZinnwalditeBrown.into());
-            let v3 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02,   0.013)).color(Palette::ZinnwalditeBrown.into());
-            let v4 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02,  -0.013)).color(Palette::ZinnwalditeBrown.into());
-            let v5 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02, -0.02)).color(Palette::ZinnwalditeBrown.into());
-            let v6 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02,  0.02)).color(Palette::ZinnwalditeBrown.into());
-            let v7 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02,  0.02)).color(Palette::ZinnwalditeBrown.into());
-            let v8 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02, -0.02)).color(Palette::ZinnwalditeBrown.into());
+            let v1 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02, -0.013)).color(color);
+            let v2 = Vertex::at(pos + rot * Vector3::new(-len/2.0 + 0.02,  0.02,  0.013)).color(color);
+            let v3 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02,  0.013)).color(color);
+            let v4 = Vertex::at(pos + rot * Vector3::new( len/2.0 - 0.02,  0.02, -0.013)).color(color);
+            let v5 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02, -0.02)).color(color);
+            let v6 = Vertex::at(pos + rot * Vector3::new(-len/2.0 - 0.02, -0.02,  0.02)).color(color);
+            let v7 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02,  0.02)).color(color);
+            let v8 = Vertex::at(pos + rot * Vector3::new( len/2.0 + 0.02, -0.02, -0.02)).color(color);
 
             vec![
                 Triangle::new(v1, v3, v2),
@@ -438,6 +445,24 @@ impl OnTick for Scene {
             self.lamp.glow = Vector4::new(0.0, 0.0, 0.0, 0.0);
             self.lamp.is_target = false;
         }
+
+        let painting_pos = self.painting.position + Vector3::y() * 1.4;
+
+        if ((head_pos + self.player.direction.normalize() * 1.0) - painting_pos).norm() < 0.4
+            || ((head_pos + self.player.direction.normalize() * 0.7) - painting_pos).norm() < 0.4
+            || ((head_pos + self.player.direction.normalize() * 0.4) - painting_pos).norm() < 0.3 {
+            self.painting.glow = Vector4::new(0.2, 0.2, 0.2, 0.0) + (self.clock.time_in_sec()*5.0).sin() * Vector4::new(0.2, 0.2, 0.2, 0.0);
+            self.painting.is_target = true;
+        } else {
+            self.painting.glow = Vector4::new(0.0, 0.0, 0.0, 0.0);
+            self.painting.is_target = false;
+        }
+
+        if !self.lamp.is_on {
+            self.lamp.offset = self.lamp.offset * 0.8 + Rotation3::from_axis_angle(&Vector3::y_axis(), self.clock.time_in_sec()) * Vector3::new(0.05, 0.1 + (self.clock.time_in_sec() * 3.7).sin() * 0.05, 0.0) * 0.2;
+        } else {
+            self.lamp.offset = self.lamp.offset * 0.5;
+        }
     }
 }
 
@@ -472,7 +497,7 @@ impl GetCamera for Scene {
 impl GetLights for Scene {
     fn get_light(&self) -> Light {
         let p = Point3::origin() + Rotation3::from_axis_angle(&Vector3::y_axis(), self.clock.time_in_sec()) * Vector3::new(2.0, 3.0, 0.0);
-        Light::new(p, Vector3::new(1.0, 1.0, 1.0), 0.0)
+        Light::new(p, Vector3::new(0.0, 2.8, 0.0), 0.3)
     }
 }
 
@@ -526,6 +551,9 @@ impl OnMouse for Scene {
             },
             MouseEvent::Pressed(MouseButton::Left, _) if self.lamp.is_target => {
                 self.lamp.is_on = !self.lamp.is_on;
+            },
+            MouseEvent::Pressed(MouseButton::Left, _) if self.painting.is_target => {
+                eprintln!("Sorpresa!");
             },
             _ => (),
         }
