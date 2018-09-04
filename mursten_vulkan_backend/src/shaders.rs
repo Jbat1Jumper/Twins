@@ -17,29 +17,22 @@ pub mod vs {
         layout(location = 8) out vec4 outNormal;
 
         layout(push_constant) uniform pushConstants {
-            mat4 world;
-            mat4 view;
-            mat4 projection;
-
-            vec4 ambient_color;
-            vec4 diffuse_color;
-            vec4 diffuse_origin;
-            vec4 specular_color;
-
-            float scale;
-            float ambient_strength;
-            float diffuse_strength;
-            float specular_strength;
+            mat4 projection_view;
+            vec4 light_color;
+            vec4 light_origin;
+            float ambient_light_strength;
+            float diffuse_light_strength;
+            float specular_light_strength;
         } c;
 
         void main() {
-            gl_Position = c.projection * c.view * c.world * position;
+            gl_Position = c.projection_view * position;
             gl_Position.y = -gl_Position.y;
             gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 
             outColor = color;
 
-            outFragPos = c.view * position;
+            outFragPos = c.projection_view * position;
 
             outNormal = normal;
         }
@@ -59,19 +52,12 @@ pub mod fs {
         layout(location = 0) out vec4 outColor;
 
         layout(push_constant) uniform pushConstants {
-            mat4 world;
-            mat4 view;
-            mat4 projection;
-
-            vec4 ambient_color;
-            vec4 diffuse_color;
-            vec4 diffuse_origin;
-            vec4 specular_color;
-
-            float scale;
-            float ambient_strength;
-            float diffuse_strength;
-            float specular_strength;
+            mat4 projection_view;
+            vec4 light_color;
+            vec4 light_origin;
+            float ambient_light_strength;
+            float diffuse_light_strength;
+            float specular_light_strength;
         } c;
 
         float rand(vec2 co) {
@@ -79,23 +65,21 @@ pub mod fs {
         }
 
         void main() {
-            vec4 ambient = c.ambient_strength * c.ambient_color;
+            vec4 ambient = c.ambient_light_strength * c.light_color;
             ambient.w = 1.0;
 
             vec4 norm = normalize(inNormal);
-            vec4 diffuse_origin = c.diffuse_origin;
+            vec4 diffuse_origin = c.light_origin;
             vec4 lightDir = normalize(diffuse_origin - inFragPos);  
-
             float diff = max(dot(norm, lightDir), 0.0);
-            vec4 diffuse = diff * c.diffuse_color;
-
+            vec4 diffuse = c.diffuse_light_strength * diff * c.light_color;
+            diffuse.w = 1.0;
 
             vec4 viewPos = vec4(0, 0, 0, 1);
             vec4 viewDir = normalize(viewPos - inFragPos);
             vec4 reflectDir = reflect(-lightDir, norm); 
-
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
-            vec4 specular = c.specular_strength * spec * c.specular_color;  
+            vec4 specular = c.specular_light_strength * spec * c.light_color;  
             specular.w = 1.0;
 
             outColor = inColor * (ambient + diffuse + specular);

@@ -8,8 +8,7 @@ mod camera {
     impl SetCamera for VulkanBackend {
         fn set_camera(&mut self, transform: Matrix4<f32>, camera: &Camera) {
             self.set_uniforms(Uniforms {
-                projection: camera.projection.clone(),
-                view: transform,
+                projection_view: camera.projection.clone() * transform,
                 ..Uniforms::default()
             });
         }
@@ -64,9 +63,11 @@ mod light {
         fn set_light(&mut self, light: Light) {
             let Light { point, color, strength } = light;
             let mut uniforms = self.get_uniforms();
-            uniforms.diffuse_origin = Vector4::new(point.x, point.y, point.z, 1.0);
-            uniforms.diffuse_color = Vector4::new(color.x, color.y, color.z, 1.0);
-            uniforms.diffuse_strength = strength;
+            uniforms.light_origin = Vector4::new(point.x, point.y, point.z, 1.0);
+            uniforms.light_color = Vector4::new(color.x, color.y, color.z, 1.0);
+            uniforms.ambient_light_strength = strength;
+            uniforms.diffuse_light_strength = strength;
+            uniforms.specular_light_strength = strength;
             self.set_uniforms(uniforms);
         }
     }

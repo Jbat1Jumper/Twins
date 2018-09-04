@@ -56,48 +56,31 @@ use winit::KeyboardInput;
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct Uniforms {
-    pub world: Matrix4<f32>,
-    pub view: Matrix4<f32>,
-    pub projection: Matrix4<f32>,
+    pub projection_view: Matrix4<f32>,
 
-    pub ambient_color: Vector4<f32>,
-    pub diffuse_color: Vector4<f32>,
-    pub diffuse_origin: Vector4<f32>,
-    pub specular_color: Vector4<f32>,
+    pub light_color: Vector4<f32>,
+    pub light_origin: Vector4<f32>,
 
-    pub scale: f32,
-    pub ambient_strength: f32,
-    pub diffuse_strength: f32,
-    pub specular_strength: f32,
+    pub ambient_light_strength: f32,
+    pub diffuse_light_strength: f32,
+    pub specular_light_strength: f32,
 }
 
 impl Default for Uniforms {
     #[cfg_attr(rustfmt, rustfmt_skip)]
     fn default() -> Self {
         Self {
-            scale: 1.0,
-            world: Matrix4::new(
+            projection_view: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous() * Matrix4::new(
                 1.0, 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0,
             ),
-            view: Matrix4::new(
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0,
-            ),
-            projection: Orthographic3::new(-1.0, 1.0, -1.0, 1.0, -900.0, 900.0).to_homogeneous(),
-            ambient_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
-            ambient_strength: 0.0,
-
-            diffuse_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
-            diffuse_origin: Vector4::new(3.0, 3.0, -3.0, 1.0),
-            diffuse_strength: 0.0,
-
-            specular_strength: 0.8,
-            specular_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            light_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
+            light_origin: Vector4::new(3.0, 3.0, -3.0, 1.0),
+            ambient_light_strength: 0.2,
+            diffuse_light_strength: 0.4,
+            specular_light_strength: 0.8,
         }
     }
 }
