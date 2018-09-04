@@ -25,6 +25,7 @@ pub fn main() {
         .add_updater(ClockUpdater::new())
         .add_updater(CameraUpdater::new())
         .add_updater(KeyboardUpdater::new())
+        .add_updater(MouseUpdater::new())
         .add_renderer(MeshRenderer::new())
         .run(scene);
 }
@@ -198,6 +199,7 @@ impl IntoMesh for Desk {
 struct Lamp {
     position: Point3<f32>,
     rotation: Rotation3<f32>,
+    is_on: bool,
 }
 
 impl Lamp {
@@ -205,6 +207,7 @@ impl Lamp {
         Self {
             position,
             rotation: Rotation3::from_axis_angle(&Vector3::y_axis(), 0.0),
+            is_on: true,
         }
     }
     pub fn rotated(self, rotation: Rotation3<f32>) -> Self {
@@ -257,7 +260,9 @@ impl IntoMesh for Lamp {
         triangles.append(&mut cylindre(Point3::new(0.0, 0.02, 0.20), 0.08, Point3::new(0.0, 0.04, 0.20), 0.03, Palette::LapisLazuli.into()));
         triangles.append(&mut cylindre(Point3::new(0.0, 0.04, 0.20), 0.03, Point3::new(0.0, 0.041, 0.20), 0.00, Palette::LapisLazuli.into()));
 
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.0, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
+        if self.is_on {
+            triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.0, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
+        }
 
         Mesh { triangles, }
     }
@@ -384,7 +389,10 @@ impl OnTick for Scene {
 
         const player_speed: f32 = 2.0;
         let translation = self.player.moving_towards * self.clock.delta_as_sec() * player_speed;
-        let new_position = self.player.position + Rotation3::rotation_between(&Vector3::z(), &self.player.direction).unwrap() * translation;
+        let mut floor_direction = self.player.direction;
+        floor_direction.y = 0.0;
+
+        let mut new_position = self.player.position + Rotation3::rotation_between(&Vector3::z(), &floor_direction).unwrap() * translation;
 
         let in_room = |position: Point3<f32>| {
             position.x > -2.88 &&
@@ -402,6 +410,9 @@ impl OnTick for Scene {
         if in_room(new_position) && !in_desk(new_position) {
             self.player.position = new_position;
         }
+
+        //self.player.position.y = 1.75 + (self.clock.time_in_sec() * 0.3).sin();
+        //eprintln!("{}", self.player.position.y);
 
         let rotation_angle = self.player.rotating_towards * self.clock.delta_as_sec() * player_speed * 0.3;
         self.player.direction = Rotation3::from_axis_angle(&Vector3::y_axis(), rotation_angle) * self.player.direction;
@@ -456,6 +467,7 @@ impl OnKeyboard for Scene {
                     Key::W => mt.z = 1.0,
                     Key::Q | Key::J => *rt = -1.0,
                     Key::E | Key::K => *rt = 1.0,
+                    Key::F => self.lamp.is_on = !self.lamp.is_on,
                 };
             }
             KeyboardEvent::Released(key, _) => {
@@ -476,6 +488,19 @@ impl OnMouse for Scene {
             MouseEvent::Wheel(displacement) => {
                 let r = Rotation3::rotation_between(&Vector3::z(), &Vector3::new(displacement.x, -displacement.y, 100.0)).unwrap();
                 self.player.direction = r * self.player.direction;
+            },
+            MouseEvent::Movement(delta) => {
+                let x =  delta.x.signum() * delta.x.abs().sqrt() / 100.0;
+                let y = -delta.y.signum() * delta.y.abs().sqrt() / 100.0;
+                let left_right = Rotation3::from_axis_angle(&Vector3::y_axis(), x);
+                let axis = Unit::new_normalize(self.player.direction.cross(&Vector3::y()));
+                let up_down = Rotation3::from_axis_angle(&axis, y);
+                let new_direction = left_right * up_down * self.player.direction;
+                let y_ang = new_direction.angle(&Vector3::y_axis());
+                let deadangle = 0.5;
+                if (y_ang > deadangle && y_ang < PI - deadangle) || (y_ang > PI + deadangle && y_ang < 2.0*PI - deadangle) {
+                    self.player.direction = new_direction;
+                }
             },
             _ => (),
         }
