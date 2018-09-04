@@ -198,16 +198,22 @@ impl IntoMesh for Desk {
 
 struct Lamp {
     position: Point3<f32>,
+    offset: Vector3<f32>,
     rotation: Rotation3<f32>,
     is_on: bool,
+    is_target: bool,
+    glow: Vector4<f32>,
 }
 
 impl Lamp {
     pub fn new(position: Point3<f32>) -> Self {
         Self {
             position,
+            offset: Vector3::new(0.0, 0.0, 0.0),
             rotation: Rotation3::from_axis_angle(&Vector3::y_axis(), 0.0),
             is_on: true,
+            is_target: false,
+            glow: Vector4::new(0.0, 0.0, 0.0, 0.0),
         }
     }
     pub fn rotated(self, rotation: Rotation3<f32>) -> Self {
@@ -244,21 +250,25 @@ impl IntoMesh for Lamp {
             }
             ts
         };
+        let color_a: Vector4<f32> = Palette::LapisLazuli.into();
+        let color_b: Vector4<f32> = Palette::PewterBlue.into();
+        let color_a = color_a + self.glow;
+        let color_b = color_b + self.glow;
 
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.25, 0.0), 0.06, Point3::new(0.0, 0.27, 0.0), 0.06, Palette::LapisLazuli.into()));
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.27, 0.0), 0.06, Point3::new(0.0, 0.32, 0.0), 0.03, Palette::LapisLazuli.into()));
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.35, 0.0), 0.03, Palette::LapisLazuli.into()));
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.35, 0.0), 0.03, Point3::new(0.0, 0.351, 0.0), 0.0, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.25, 0.0), 0.06, Point3::new(0.0, 0.27, 0.0), 0.06, color_a));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.27, 0.0), 0.06, Point3::new(0.0, 0.32, 0.0), 0.03, color_a));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.35, 0.0), 0.03, color_a));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.35, 0.0), 0.03, Point3::new(0.0, 0.351, 0.0), 0.0, color_a));
 
-        triangles.append(&mut cylindre(Point3::new( 0.02, 0.34, 0.01), 0.005, Point3::new( 0.02, 0.15, 0.25), 0.005, Palette::PewterBlue.into()));
-        triangles.append(&mut cylindre(Point3::new(-0.02, 0.34, 0.01), 0.005, Point3::new(-0.02, 0.15, 0.25), 0.005, Palette::PewterBlue.into()));
+        triangles.append(&mut cylindre(Point3::new( 0.02, 0.34, 0.01), 0.005, Point3::new( 0.02, 0.15, 0.25), 0.005, color_b));
+        triangles.append(&mut cylindre(Point3::new(-0.02, 0.34, 0.01), 0.005, Point3::new(-0.02, 0.15, 0.25), 0.005, color_b));
 
-        triangles.append(&mut cylindre(Point3::new( 0.02, 0.15, 0.25), 0.005, Point3::new( 0.02, 0.01, 0.20), 0.005, Palette::PewterBlue.into()));
-        triangles.append(&mut cylindre(Point3::new(-0.02, 0.15, 0.25), 0.005, Point3::new(-0.02, 0.01, 0.20), 0.005, Palette::PewterBlue.into()));
+        triangles.append(&mut cylindre(Point3::new( 0.02, 0.15, 0.25), 0.005, Point3::new( 0.02, 0.01, 0.20), 0.005, color_b));
+        triangles.append(&mut cylindre(Point3::new(-0.02, 0.15, 0.25), 0.005, Point3::new(-0.02, 0.01, 0.20), 0.005, color_b));
 
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.0, 0.20), 0.08, Point3::new(0.0, 0.02, 0.20), 0.08, Palette::LapisLazuli.into()));
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.02, 0.20), 0.08, Point3::new(0.0, 0.04, 0.20), 0.03, Palette::LapisLazuli.into()));
-        triangles.append(&mut cylindre(Point3::new(0.0, 0.04, 0.20), 0.03, Point3::new(0.0, 0.041, 0.20), 0.00, Palette::LapisLazuli.into()));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.0, 0.20), 0.08, Point3::new(0.0,  0.02,  0.20), 0.08, color_a));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.02, 0.20), 0.08, Point3::new(0.0, 0.04,  0.20), 0.03, color_a));
+        triangles.append(&mut cylindre(Point3::new(0.0, 0.04, 0.20), 0.03, Point3::new(0.0, 0.041, 0.20), 0.00, color_a));
 
         if self.is_on {
             triangles.append(&mut cylindre(Point3::new(0.0, 0.32, 0.0), 0.03, Point3::new(0.0, 0.0, 0.0), 0.1, Vector4::new(1.0, 1.0, 1.0, 0.02)));
@@ -416,6 +426,18 @@ impl OnTick for Scene {
 
         let rotation_angle = self.player.rotating_towards * self.clock.delta_as_sec() * player_speed * 0.3;
         self.player.direction = Rotation3::from_axis_angle(&Vector3::y_axis(), rotation_angle) * self.player.direction;
+
+        let head_pos = self.player.position + Vector3::y() * 1.7;
+
+        if ((head_pos + self.player.direction.normalize() * 1.0) - self.lamp.position).norm() < 0.4
+            || ((head_pos + self.player.direction.normalize() * 0.7) - self.lamp.position).norm() < 0.4
+            || ((head_pos + self.player.direction.normalize() * 0.4) - self.lamp.position).norm() < 0.3 {
+            self.lamp.glow = Vector4::new(0.2, 0.2, 0.2, 0.0) + (self.clock.time_in_sec()*5.0).sin() * Vector4::new(0.2, 0.2, 0.2, 0.0);
+            self.lamp.is_target = true;
+        } else {
+            self.lamp.glow = Vector4::new(0.0, 0.0, 0.0, 0.0);
+            self.lamp.is_target = false;
+        }
     }
 }
 
@@ -502,8 +524,8 @@ impl OnMouse for Scene {
                     self.player.direction = new_direction;
                 }
             },
-            MouseEvent::Pressed(MouseButton::Left, _) => {
-                eprintln!("hoho!");
+            MouseEvent::Pressed(MouseButton::Left, _) if self.lamp.is_target => {
+                self.lamp.is_on = !self.lamp.is_on;
             },
             _ => (),
         }
