@@ -79,8 +79,8 @@ impl Default for Uniforms {
             light_color: Vector4::new(1.0, 1.0, 1.0, 1.0),
             light_origin: Vector4::new(3.0, 3.0, -3.0, 1.0),
             ambient_light_strength: 0.2,
-            diffuse_light_strength: 0.4,
-            specular_light_strength: 0.8,
+            diffuse_light_strength: 0.7,
+            specular_light_strength: 0.3,
         }
     }
 }
