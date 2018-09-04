@@ -316,6 +316,7 @@ impl OnKeyboard for Scene {
                     Key::W => mt.z = 1.0,
                     Key::Q => *rt = -1.0,
                     Key::E => *rt = 1.0,
+                    _ => (),
                 };
             }
             KeyboardEvent::Released(key, _) => {

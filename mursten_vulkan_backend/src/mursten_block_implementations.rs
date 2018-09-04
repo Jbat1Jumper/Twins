@@ -81,7 +81,14 @@ mod input {
 
     impl KeyboardEventSource for backend::VulkanBackend {
         fn drain_events(&mut self) -> Vec<KeyboardEvent> {
-           self.get_events().into_iter().filter_map(|window_event| {
+           self.get_events().into_iter().filter_map(|event| {
+
+               match event {
+                   winit::Event::WindowEvent { event, .. } => Some(event),
+                   _ => None,
+               }
+
+           }).filter_map(|window_event| {
 
                match window_event {
                     winit::WindowEvent::KeyboardInput { input, .. } => Some(input),
@@ -99,6 +106,7 @@ mod input {
                     winit::VirtualKeyCode::E => Some(Key::E),
                     winit::VirtualKeyCode::J => Some(Key::J),
                     winit::VirtualKeyCode::K => Some(Key::K),
+                    winit::VirtualKeyCode::F => Some(Key::F),
                     _ => None
                 })??;
                 let modifiers = KeyModifiers {};
@@ -115,13 +123,18 @@ mod input {
 
     impl MouseEventSource for backend::VulkanBackend {
         fn drain_events(&mut self) -> Vec<MouseEvent> {
-           self.get_events().into_iter().filter_map(|window_event| {
+           self.get_events().into_iter().filter_map(|event| {
+               match event {
+                   winit::Event::DeviceEvent { event, .. } => Some(event),
+                   _ => None,
+               }
+           }).filter_map(|device_event| {
 
-               match window_event {
-                    winit::WindowEvent::CursorMoved { position, .. } => {
-                        Some(MouseEvent::Movement(Point2::new(position.0 as f32, position.1 as f32)))
+               match device_event {
+                    winit::DeviceEvent::MouseMotion { delta, .. } => {
+                        Some(MouseEvent::Movement(Vector2::new(delta.0 as f32, delta.1 as f32)))
                     },
-                    winit::WindowEvent::MouseWheel { delta, .. } => {
+                    winit::DeviceEvent::MouseWheel { delta, .. } => {
                         const LINE_SIZE: f32 = 1.0;
                         Some(MouseEvent::Wheel(
                             match delta {
@@ -130,11 +143,8 @@ mod input {
                             }
                         ))
                     },
-                    winit::WindowEvent::MouseInput { state, button, .. } => {
+                    winit::DeviceEvent::Button { state, button, .. } => {
                         let button = match button {
-                            winit::MouseButton::Left => MouseButton::Left,
-                            winit::MouseButton::Right => MouseButton::Right,
-                            winit::MouseButton::Middle => MouseButton::Middle,
                             _ => MouseButton::Left,
                         };
                         let position = self.get_mouse_position();

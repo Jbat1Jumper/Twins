@@ -44,6 +44,7 @@ use vulkano::swapchain::SwapchainCreationError;
 use vulkano::sync::now;
 use vulkano::sync::GpuFuture;
 
+use winit::CursorState;
 use winit::Event;
 use winit::EventsLoop;
 use winit::Window;
@@ -112,7 +113,7 @@ impl_vertex!(Vertex, position, normal, color, texture);
 
 pub struct VulkanBackend {
     vertex_queue: Vec<Vertex>,
-    event_queue: Vec<WindowEvent>,
+    event_queue: Vec<Event>,
 
     mouse_position: (f64, f64),
 
@@ -152,7 +153,7 @@ impl VulkanBackend {
         self.vertex_queue.append(&mut vertexes);
     }
 
-    pub fn get_events(&mut self) -> Vec<WindowEvent> {
+    pub fn get_events(&mut self) -> Vec<Event> {
         self.event_queue.clone()
     }
 
@@ -226,8 +227,11 @@ where
             .build_vk_surface(&events_loop, instance.clone())
             .unwrap();
 
+        window.window().set_cursor_state(CursorState::Grab);
+        //window.window().set_fullscreen(Some(window.window().get_current_monitor()));
+
         let mut dimensions = {
-            let (width, height) = window.window().get_inner_size().unwrap();
+            let (width, height) = window.window().get_inner_size().unwrap().into();
             self.dimensions = (width, height);
             [width, height]
         };
@@ -348,7 +352,7 @@ where
 
             if recreate_swapchain {
                 dimensions = {
-                    let (new_width, new_height) = window.window().get_inner_size().unwrap();
+                    let (new_width, new_height) = window.window().get_inner_size().unwrap().into();
                     self.dimensions = (new_width, new_height);
                     [new_width, new_height]
                 };
@@ -414,6 +418,15 @@ where
                 };
 
             //eprintln!(" constants: {:?}", self.constants);
+            let dynamic_state = DynamicState {
+                line_width: None,
+                viewports: Some(vec![Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: [dimensions[0] as f32, dimensions[1] as f32],
+                    depth_range: 0.0..1.0,
+                }]),
+                scissors: None,
+            };
 
             let command_buffer =
                 AutoCommandBufferBuilder::primary_one_time_submit(device.clone(), queue.family())
@@ -426,15 +439,7 @@ where
                     .unwrap()
                     .draw(
                         pipeline.clone(),
-                        DynamicState {
-                            line_width: None,
-                            viewports: Some(vec![Viewport {
-                                origin: [0.0, 0.0],
-                                dimensions: [dimensions[0] as f32, dimensions[1] as f32],
-                                depth_range: 0.0..1.0,
-                            }]),
-                            scissors: None,
-                        },
+                        dynamic_state,
                         vertex_buffer.clone(),
                         (),
                         self.constants,
@@ -458,15 +463,15 @@ where
 
             let mut done = false;
             events_loop.poll_events(|ev| {
+                //eprintln!("{:?}", ev);
+                self.event_queue.push(ev.clone());
                 match ev {
-
                     Event::WindowEvent { event, .. } => {
-                        self.event_queue.push(event.clone());
                         match event {
                             WindowEvent::Closed => done = true,
                             WindowEvent::Resized(_, _) => recreate_swapchain = true,
                             WindowEvent::CursorMoved { position, .. } => {
-                                self.mouse_position = position;
+                                self.mouse_position = position.into();
                             },
                             _ => (),
                         }
