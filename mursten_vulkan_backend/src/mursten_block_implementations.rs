@@ -160,7 +160,7 @@ mod input {
 
             }).collect();
 
-           let mut mouse_events_from_window = self.get_events().into_iter().filter_map(|event| {
+           let mut mouse_events_from_window: Vec<MouseEvent> = self.get_events().into_iter().filter_map(|event| {
                match event {
                    winit::Event::WindowEvent { event, .. } => Some(event),
                    _ => None,
@@ -183,6 +183,11 @@ mod input {
                 }
 
             }).collect();
+
+           let is_mouse_pressed = |ev: &MouseEvent| match *ev { MouseEvent::Pressed(_, _) => true, _ => false };
+           if mouse_events_from_device.iter().any(is_mouse_pressed) {
+                mouse_events_from_window.retain(|ev| !is_mouse_pressed(ev));
+           }
 
             mouse_events_from_device.append(&mut mouse_events_from_window);
             mouse_events_from_device
