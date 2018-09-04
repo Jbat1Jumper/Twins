@@ -8,7 +8,7 @@ use mursten::{Application, Backend, Data};
 use mursten_blocks::geometry::{Mesh, Triangle, Vertex};
 use mursten_blocks::camera::{Camera, CameraUpdater, GetCamera};
 use mursten_blocks::time::{Clock, ClockUpdater, OnTick, Tick};
-use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater, MouseEvent, OnMouse, MouseUpdater};
+use mursten_blocks::input::{Key, KeyboardEvent, OnKeyboard, KeyboardUpdater, MouseEvent, OnMouse, MouseUpdater, MouseButton};
 use mursten_blocks::mesh_renderer::{GetMeshes, IntoMesh, MeshRenderer};
 use mursten_blocks::light::{Light, GetLights, LightUpdater};
 
@@ -501,6 +501,9 @@ impl OnMouse for Scene {
                 if (y_ang > deadangle && y_ang < PI - deadangle) || (y_ang > PI + deadangle && y_ang < 2.0*PI - deadangle) {
                     self.player.direction = new_direction;
                 }
+            },
+            MouseEvent::Pressed(MouseButton::Left, _) => {
+                eprintln!("hoho!");
             },
             _ => (),
         }

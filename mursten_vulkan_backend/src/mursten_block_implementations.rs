@@ -123,7 +123,7 @@ mod input {
 
     impl MouseEventSource for backend::VulkanBackend {
         fn drain_events(&mut self) -> Vec<MouseEvent> {
-           self.get_events().into_iter().filter_map(|event| {
+           let mut mouse_events_from_device: Vec<MouseEvent> = self.get_events().into_iter().filter_map(|event| {
                match event {
                    winit::Event::DeviceEvent { event, .. } => Some(event),
                    _ => None,
@@ -157,7 +157,34 @@ mod input {
                     _ => None,
                 }
 
-            }).collect()
+            }).collect();
+
+           let mut mouse_events_from_window = self.get_events().into_iter().filter_map(|event| {
+               match event {
+                   winit::Event::WindowEvent { event, .. } => Some(event),
+                   _ => None,
+               }
+           }).filter_map(|window_event| {
+
+               match window_event {
+                    winit::WindowEvent::MouseInput { state, button, .. } => {
+                        let button = match button {
+                            _ => MouseButton::Left,
+                        };
+                        let position = self.get_mouse_position();
+                        let position = Point2::new(position.0 as f32, position.1 as f32);
+                        match state {
+                            winit::ElementState::Pressed => Some(MouseEvent::Pressed(button, position)),
+                            winit::ElementState::Released => Some(MouseEvent::Released(button, position)),
+                        }
+                    }
+                    _ => None,
+                }
+
+            }).collect();
+
+            mouse_events_from_device.append(&mut mouse_events_from_window);
+            mouse_events_from_device
         }
     }
 }
