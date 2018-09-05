@@ -17,9 +17,9 @@ In a terminal run:
 
 ```
 curl https://sh.rustup.rs -sSf | sh  # This will prompt for installation options
-git clone git@github.com:Jbat1Jumper/Twins.git twin
+git clone git@github.com:Jbat1Jumper/Twins.git twins
 cd twins
-cargo run --bin twins  # Use `--bin brillito` to run another experiment
+cargo run --bin twins  # Use `--bin room` to run the project for the graphic systems course of the ECI 2018 
 ```
 
 If you are on windows you may need to download rust from https://rustup.rs/
