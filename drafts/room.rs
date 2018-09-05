@@ -553,7 +553,21 @@ impl OnMouse for Scene {
                 self.lamp.is_on = !self.lamp.is_on;
             },
             MouseEvent::Pressed(MouseButton::Left, _) if self.painting.is_target => {
-                eprintln!("Sorpresa!");
+
+                if cfg!(windows) {
+                    eprintln!("Sorpresa!");
+                    use std::process::{Command, Stdio};
+                    Command::new("cmd")
+                            .arg("/c")
+                            .arg("start")
+                            .arg("https://www.youtube.com/watch?v=oFlG7KN6OqY")
+                            .stderr(Stdio::null())
+                            .spawn()
+                            .expect("Surprise failed to start");
+                }
+                else {
+                    eprintln!("Surprises are only allowed on windows.");
+                }
             },
             _ => (),
         }
