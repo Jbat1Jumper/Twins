@@ -16,6 +16,7 @@ use mursten_vulkan_backend::VulkanBackend;
 
 use nalgebra::*;
 use std::f32::consts::PI;
+use std::process::{Command, Stdio};
 
 
 pub fn main() {
@@ -556,7 +557,6 @@ impl OnMouse for Scene {
 
                 if cfg!(windows) {
                     eprintln!("Sorpresa!");
-                    use std::process::{Command, Stdio};
                     Command::new("cmd")
                             .arg("/c")
                             .arg("start")
@@ -564,10 +564,16 @@ impl OnMouse for Scene {
                             .stderr(Stdio::null())
                             .spawn()
                             .expect("Surprise failed to start");
-                }
-                else {
-                    eprintln!("Surprises are only allowed on windows.");
-                }
+                } else if cfg!(target_os = "macos") {
+                    eprintln!("Sorpresa!");
+                    Command::new("open")
+                            .arg("https://www.youtube.com/watch?v=oFlG7KN6OqY")
+                            .stderr(Stdio::null())
+                            .spawn()
+                            .expect("Surprise failed to start");
+                } else {
+                    eprintln!("Surprises are not allowed for your os.");
+                } 
             },
             _ => (),
         }
