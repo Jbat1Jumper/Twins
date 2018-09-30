@@ -14,30 +14,36 @@ pub use cursive;
 /// Structure and trait definition
 /// ------------------------------
 
-pub struct CursiveRenderer<V, E>
+pub struct CursiveRenderer<V>
 where
-    V: CursiveView<Event=E>,
+    V: CursiveView,
 {
     view: V,
-    context: CursiveContext<E>,
+    context: CursiveContext<V>,
 }
 
-pub struct CursiveContext<E> {
+pub struct CursiveContext<V>
+where
+    V: CursiveView,
+{
     screen: Cursive,
-    address_book: AddressBook<E>, 
-    mailbox: Mailbox<E>,
+    address_book: AddressBook<V::Event>, 
+    mailbox: Mailbox<V::Event>,
 }
 
-pub trait CursiveView {
-    type Model;
-    type Event;
+pub trait CursiveView
+where
+    Self: Sized
+{
+    type Model: Data;
+    type Event: Clone;
     fn configure(
         &mut self,
-        &mut CursiveContext<Self::Event>,
+        &mut CursiveContext<Self>,
     );
     fn update(
         &mut self,
-        &mut CursiveContext<Self::Event>,
+        &mut CursiveContext<Self>,
         &Self::Model
     );
     fn need_to_update(&mut self, _: &Self::Model) -> bool {
@@ -49,11 +55,9 @@ pub trait CursiveView {
 /// Renderer implemtation
 /// ---------------------
 
-impl<V, E, D> CursiveRenderer<V, E>
+impl<V> CursiveRenderer<V>
 where
-    D: Data,
-    V: CursiveView<Model=D, Event=E>,
-    E: Clone,
+    V: CursiveView,
 {
     pub fn new(name: &'static str, mut view: V) -> Self {
         let mut context = CursiveContext {
@@ -69,7 +73,10 @@ where
     }
 }
 
-impl<E> CursiveContext<E> {
+impl<V> CursiveContext<V>
+where
+    V: CursiveView,
+{
     pub fn screen<'a>(&'a mut self) -> &'a mut Cursive {
         &mut self.screen
     }
@@ -78,14 +85,12 @@ impl<E> CursiveContext<E> {
     }
 }
 
-impl<B, D, V, E> Renderer<B, D> for CursiveRenderer<V, E>
+impl<B, V> Renderer<B, V::Model> for CursiveRenderer<V>
 where
-    D: Data,
-    B: Backend<D>,
-    V: CursiveView<Model=D, Event=E>,
-    E: Clone,
+    V: CursiveView,
+    B: Backend<V::Model>,
 {
-    fn render(&mut self, _: &mut B, data: &D) {
+    fn render(&mut self, _: &mut B, data: &V::Model) {
         if self.view.need_to_update(data) {
             self.view.update(&mut self.context, data);
         }
@@ -98,41 +103,40 @@ where
 /// Event support implemtation
 /// --------------------------
 
-impl<V, E> EventEmitter<E> for CursiveRenderer<V, E>
+impl<V> EventEmitter<V::Event> for CursiveRenderer<V>
 where
-    V: CursiveView<Event=E>,
-    E: Clone,
+    V: CursiveView,
 {
-    fn connect_to(&mut self, addr: Address<E>) {
+    fn connect_to(&mut self, addr: Address<V::Event>) {
         self.context.connect_to(addr)
     }
 } 
 
-impl<E> EventEmitter<E> for CursiveContext<E>
+impl<V> EventEmitter<V::Event> for CursiveContext<V>
 where
-    E: Clone,
+    V: CursiveView,
 {
-    fn connect_to(&mut self, addr: Address<E>) {
+    fn connect_to(&mut self, addr: Address<V::Event>) {
         self.address_book.add(addr);
     }
 } 
 
-impl<E> EventReceiver<E> for CursiveContext<E>
+impl<V> EventReceiver<V::Event> for CursiveContext<V>
 where
-    E: Clone,
+    V: CursiveView,
 {
-    fn address(&self) -> Address<E> {
+    fn address(&self) -> Address<V::Event> {
         self.mailbox.address()
     }
-    fn handle_event(&mut self, ev: E) -> EventResult {
+    fn handle_event(&mut self, ev: V::Event) -> EventResult {
         self.address_book.send(ev.clone());
         true
     }
 }
 
-impl<E> CursiveContext<E>
+impl<V> CursiveContext<V>
 where 
-    E: Clone,
+    V: CursiveView,
 {
     fn pump_events(&mut self) {
         for ev in self.mailbox.read() {

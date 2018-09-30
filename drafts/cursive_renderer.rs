@@ -59,7 +59,7 @@ enum Action {
 impl CursiveView for View {
     type Model = Model;
     type Event = Action;
-    fn configure(&mut self, ctx: &mut CursiveContext<Self::Event>) {
+    fn configure(&mut self, ctx: &mut CursiveContext<Self>) {
         let address = ctx.address();
         let randomize_name = move |_: &mut Cursive| {
             address.send(Action::RandomizeName);
@@ -81,7 +81,7 @@ impl CursiveView for View {
                 .button("Quit", request_quit)
         );
     }
-    fn update(&mut self, ctx: &mut CursiveContext<Self::Event>, model: &Self::Model) {
+    fn update(&mut self, ctx: &mut CursiveContext<Self>, model: &Self::Model) {
         let mut s = ctx.screen();
         s.call_on_id("model.name", |tv: &mut TextView| {
             tv.set_content(model.name.clone());
