@@ -3,7 +3,7 @@ extern crate mursten_blocks;
 extern crate nalgebra;
 extern crate rand;
 
-use mursten::{Application, Data};
+use mursten::{Application, Data, Backend};
 use mursten::dummy::DummyBackend;
 use mursten_blocks::cursive_renderer::{CursiveRenderer, CursiveView, CursiveContext};
 use mursten_blocks::cursive_renderer::cursive::Cursive;
@@ -87,18 +87,24 @@ impl CursiveView for View {
 struct ActionReducer;
 
 impl EventHandler for ActionReducer {
-    type Backend = DummyBackend;
     type Model = Model;
+    type Backend = DummyBackend<Self::Model>;
     type Event = Action;
     fn handle_event(
         &mut self,
-        _: &mut Self::Backend,
-        _: &mut Self::Model,
-        ev: Self::Event
+        backend: &mut Self::Backend,
+        model: &mut Self::Model,
+        event: Self::Event
     ) {
-        match ev {
-            Action::Quit => eprintln!("Quit!"),
-            Action::RandomizeName => eprintln!("Randomize name!"),
+        match event {
+            Action::Quit => {
+                backend.quit();
+            },
+            Action::RandomizeName => {
+                use rand::Rng;
+                let names = vec!["Pedro", "Juan", "Jose", "Carlos", "Eucebio", "Ignacio"];
+                model.name = rand::thread_rng().choose(&names).unwrap().to_string();
+            },
         }
     }
 }

@@ -145,17 +145,18 @@ mod render {
 }
 
 pub mod dummy {
-    pub struct DummyBackend {
+    pub struct DummyBackend<D> {
         must_quit: bool,
+        _data: Option<D>,
     }
 
-    impl DummyBackend {
+    impl<D> DummyBackend<D> {
         pub fn new() -> Self {
-            Self { must_quit: false }
+            Self { must_quit: false, _data: None }
         }
     }
 
-    impl<D> super::Backend<D> for DummyBackend
+    impl<D> super::Backend<D> for DummyBackend<D>
     where 
         Self: Sized,
         D: super::Data,
@@ -168,6 +169,9 @@ pub mod dummy {
         ) -> D {
             while !self.must_quit {
                 uc.update(&mut self, &mut data);
+                if self.must_quit {
+                    return data
+                }
                 rc.render(&mut self, &data);
             }
             data
