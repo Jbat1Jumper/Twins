@@ -1,7 +1,9 @@
 use mursten::{Backend, Data, Renderer};
 use nalgebra::*;
-use geometry::Mesh;
 use std::vec;
+
+use super::geometry::Mesh;
+
 
 pub struct MeshRenderer {}
 

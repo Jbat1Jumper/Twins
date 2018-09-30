@@ -1,9 +1,10 @@
 use mursten::{Backend, Data, Updater};
-use properties::{GetProperties, Property, Value};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::sync::mpsc::{channel, Receiver, RecvTimeoutError, Sender};
 use std::time::Duration;
+
+use super::properties::{GetProperties, Property, Value};
 
 pub fn create_repl() -> (Client, Server) {
     let (client_tx, server_rx) = channel();

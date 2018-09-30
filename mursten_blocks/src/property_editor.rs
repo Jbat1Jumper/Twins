@@ -1,5 +1,7 @@
 use mursten::{Data, Updater};
-use properties::{GetProperties, Property};
+
+use super::properties::{GetProperties, Property};
+
 
 pub struct PropertyEditor {}
 

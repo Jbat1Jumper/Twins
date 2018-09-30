@@ -1,4 +1,7 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::ops::{Add, AddAssign};
+
+use mursten::{Data, Updater};
 
 pub type Time = SystemTime;
 
@@ -49,7 +52,6 @@ impl Clock {
     }
 }
 
-use std::ops::{Add, AddAssign};
 
 impl Add<Tick> for Clock {
     type Output = Clock;
@@ -96,7 +98,6 @@ impl ClockUpdater {
     }
 }
 
-use mursten::{Data, Updater};
 
 impl<B, D> Updater<B, D> for ClockUpdater
 where
