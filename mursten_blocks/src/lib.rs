@@ -1,10 +1,12 @@
 extern crate alga;
+pub extern crate cursive;
 extern crate midir;
 extern crate mursten;
 extern crate nalgebra;
 extern crate rustyline;
 
 pub mod camera;
+pub mod cursive_renderer;
 pub mod geometry;
 pub mod input;
 pub mod light;
