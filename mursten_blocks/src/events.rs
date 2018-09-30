@@ -14,30 +14,23 @@ pub trait EventReceiver<E> {
     fn handle_event(&mut self, E) -> EventResult;
 }
 
-pub struct SimpleEventReceiver<E, H> 
-where 
-    H: Fn(E) -> EventResult
-{
+pub struct SimpleEventReceiver<E> {
     mailbox: Mailbox<E>,
-    handler: H,
+    handler: Box<Fn(E) -> EventResult>,
 }
 
-impl<E, H> SimpleEventReceiver<E, H>
-where 
-    H: Fn(E) -> EventResult
-{
-    pub fn new(name: &'static str, h: H) -> Self {
+impl<E> SimpleEventReceiver<E> {
+    pub fn new<F>(name: &'static str, closure: F) -> Self
+        where F: Fn(E) -> EventResult + 'static,
+    {
         Self {
-            handler: h,
+            handler: Box::new(closure),
             mailbox: Mailbox::new(name),
         }
     }
 }
 
-impl<E, H> EventReceiver<E> for SimpleEventReceiver<E, H>
-where 
-    H: Fn(E) -> EventResult
-{
+impl<E> EventReceiver<E> for SimpleEventReceiver<E> {
     fn address(&self) -> Address<E> {
         self.mailbox.address()
     }
@@ -46,9 +39,8 @@ where
     }
 }
 
-impl<B, D, E, H> Updater<B, D> for SimpleEventReceiver<E, H>
+impl<B, D, E> Updater<B, D> for SimpleEventReceiver<E>
 where
-    H: Fn(E) -> EventResult,
     D: Data,
 {
     fn update(&mut self, _backend: &mut B, _data: &mut D) {
