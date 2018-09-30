@@ -7,6 +7,7 @@ extern crate rustyline;
 
 pub mod camera;
 pub mod cursive_renderer;
+pub mod events;
 pub mod geometry;
 pub mod input;
 pub mod light;
