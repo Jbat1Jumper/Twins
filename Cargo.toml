@@ -54,3 +54,7 @@ path = "drafts/specular_light_test.rs"
 name = "room"
 path = "drafts/room.rs"
 
+[[bin]]
+name = "cursive_renderer"
+path = "drafts/cursive_renderer.rs"
+
