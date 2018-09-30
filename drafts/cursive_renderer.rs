@@ -5,10 +5,11 @@ extern crate rand;
 
 use mursten::{Application, Data};
 use mursten::dummy::DummyBackend;
-use mursten_blocks::cursive_renderer::{CursiveRenderer, CursiveView};
+use mursten_blocks::cursive_renderer::{CursiveRenderer, CursiveView, CursiveContext};
 use mursten_blocks::cursive_renderer::cursive::Cursive;
 use mursten_blocks::cursive_renderer::cursive::views::*;
 use mursten_blocks::cursive_renderer::cursive::traits::*;
+use mursten_blocks::events::SimpleEventReceiver;
 
 
 pub fn main() {
@@ -40,7 +41,9 @@ impl View {
 
 impl CursiveView for View {
     type Model = Model;
-    fn configure(&mut self, s: &mut Cursive) {
+    type Event = ();
+    fn configure(&mut self, ctx: &mut CursiveContext<Self::Event>) {
+        let mut s = ctx.screen();
         s.add_layer(
             Dialog::around(
                 TextView::new("_this will be replaced by the real text_")
@@ -51,7 +54,8 @@ impl CursiveView for View {
                 .button("Quit", |_| { })
         );
     }
-    fn update(&mut self, s: &mut Cursive, model: &Self::Model) {
+    fn update(&mut self, ctx: &mut CursiveContext<Self::Event>, model: &Self::Model) {
+        let mut s = ctx.screen();
         s.call_on_id("model.name", |tv: &mut TextView| {
             tv.set_content(model.name.clone());
         });
