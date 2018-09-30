@@ -9,18 +9,13 @@ use mursten_blocks::cursive_renderer::{CursiveRenderer, CursiveView, CursiveCont
 use mursten_blocks::cursive_renderer::cursive::Cursive;
 use mursten_blocks::cursive_renderer::cursive::views::*;
 use mursten_blocks::cursive_renderer::cursive::traits::*;
-use mursten_blocks::events::{SimpleEventReceiver, EventReceiver, EventEmitter};
+use mursten_blocks::events::simple::EventHandler;
+use mursten_blocks::events::{EventReceiver, EventEmitter};
 
 
 pub fn main() {
-    let action_reducer = SimpleEventReceiver::new("reducer", |ev: Action| {
-        match ev {
-            Action::Quit => eprintln!("Quit!"),
-            Action::RandomizeName => eprintln!("Randomize name!"),
-        }
-        true
-    });
     let mut cursive_renderer = CursiveRenderer::new("renderer", View::new());
+    let action_reducer = ActionReducer.into_updater("reducer");
     cursive_renderer.connect_to(action_reducer.address());
 
     Application::new(DummyBackend::new())
@@ -86,6 +81,25 @@ impl CursiveView for View {
         s.call_on_id("model.name", |tv: &mut TextView| {
             tv.set_content(model.name.clone());
         });
+    }
+}
+
+struct ActionReducer;
+
+impl EventHandler for ActionReducer {
+    type Backend = DummyBackend;
+    type Model = Model;
+    type Event = Action;
+    fn handle_event(
+        &mut self,
+        _: &mut Self::Backend,
+        _: &mut Self::Model,
+        ev: Self::Event
+    ) {
+        match ev {
+            Action::Quit => eprintln!("Quit!"),
+            Action::RandomizeName => eprintln!("Randomize name!"),
+        }
     }
 }
 

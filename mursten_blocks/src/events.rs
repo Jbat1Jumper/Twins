@@ -1,9 +1,6 @@
-use mursten::{Backend, Data, Updater};
 
 use super::events::transport::*;
 
-
-pub type EventResult = bool;
 
 pub trait EventEmitter<E> {
     fn connect_to(&mut self, Address<E>);
@@ -11,41 +8,60 @@ pub trait EventEmitter<E> {
 
 pub trait EventReceiver<E> {
     fn address(&self) -> Address<E>;
-    fn handle_event(&mut self, E) -> EventResult;
 }
 
-pub struct SimpleEventReceiver<E> {
-    mailbox: Mailbox<E>,
-    handler: Box<Fn(E) -> EventResult>,
-}
+pub mod simple {
 
-impl<E> SimpleEventReceiver<E> {
-    pub fn new<F>(name: &'static str, closure: F) -> Self
-        where F: Fn(E) -> EventResult + 'static,
+    use mursten::{Backend, Data, Updater};
+    use super::transport::*;
+    pub use super::EventReceiver;
+
+    pub struct SimpleEventReceiver<H>
+    where
+        H: EventHandler,
     {
-        Self {
-            handler: Box::new(closure),
-            mailbox: Mailbox::new(name),
+        handler: H,
+        mailbox: Mailbox<H::Event>,
+    }
+
+    pub trait EventHandler
+    where
+        Self: Sized,
+    {
+        type Model: Data;
+        type Backend: Backend<Self::Model>;
+        type Event: Clone;
+        fn handle_event(
+            &mut self,
+            &mut Self::Backend,
+            &mut Self::Model,
+            Self::Event
+        );
+        fn into_updater(self, name: &'static str) -> SimpleEventReceiver<Self> {
+            SimpleEventReceiver {
+                handler: self,
+                mailbox: Mailbox::new(name),
+            }
         }
     }
-}
 
-impl<E> EventReceiver<E> for SimpleEventReceiver<E> {
-    fn address(&self) -> Address<E> {
-        self.mailbox.address()
+    impl<H> EventReceiver<H::Event> for SimpleEventReceiver<H>
+    where 
+        H: EventHandler,
+    {
+        fn address(&self) -> Address<H::Event> {
+            self.mailbox.address()
+        }
     }
-    fn handle_event(&mut self, ev: E) -> EventResult {
-        (self.handler)(ev)
-    }
-}
 
-impl<B, D, E> Updater<B, D> for SimpleEventReceiver<E>
-where
-    D: Data,
-{
-    fn update(&mut self, _backend: &mut B, _data: &mut D) {
-        for ev in self.mailbox.read() {
-            self.handle_event(ev);
+    impl<H> Updater<H::Backend, H::Model> for SimpleEventReceiver<H>
+    where
+        H: EventHandler,
+    {
+        fn update(&mut self, backend: &mut H::Backend, data: &mut H::Model) {
+            for event in self.mailbox.read() {
+                self.handler.handle_event(backend, data, event);
+            }
         }
     }
 }

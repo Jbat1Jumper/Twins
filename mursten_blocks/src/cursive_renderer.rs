@@ -1,7 +1,7 @@
 use cursive::Cursive;
 use mursten::{Backend, Data, Renderer};
 
-use super::events::{EventEmitter, EventReceiver, EventResult};
+use super::events::{EventEmitter, EventReceiver};
 use super::events::transport::{Mailbox, Address, AddressBook};
 
 
@@ -128,10 +128,6 @@ where
     fn address(&self) -> Address<V::Event> {
         self.mailbox.address()
     }
-    fn handle_event(&mut self, ev: V::Event) -> EventResult {
-        self.address_book.send(ev.clone());
-        true
-    }
 }
 
 impl<V> CursiveContext<V>
@@ -140,7 +136,7 @@ where
 {
     fn pump_events(&mut self) {
         for ev in self.mailbox.read() {
-            self.handle_event(ev);
+            self.address_book.send(ev.clone());
         }
     }
 }
