@@ -23,7 +23,12 @@ where
     Self: Sized,
     D: Data,
 {
-    fn run(self, uc: UpdateChain<Self, D>, rc: RenderChain<Self, D>, data: D) -> D;
+    fn run(
+        self,
+        UpdateChain<Self, D>,
+        RenderChain<Self, D>,
+        D
+    ) -> D;
     fn quit(&mut self);
 }
 
@@ -135,6 +140,40 @@ mod render {
             for r in self.renderers.iter_mut() {
                 r.render(&mut backend, data);
             }
+        }
+    }
+}
+
+pub mod dummy {
+    pub struct DummyBackend {
+        must_quit: bool,
+    }
+
+    impl DummyBackend {
+        pub fn new() -> Self {
+            Self { must_quit: false }
+        }
+    }
+
+    impl<D> super::Backend<D> for DummyBackend
+    where 
+        Self: Sized,
+        D: super::Data,
+    {
+        fn run(
+            mut self,
+            mut uc: super::UpdateChain<Self, D>,
+            mut rc: super::RenderChain<Self, D>,
+            mut data: D
+        ) -> D {
+            while !self.must_quit {
+                uc.update(&mut self, &mut data);
+                rc.render(&mut self, &data);
+            }
+            data
+        }
+        fn quit(&mut self) {
+            self.must_quit = true;
         }
     }
 }
