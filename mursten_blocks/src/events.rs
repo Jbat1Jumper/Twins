@@ -1,7 +1,7 @@
 use mursten::{Backend, Data, Updater};
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-type EventResult = bool;
+pub type EventResult = bool;
 
 pub trait EventEmitter<E> {
     fn connect_to(&mut self, Sender<E>);
