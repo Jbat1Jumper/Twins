@@ -9,12 +9,23 @@ use mursten_blocks::cursive_renderer::{CursiveRenderer, CursiveView, CursiveCont
 use mursten_blocks::cursive_renderer::cursive::Cursive;
 use mursten_blocks::cursive_renderer::cursive::views::*;
 use mursten_blocks::cursive_renderer::cursive::traits::*;
-use mursten_blocks::events::SimpleEventReceiver;
+use mursten_blocks::events::{SimpleEventReceiver, EventReceiver, EventEmitter};
 
 
 pub fn main() {
+    let action_reducer = SimpleEventReceiver::new("reducer", |ev: Action| {
+        match ev {
+            Action::Quit => eprintln!("Quit!"),
+            Action::RandomizeName => eprintln!("Randomize name!"),
+        }
+        true
+    });
+    let mut cursive_renderer = CursiveRenderer::new("renderer", View::new());
+    cursive_renderer.connect_to(action_reducer.address());
+
     Application::new(DummyBackend::new())
-        .add_renderer(CursiveRenderer::new(View::new()))
+        .add_updater(action_reducer)
+        .add_renderer(cursive_renderer)
         .run(Model::new());
 }
 
@@ -39,10 +50,26 @@ impl View {
     }
 }
 
+#[derive(Clone)]
+enum Action {
+    RandomizeName,
+    Quit,
+}
+
 impl CursiveView for View {
     type Model = Model;
-    type Event = ();
+    type Event = Action;
     fn configure(&mut self, ctx: &mut CursiveContext<Self::Event>) {
+        let address = ctx.address();
+        let randomize_name = move |_: &mut Cursive| {
+            address.send(Action::RandomizeName);
+        };
+
+        let address = ctx.address();
+        let request_quit = move |_: &mut Cursive| {
+            address.send(Action::Quit);
+        };
+
         let mut s = ctx.screen();
         s.add_layer(
             Dialog::around(
@@ -50,8 +77,8 @@ impl CursiveView for View {
                     .with_id("model.name")
             )
                 .title("The name in the model")
-                .button("Randomize name", |_| { })
-                .button("Quit", |_| { })
+                .button("Randomize name", randomize_name)
+                .button("Quit", request_quit)
         );
     }
     fn update(&mut self, ctx: &mut CursiveContext<Self::Event>, model: &Self::Model) {
