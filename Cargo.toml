@@ -4,57 +4,9 @@ version = "0.1.0"
 authors = ["Nikita Zdanovitch <nzdanovitch@gmail.com>"]
 
 [dependencies]
-cgmath = "0.14.1"
 ggez = "0.4"
 image = "0.19.0"
 log = "0.4"
-markov = "1.0.2"
-midir = "0.5"
-mursten = { git = "https://github.com/teglvaerk/mursten.git" }
-mursten_blocks = { git = "https://github.com/teglvaerk/mursten-blocks.git" }
-mursten_piston_backend = { path = "mursten_piston_backend" }
-mursten_vulkan_backend = { git = "https://github.com/teglvaerk/mursten-vulkan-backend.git" }
 nalgebra = "0.16"
-piston2d-graphics = "0.26.0"
-piston_window = "0.80.0"
-pretty_env_logger = "0.2"
 rand = "0.4"
-reqwest = "0.8.6"
-time = "0.1.37"
-vulkano = "0.9"
-vulkano-shader-derive = "0.9"
-vulkano-win = "0.9"
-winit = "0.11.0"
-
-[[bin]]
-name = "brillito"
-path = "drafts/visuals.rs"
-
-[[bin]]
-name = "twins"
-path = "twins/mod.rs"
-
-[[bin]]
-name = "midi_one"
-path = "drafts/midi_one.rs"
-
-[[bin]]
-name = "plot"
-path = "drafts/plot.rs"
-
-[[bin]]
-name = "first_person_camera"
-path = "drafts/first_person_camera.rs"
-
-[[bin]]
-name = "specular_light_test"
-path = "drafts/specular_light_test.rs"
-
-[[bin]]
-name = "room"
-path = "drafts/room.rs"
-
-[[bin]]
-name = "cursive_renderer"
-path = "drafts/cursive_renderer.rs"
 
