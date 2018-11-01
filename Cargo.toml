@@ -11,9 +11,9 @@ log = "0.4"
 markov = "1.0.2"
 midir = "0.5"
 mursten = { git = "https://github.com/teglvaerk/mursten.git" }
-mursten_blocks = { path = "mursten_blocks" }
+mursten_blocks = { git = "https://github.com/teglvaerk/mursten-blocks.git" }
 mursten_piston_backend = { path = "mursten_piston_backend" }
-mursten_vulkan_backend = { path = "mursten_vulkan_backend" }
+mursten_vulkan_backend = { git = "https://github.com/teglvaerk/mursten-vulkan-backend.git" }
 nalgebra = "0.16"
 piston2d-graphics = "0.26.0"
 piston_window = "0.80.0"
