@@ -115,16 +115,16 @@ impl event::EventHandler for Main {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.t += self.game.delta_time();
 
-        let start = Instant::now();
-        let frame_time = start - self.last_time;
-        if self.profile {
-            print!(
-                "   Frame time is {}s {}ms",
-                frame_time.as_secs(),
-                frame_time.subsec_nanos() / 1_000_000
-            );
-        }
-        self.last_time = start;
+        // let start = Instant::now();
+        // let frame_time = start - self.last_time;
+        // if self.profile {
+        //     print!(
+        //         "   Frame time is {}s {}ms",
+        //         frame_time.as_secs(),
+        //         frame_time.subsec_nanos() / 1_000_000
+        //     );
+        // }
+        // self.last_time = start;
 
         self.controller.update(&mut self.game);
 
@@ -138,24 +138,24 @@ impl event::EventHandler for Main {
         });
         self.current_state = self.current_state.update(&mut self.game);
 
-        if self.debug {
-            println!("{:?}", self.current_state);
-        }
-        let end = Instant::now();
-        let update_time = end - start;
-        if self.profile {
-            print!(
-                "   Update time is {}s {}ms",
-                update_time.as_secs(),
-                update_time.subsec_nanos() / 1_000_000
-            );
-        }
+        // if self.debug {
+        //     println!("{:?}", self.current_state);
+        // }
+        // let end = Instant::now();
+        // let update_time = end - start;
+        // if self.profile {
+        //     print!(
+        //         "   Update time is {}s {}ms",
+        //         update_time.as_secs(),
+        //         update_time.subsec_nanos() / 1_000_000
+        //     );
+        // }
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let start = Instant::now();
+        // let start = Instant::now();
 
         ggez::graphics::set_background_color(ctx, Color::from(Palette::Black));
         ggez::graphics::clear(ctx);
@@ -165,28 +165,28 @@ impl event::EventHandler for Main {
             entity.render(ctx);
         }
 
-        let present = Instant::now();
-        let draw_time = present - start;
-        if self.profile {
-            print!(
-                "   Draw time is {}s {}ms",
-                draw_time.as_secs(),
-                draw_time.subsec_nanos() / 1_000_000
-            );
-        }
+        // let present = Instant::now();
+        // let draw_time = present - start;
+        // if self.profile {
+        //     print!(
+        //         "   Draw time is {}s {}ms",
+        //         draw_time.as_secs(),
+        //         draw_time.subsec_nanos() / 1_000_000
+        //     );
+        // }
 
         ggez::graphics::present(ctx);
 
-        let end = Instant::now();
-        let present_time = end - present;
-        if self.profile {
-            print!(
-                "    Present time is {}s {}ms",
-                present_time.as_secs(),
-                present_time.subsec_nanos() / 1_000_000
-            );
-            println!(" ;");
-        }
+        // let end = Instant::now();
+        // let present_time = end - present;
+        // if self.profile {
+        //     print!(
+        //         "    Present time is {}s {}ms",
+        //         present_time.as_secs(),
+        //         present_time.subsec_nanos() / 1_000_000
+        //     );
+        //     println!(" ;");
+        // }
 
         Ok(())
     }
