@@ -12,5 +12,9 @@ rand = "0.4"
 
 [[bin]]
 name = "main2"
-path = "src/main2.rs"
+path = "src/ggez_backend.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
 
