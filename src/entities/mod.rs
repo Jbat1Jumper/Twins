@@ -90,7 +90,7 @@ where
     T: Entity,
 {
     fn render(&mut self, ctx: &mut Context) {
-        Entity::render(self, ctx);
+        self.render(ctx);
     }
 }
 
