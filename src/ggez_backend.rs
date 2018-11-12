@@ -3,8 +3,10 @@
 ///
 
 extern crate nalgebra;
+extern crate petgraph;
 
 use engine::logical::{Logical, AsLogical, LogicUpdater};
+use petgraph::graph::{Graph, NodeIndex};
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
 
@@ -12,39 +14,39 @@ mod engine;
 
 
 struct World {
-    content: HashMap<Id, Object>,
+    content: Graph<Node, Edge>,
+    player_id: NodeIndex,
 }
 
-type Id = u32;
+impl Index<NodeIndex> for World {
+    type Output = Node;
 
-impl Index<Id> for World {
-    type Output = Object;
-
-    fn index(&self, id: Id) -> &Object {
-        self.content.get(&id).unwrap()
+    fn index(&self, id: NodeIndex) -> &Node {
+        &self.content[id]
     }
 }
 
-impl IndexMut<Id> for World {
-    fn index_mut(&mut self, id: Id) -> &mut Object {
-        self.content.get_mut(&id).unwrap()
+impl IndexMut<NodeIndex> for World {
+    fn index_mut(&mut self, id: NodeIndex) -> &mut Node {
+        &mut self.content[id]
     }
 }
-
-
 
 #[derive(Clone)]
-enum Object {
+struct Edge;
+
+#[derive(Clone)]
+enum Node {
     Player(Player),
     Tree(Tree),
     Monster(Monster),
     Dead,
 }
 
-impl AsLogical<World> for Object {
+impl AsLogical<World> for Node {
     fn as_logical_mut<'a>(&'a mut self) -> Option<&'a mut Logical<World>> {
         match self {
-            Object::Player(p) => Some(p),
+            Node::Player(p) => Some(p),
             _ => None,
         }
     }
@@ -69,14 +71,14 @@ impl Logical<World> for Player {
 
 impl World {
     fn new() -> Self {
-        let mut content = HashMap::new();
-        content.insert(0, Object::Player(Player { lives: 3, }));
-        content.insert(1, Object::Tree(Tree));
-        content.insert(2, Object::Tree(Tree));
-        content.insert(3, Object::Tree(Tree));
-        content.insert(4, Object::Tree(Tree));
-        content.insert(5, Object::Monster(Monster));
-        Self { content, }
+        let mut content = Graph::new();
+        let player_id = content.add_node(Node::Player(Player { lives: 3, }));
+        content.add_node(Node::Tree(Tree));
+        content.add_node(Node::Tree(Tree));
+        content.add_node(Node::Tree(Tree));
+        content.add_node(Node::Tree(Tree));
+        content.add_node(Node::Monster(Monster));
+        Self { content, player_id }
     }
 }
 
@@ -93,11 +95,11 @@ fn main() {
 
     let mut is_alive = true;
     while is_alive {
-        let ids: Vec<Id> = w.content.keys().cloned().collect();
+        let ids: Vec<NodeIndex> = w.content.node_indices().collect();
         for id in ids {
             LogicUpdater::update(id, &mut w);
         }
-        if let Object::Player(ref p) = w[0] {
+        if let Node::Player(ref p) = w[w.player_id] {
             is_alive = p.lives > 0;
         }
     }
