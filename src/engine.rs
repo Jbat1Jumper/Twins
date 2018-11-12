@@ -32,15 +32,11 @@ pub mod graphics {
 
 pub mod logical {
 
-    use std::ops::{Index, IndexMut};
-
     pub trait Logical<C> {
         fn update(&mut self, &mut C);
     }
 
-    pub trait AsLogical<C> {
-        fn as_logical_mut<'a>(&'a mut self) -> Option<&'a mut Logical<C>>;
-    }
+    use std::ops::{Index, IndexMut};
 
     pub struct LogicUpdater;
 
@@ -49,13 +45,13 @@ pub mod logical {
         where
             ID: Copy,
             C: IndexMut<ID>,
-            C::Output: AsLogical<C> + Clone,
+            C::Output: Logical<C> + Clone,
         {
+            // This updater needs the node to implement clone so we
+            // can call update over a cloned version of it passing
+            // the whole context to it.
             let mut o = ctx[id].clone();
-            
-            if let Some(l) = o.as_logical_mut() {
-                l.update(ctx);
-            }
+            o.update(ctx);
             ctx[id] = o;
         }
     }

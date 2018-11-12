@@ -5,7 +5,7 @@
 extern crate nalgebra;
 extern crate petgraph;
 
-use engine::logical::{Logical, AsLogical, LogicUpdater};
+use engine::logical::{Logical, LogicUpdater};
 use petgraph::graph::{Graph, NodeIndex};
 use std::collections::HashMap;
 use std::ops::{Index, IndexMut};
@@ -43,11 +43,11 @@ enum Node {
     Dead,
 }
 
-impl AsLogical<World> for Node {
-    fn as_logical_mut<'a>(&'a mut self) -> Option<&'a mut Logical<World>> {
+impl Logical<World> for Node {
+    fn update(&mut self, w: &mut World) {
         match self {
-            Node::Player(p) => Some(p),
-            _ => None,
+            Node::Player(p) => p.update(w),
+            _ => {},
         }
     }
 }
