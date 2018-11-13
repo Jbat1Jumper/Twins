@@ -121,7 +121,7 @@ pub struct Game {
     context: ggez::Context,
 }
 
-impl<'a> Game {
+impl Game {
     fn new(w: u32, h: u32) -> Self {
         let mut c = ggez::conf::Conf::new();
         c.window_setup.title = "t".to_string();
@@ -135,7 +135,7 @@ impl<'a> Game {
 
     fn run<W>(&mut self, world: W)
     where
-        W: Update<ggez::Context> + Draw<Screen<'a>>
+        for<'a> W: Update<ggez::Context> + Draw<Screen<'a>>
     {
         ggez::event::run(&mut self.context, &mut Main::new(world)).unwrap();
     }
@@ -212,9 +212,9 @@ impl<W> Main<W> {
     }
 }
 
-impl<'a, W> ggez::event::EventHandler for Main<W>
+impl<W> ggez::event::EventHandler for Main<W>
 where
-    W: Update<ggez::Context> + Draw<Screen<'a>>,
+    for<'a> W: Update<ggez::Context> + Draw<Screen<'a>>,
 {
     fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
 
@@ -223,11 +223,11 @@ where
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
+    fn draw<'b>(&mut self, ctx: &'b mut ggez::Context) -> ggez::GameResult<()> {
 
-        // let screen = Screen { ctx, precision: 0.5 };
+        let mut screen : Screen<'b> = Screen { ctx, precision: 0.5 };
 
-        // self.world.draw(&mut screen);
+        self.world.draw(&mut screen);
 
         Ok(())
     }

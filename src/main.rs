@@ -214,6 +214,6 @@ pub fn main() {
     c.window_mode.height = W_HEIGHT;
     let ctx = &mut Context::load_from_conf("twins", "jbat1jumper", c).unwrap();
     let state = &mut Main::new(ctx).unwrap();
-    state.init();
+    //state.init();
     event::run(ctx, state).unwrap();
 }
