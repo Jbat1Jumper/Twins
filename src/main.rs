@@ -108,7 +108,6 @@ impl Main {
         };
         Ok(s)
     }
-    fn init(&mut self) {}
 }
 
 impl event::EventHandler for Main {

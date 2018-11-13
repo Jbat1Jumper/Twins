@@ -1,11 +1,9 @@
 
 pub mod graphics {
-
     use nalgebra::*;
 
-
     pub trait Color: Clone + Copy {
-        fn into_rgba(self) -> Vector4<f32>;
+        fn into_rgba(self) -> [f32; 4];
     }
 
     pub enum DrawMode {
@@ -13,47 +11,27 @@ pub mod graphics {
         Fill,
     }
 
-
     pub trait Graphics {
-        fn clear<C: Color>(C);
-        fn present();
+        fn clear<C: Color>(&mut self, C);
+        fn present(&mut self);
         // fn draw(Drawable, position: Point2, scale: f32);
     }
 
-    pub trait DrawPrimitives {
-        fn set_color<C: Color>(C);
-        fn circle(DrawMode, origin: Point2<f32>, radius: f32);
-        fn ellipse(DrawMode, origin: Point2<f32>, width: f32, height: f32);
-        fn line(origin: Point2<f32>, target: Point2<f32>, width: f32);
+    pub trait DrawPrimitives: Graphics {
+        fn set_color<C: Color>(&mut self, C);
+        fn circle(&mut self, DrawMode, origin: Point2<f32>, radius: f32);
+        fn ellipse(&mut self, DrawMode, origin: Point2<f32>, width: f32, height: f32);
+        fn line(&mut self, origin: Point2<f32>, target: Point2<f32>, width: f32);
     }
 
+    pub trait Draw<S> {
+        fn draw(&self, &mut S);
+    }
 }
 
 
 pub mod logical {
-
-    pub trait Logical<C> {
+    pub trait Update<C> {
         fn update(&mut self, &mut C);
     }
-
-    use std::ops::{Index, IndexMut};
-
-    pub struct LogicUpdater;
-
-    impl LogicUpdater {
-        pub fn update<C, ID>(id: ID, ctx: &mut C)
-        where
-            ID: Copy,
-            C: IndexMut<ID>,
-            C::Output: Logical<C> + Clone,
-        {
-            // This updater needs the node to implement clone so we
-            // can call update over a cloned version of it passing
-            // the whole context to it.
-            let mut o = ctx[id].clone();
-            o.update(ctx);
-            ctx[id] = o;
-        }
-    }
-
 }
