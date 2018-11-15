@@ -54,6 +54,18 @@ impl Update<World> for Node {
     }
 }
 
+impl<S> Draw<S> for Node
+where
+    S: DrawPrimitives,
+{
+    fn draw(&self, surface: &mut S) {
+        match self {
+            Node::Player(p) => p.draw(surface),
+            _ => {},
+        }
+    }
+}
+
 
 #[derive(Clone)]
 struct Player {
@@ -62,12 +74,37 @@ struct Player {
 
 impl Update<World> for Player {
     fn update(&mut self, w: &mut World) {
-        self.lives -= 1;
+        //self.lives -= 1;
         if self.lives > 0 {
             println!("I'm the player and I can think for myself!");
         } else {
             println!("Ouch, not anymore!");
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+enum Palette {
+    White,
+    Black,
+}
+
+impl Color for Palette {
+    fn into_rgba(self) -> [f32; 4] {
+        match self {
+            Palette::White => [1.0, 1.0, 1.0, 1.0],
+            Palette::Black => [0.0, 0.0, 0.0, 1.0],
+        }
+    }
+}
+
+impl<S> Draw<S> for Player
+where 
+    S: DrawPrimitives,
+{
+    fn draw(&self, surface: &mut S) {
+        surface.set_color(Palette::White);
+        surface.circle(DrawMode::Fill, Point::origin(), 100.0);
     }
 }
 
@@ -84,8 +121,17 @@ impl World {
     }
 }
 
-impl<S> Draw<S> for World {
+impl<S> Draw<S> for World
+where 
+    S: DrawPrimitives,
+{
     fn draw(&self, surface: &mut S) {
+        let ids: Vec<NodeIndex> = self.content.node_indices().collect();
+        surface.clear(Palette::Black);
+        for id in ids {
+            self.content[id].draw(surface);
+        }
+        surface.present();
     }
 }
 
@@ -121,7 +167,7 @@ pub struct Game {
     context: ggez::Context,
 }
 
-impl<'a> Game {
+impl Game {
     fn new(w: u32, h: u32) -> Self {
         let mut c = ggez::conf::Conf::new();
         c.window_setup.title = "t".to_string();
@@ -135,7 +181,7 @@ impl<'a> Game {
 
     fn run<W>(&mut self, world: W)
     where
-        W: Update<ggez::Context> + Draw<Screen<'a>>
+        for<'a> W: Update<ggez::Context> + Draw<Screen<'a>>
     {
         ggez::event::run(&mut self.context, &mut Main::new(world)).unwrap();
     }
@@ -212,9 +258,9 @@ impl<W> Main<W> {
     }
 }
 
-impl<'a, W> ggez::event::EventHandler for Main<W>
+impl<W> ggez::event::EventHandler for Main<W>
 where
-    W: Update<ggez::Context> + Draw<Screen<'a>>,
+    for<'a> W: Update<ggez::Context> + Draw<Screen<'a>>,
 {
     fn update(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
 
@@ -223,11 +269,11 @@ where
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut ggez::Context) -> ggez::GameResult<()> {
+    fn draw<'b>(&mut self, ctx: &'b mut ggez::Context) -> ggez::GameResult<()> {
 
-        // let screen = Screen { ctx, precision: 0.5 };
+        let mut screen : Screen<'b> = Screen { ctx, precision: 0.5 };
 
-        // self.world.draw(&mut screen);
+        self.world.draw(&mut screen);
 
         Ok(())
     }
