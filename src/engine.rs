@@ -30,6 +30,23 @@ pub mod graphics {
 }
 
 
+pub mod time {
+    pub type Time = std::time::SystemTime;
+    pub type Duration = std::time::Duration;
+    pub const TIME_START: Time = std::time::UNIX_EPOCH;
+
+    pub trait GetTime {
+        fn time(&self) -> Time;
+        fn delta(&self) -> Duration;
+        fn time_in_sec(&self) -> f32 {
+            let d = self.time().duration_since(TIME_START).unwrap();
+            d.as_secs() as f32 + d.subsec_millis() as f32 / 1000.0
+        }
+        fn delta_as_sec(&self) -> f32 {
+            self.delta().as_secs() as f32 + self.delta().subsec_millis() as f32 / 1000.0
+        }
+    }
+}
 pub mod logical {
     pub trait Update<C> {
         fn update(&mut self, &mut C);
