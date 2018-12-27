@@ -52,3 +52,62 @@ pub mod logical {
         fn update(&mut self, &mut C);
     }
 }
+
+pub mod sequence {
+    use super::logical::Update;
+    
+    #[derive(Clone)]
+    pub struct Sequence {
+        current: u32,
+    }
+
+    impl Sequence {
+        pub fn new() -> Sequence {
+            Sequence {
+                current: 0,
+            }
+        }
+        pub fn step<'s, 'c, S, C>(&mut self, state: &'s mut S, context: &'c mut C) -> SecuenceExecuter<'s, 'c, S, C> {
+            self.current += 1;
+            SecuenceExecuter {
+                state,
+                context,
+                execute_at_step: 0,
+                before: self.current - 1,
+                now: self.current,
+            }
+        }
+    }
+
+    pub struct SecuenceExecuter<'s, 'c, S: 's, C: 'c> {
+        before: u32,
+        now: u32,
+        execute_at_step: u32,
+        state: &'s mut S,
+        context: &'c mut C,
+    }
+
+    impl<'s, 'c, S, C> SecuenceExecuter<'s, 'c, S, C> {
+        pub fn then<F>(self, c: F) -> Self
+            where
+                F: FnOnce(&mut S, &mut C),
+        {
+            if self.before <= self.execute_at_step && self.execute_at_step < self.now {
+                c(self.state, self.context);
+            }
+            SecuenceExecuter {
+                ..self
+            }
+        }
+        pub fn wait(self, steps: u32) -> Self {
+            SecuenceExecuter {
+                execute_at_step: self.execute_at_step + steps,
+                ..self
+            }
+        }
+    }
+    impl<C> Update<C> for Sequence {
+        fn update(&mut self, ctx: &mut C) {
+        }
+    }
+}
