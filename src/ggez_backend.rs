@@ -2,6 +2,8 @@
 /// This is the real game implementation, 
 ///
 
+extern crate mursten;
+extern crate mursten_ggez_backend;
 extern crate nalgebra;
 extern crate petgraph;
 extern crate ggez;
@@ -175,8 +177,14 @@ struct Monster;
 
 /////
 
+use mursten::Scene;
 
+impl Scene for World {}
+
+use mursten::Game;
+use mursten_ggez_backend::GgezBackend;
 
 fn main() {
-    let game = Game::new(320, 240).run(World::new());
+    Game::new(GgezBackend::new(320, 240))
+        .run(World::new());
 }

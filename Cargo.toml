@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Nikita Zdanovitch <nzdanovitch@gmail.com>"]
 
 [dependencies]
+mursten = { path="../mursten" }
+mursten-ggez-backend = { path = "../mursten-ggez-backend" }
 ggez = "0.4"
 image = "0.19.0"
 log = "0.4"
