@@ -10,7 +10,7 @@ ggez = "0.4"
 image = "0.19.0"
 log = "0.4"
 nalgebra = "0.16"
-rand = "0.4"
+rand = "0.5"
 petgraph = "0.4"
 
 [[bin]]
@@ -21,3 +21,6 @@ path = "src/ggez_backend.rs"
 name = "main"
 path = "src/main.rs"
 
+[[bin]]
+name = "walden"
+path = "src/walden.rs"
